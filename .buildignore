@@ -1,0 +1,17 @@
+build/
+dist/
+.git/
+.github/
+node_modules/
+vendor/bin/
+tests/
+.gitignore
+.buildignore
+build.sh
+composer.lock
+package-lock.json
+*.log
+.DS_Store
+.claude/
+CLAUDE.md
+README.md
