@@ -34,13 +34,11 @@ function is_user_ad_free($userDetails = null) {
         return false;
     }
 
-    // Switch to shop site (blog ID 3) to access ad-free database
     switch_to_blog(3);
 
     global $wpdb;
     $table = $wpdb->prefix . 'extrachill_ad_free';
 
-    // Check if table exists first
     $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'") === $table;
 
     if (!$table_exists) {
@@ -48,12 +46,10 @@ function is_user_ad_free($userDetails = null) {
         return false;
     }
 
-    // Check for ad-free license
     $has_license = (bool) $wpdb->get_var(
         $wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE username = %s", sanitize_text_field($username))
     );
 
-    // Restore original blog
     restore_current_blog();
 
     return $has_license;

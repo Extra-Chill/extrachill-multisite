@@ -8,9 +8,6 @@
  * @package ExtraChill
  */
 
-/**
- * Restrict wp-admin access to administrators only
- */
 function extrachill_redirect_admin() {
     // WordPress multisite handles authentication natively - simple admin check
     if (!current_user_can('administrator') && is_admin() && !wp_doing_ajax()) {
@@ -21,7 +18,6 @@ function extrachill_redirect_admin() {
 add_action('admin_init', 'extrachill_redirect_admin');
 
 /**
- * Hide admin bar for non-administrators
  * Runs early on init to prevent admin bar from showing
  */
 function extrachill_hide_admin_bar_for_non_admins() {

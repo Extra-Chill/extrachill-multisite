@@ -74,24 +74,20 @@ function ec_get_contextual_excerpt_multisite($content, $search_term, $word_limit
         return $content;
     }
 
-    // Find the search term in the content
     $search_pos = stripos($content, $search_term);
     if ($search_pos !== false) {
-        // Get words around the search term
         $start_word = max(0, floor($search_pos / 6) - ($word_limit / 2));
         $excerpt_words = array_slice($words, $start_word, $word_limit);
         return ($start_word > 0 ? '...' : '') . implode(' ', $excerpt_words) . '...';
     }
 
-    // Fallback to first words
     return implode(' ', array_slice($words, 0, $word_limit)) . '...';
 }
 
 add_filter('posts_pre_query', 'ec_hijack_search_query', 10, 2);
 function ec_hijack_search_query($posts, $query) {
-    // Only hijack main search queries on frontend
     if (!$query->is_main_query() || is_admin() || !$query->is_search()) {
-        return null; // Let WordPress proceed normally
+        return null;
     }
 
     $search_term = $query->get('s');
@@ -99,7 +95,6 @@ function ec_hijack_search_query($posts, $query) {
         return null;
     }
 
-    // Get real-time forum results from community site
     $forum_posts = ec_fetch_forum_results_multisite($search_term, 100);
 
     // Get real-time local posts
