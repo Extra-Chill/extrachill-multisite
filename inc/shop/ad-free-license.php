@@ -10,13 +10,8 @@
  */
 
 /**
- * Check if user has ad-free access via cross-site database lookup
- *
- * Uses switch_to_blog(3) to check shop site's ad-free license table,
- * following the same pattern as forum integration.
- *
- * @param array|null $userDetails Optional user details array
- * @return bool True if user has ad-free access, false otherwise
+ * Uses switch_to_blog(3) to check shop site's ad-free license table
+ * following WordPress multisite cross-site data access pattern.
  */
 function is_user_ad_free($userDetails = null) {
     if (!is_user_logged_in()) {
