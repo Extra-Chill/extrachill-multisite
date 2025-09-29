@@ -1,9 +1,7 @@
 <?php
 /**
- * Multisite Search - Real-Time Search Across Sites
- *
- * Provides unified search functionality across WordPress multisite network.
- * Searches both local site and community forum in real-time with no caching.
+ * Multisite cross-site search using switch_to_blog() for community forum integration.
+ * Hardcoded blog IDs (main=1, community=2) eliminate database lookups for performance.
  */
 
 function ec_fetch_forum_results_multisite($search_term, $limit = 100) {
@@ -42,7 +40,6 @@ function ec_fetch_forum_results_multisite($search_term, $limit = 100) {
                 $query->the_post();
                 global $post;
 
-                // Create virtual post object for forum content
                 $forum_post = new stdClass();
                 $forum_post->ID = $post->ID;
                 $forum_post->post_title = get_the_title();
@@ -97,7 +94,6 @@ function ec_hijack_search_query($posts, $query) {
 
     $forum_posts = ec_fetch_forum_results_multisite($search_term, 100);
 
-    // Get real-time local posts
     $local_args = array(
         'post_type' => 'post',
         'post_status' => 'publish',
@@ -108,44 +104,34 @@ function ec_hijack_search_query($posts, $query) {
     $local_query = new WP_Query($local_args);
     $local_posts = $local_query->posts;
 
-    // Merge and sort all posts by date (most recent first)
     $all_posts = array_merge($local_posts, $forum_posts);
     usort($all_posts, function($a, $b) {
         return strtotime($b->post_date) - strtotime($a->post_date);
     });
 
-    // Calculate pagination
     $posts_per_page = get_option('posts_per_page');
     $total_posts = count($all_posts);
     $max_num_pages = ceil($total_posts / $posts_per_page);
     $current_page = max(1, get_query_var('paged', 1));
 
-    // Get posts for current page
     $offset = ($current_page - 1) * $posts_per_page;
     $paginated_posts = array_slice($all_posts, $offset, $posts_per_page);
 
-    // Set query vars for pagination
     $query->found_posts = $total_posts;
     $query->max_num_pages = $max_num_pages;
 
     return $paginated_posts;
 }
 
-/**
- * Enhanced contextual excerpt with search term highlighting
- */
 if (!function_exists('ec_get_contextual_excerpt')) {
     function ec_get_contextual_excerpt($content, $search_term, $word_limit = 30) {
         $position = stripos($content, $search_term);
         if ($position === false) {
-            // If no match, fallback to default trimmed content
             $excerpt = '...' . wp_trim_words($content, $word_limit) . '...';
         } else {
-            // Get surrounding text
             $words = explode(' ', $content);
             $match_position = 0;
 
-            // Count words until we find the match
             foreach ($words as $index => $word) {
                 if (stripos($word, $search_term) !== false) {
                     $match_position = $index;
@@ -153,14 +139,11 @@ if (!function_exists('ec_get_contextual_excerpt')) {
                 }
             }
 
-            // Get the range of words around the match
             $start = max(0, $match_position - floor($word_limit / 2));
             $length = min(count($words) - $start, $word_limit);
 
-            // Extract the excerpt
             $excerpt = array_slice($words, $start, $length);
 
-            // Add ellipses based on whether we're truncating at the start or end
             $prefix = $start > 0 ? '...' : '';
             $suffix = ($start + $length) < count($words) ? '...' : '';
 

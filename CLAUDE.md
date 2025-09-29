@@ -16,10 +16,11 @@ Network-activated WordPress plugin providing centralized multisite functionality
 
 ## Architecture
 
-### PSR-4 Implementation
-- **Composer Autoloading**: Configured with PSR-4 namespace `ExtraChill\Multisite\` mapping to `inc/`
+### Plugin Loading Pattern
+- **Procedural WordPress Pattern**: Uses direct `require_once` includes for all plugin functionality
+- **Composer PSR-4 Configuration**: Exists in `composer.json` but ONLY used for development dependencies (PHPUnit, PHPCS)
 - **Network Plugin Structure**: Network-activated plugin providing functionality across all multisite installations
-- **Modular Loading**: Site-specific functionality loaded conditionally based on context
+- **Modular Loading**: Site-specific functionality loaded conditionally via direct includes in main plugin file
 
 ### Core Features
 
@@ -94,7 +95,8 @@ try {
 ## Development Standards
 
 ### Code Organization
-- **PSR-4 Autoloading**: Proper namespace structure with Composer autoloader
+- **Procedural Pattern**: Direct `require_once` includes throughout plugin architecture
+- **Composer Autoloader**: Only for development dependencies (PHPUnit, PHPCS, WordPress standards)
 - **WordPress Standards**: Full compliance with network plugin development guidelines
 - **Security Implementation**: Network-wide admin access control and secure cross-site data access
 - **Performance Focus**: Direct database queries and hardcoded blog IDs for optimization

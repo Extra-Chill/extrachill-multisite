@@ -41,13 +41,13 @@ add_action( 'plugins_loaded', 'extrachill_multisite_init' );
 function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/admin-access-control.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/extrachill-turnstile.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/team-members.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/comment-author-links.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/multisite-search.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/recent-activity-feed.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/shop/ad-free-license.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community/main-site-comments.php';
 
-	// Load network admin interface
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-security-settings.php';
 	}
