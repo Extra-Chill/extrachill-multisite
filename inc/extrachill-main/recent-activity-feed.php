@@ -1,21 +1,11 @@
 <?php
 
 /**
- * Recent Activity Feed Functions
- * Native multisite integration for displaying community forum activity
- * Replaces REST API calls with direct database queries for improved performance
- *
- * @package ExtraChill
- * @since 69.57
+ * Recent Activity Feed - Community forum activity using native multisite functions
  */
+
 /**
- * Generate compact human-readable time difference strings
- * Uses abbreviated format (e.g., "5m ago", "2h ago") for space efficiency
- *
- * @param int $from Unix timestamp of the past time
- * @param int $to   Unix timestamp of current time (defaults to now)
- * @return string Formatted time difference string
- * @since 69.57
+ * Generate compact time difference strings (5m ago, 2h ago)
  */
 function custom_human_time_diff($from, $to = '') {
     if (empty($to)) {
@@ -48,15 +38,8 @@ function custom_human_time_diff($from, $to = '') {
 }
 
 /**
- * Fetch recent activity from community site using native multisite functions
- * Direct replacement for REST API calls - provides significant performance improvement
- * Queries bbPress topics and replies from community.extrachill.com via multisite
- *
- * @param int $limit Number of activities to fetch (default: 10)
- * @return array Array of activity data with user, topic, and forum information
- * @since 69.57
- *
- * @throws Exception If multisite operation fails, logs error and returns empty array
+ * Fetch recent activity from community site
+ * Excludes forum ID 1494, searches topics/replies via extrachill_multisite_search()
  */
 function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 	if ( ! is_multisite() ) {
@@ -64,66 +47,75 @@ function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 		return array();
 	}
 
-	$activities = array();
-
-	// Switch to community site (blog ID 2)
-	switch_to_blog( 2 );
-
-	try {
-		// Query recent bbPress activity
-		$args = array(
-			'post_type' => array( 'topic', 'reply' ),
-			'post_status' => 'publish',
-			'posts_per_page' => $limit,
-			'orderby' => 'date',
-			'order' => 'DESC',
-			'meta_query' => array(
-				'relation' => 'AND',
+	// Use centralized multisite search
+	$results = extrachill_multisite_search(
+		'',
+		array( 'community.extrachill.com' ),
+		array(
+			'post_types'  => array( 'topic', 'reply' ),
+			'post_status' => array( 'publish' ),
+			'limit'       => $limit,
+			'meta_query'  => array(
 				array(
-					'key' => '_bbp_forum_id',
-					'value' => '1494', // Exclude restricted forum
+					'key'     => '_bbp_forum_id',
+					'value'   => '1494',
 					'compare' => '!=',
 				),
 			),
-		);
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+		)
+	);
 
-		$query = new WP_Query( $args );
+	if ( empty( $results ) ) {
+		return array();
+	}
 
-		if ( $query->have_posts() ) {
-			while ( $query->have_posts() ) {
-				$query->the_post();
-				$post_id = get_the_ID();
-				$post_type = get_post_type( $post_id );
+	// Transform search results to activity format
+	$activities = array();
 
-				$forum_id = ( 'reply' === $post_type ) ? get_post_meta( get_post_meta( $post_id, '_bbp_topic_id', true ), '_bbp_forum_id', true ) : get_post_meta( $post_id, '_bbp_forum_id', true );
-				$forum_title = get_the_title( $forum_id );
-				$forum_url = get_permalink( $forum_id );
+	// Switch to community site once to fetch bbPress metadata
+	switch_to_blog( get_blog_id_from_url( 'community.extrachill.com', '/' ) );
 
-				$topic_title = ( 'reply' === $post_type ) ? get_the_title( get_post_meta( $post_id, '_bbp_topic_id', true ) ) : get_the_title( $post_id );
-				$topic_url = get_permalink( $post_id );
+	try {
+		foreach ( $results as $result ) {
+			$post_id   = $result['ID'];
+			$post_type = $result['post_type'];
 
-				$author_id = get_the_author_meta( 'ID' );
-				$username = get_the_author();
-				$user_profile_url = get_author_posts_url( $author_id );
+			// Get forum metadata
+			$forum_id = ( 'reply' === $post_type )
+				? get_post_meta( get_post_meta( $post_id, '_bbp_topic_id', true ), '_bbp_forum_id', true )
+				: get_post_meta( $post_id, '_bbp_forum_id', true );
 
-				$activities[] = array(
-					'type' => ( 'reply' === $post_type ) ? 'Reply' : 'Topic',
-					'username' => $username,
-					'user_profile_url' => $user_profile_url,
-					'topic_title' => $topic_title,
-					'topic_url' => $topic_url,
-					'forum_title' => $forum_title,
-					'forum_url' => $forum_url,
-					'date_time' => get_the_date( 'c' ),
-				);
-			}
-			wp_reset_postdata();
+			$forum_title = get_the_title( $forum_id );
+			$forum_url   = get_permalink( $forum_id );
+
+			// Get topic information
+			$topic_title = ( 'reply' === $post_type )
+				? get_the_title( get_post_meta( $post_id, '_bbp_topic_id', true ) )
+				: $result['post_title'];
+
+			$topic_url = $result['permalink'];
+
+			// Get author information
+			$author_id        = $result['post_author'];
+			$username         = get_the_author_meta( 'display_name', $author_id );
+			$user_profile_url = get_author_posts_url( $author_id );
+
+			$activities[] = array(
+				'type'             => ( 'reply' === $post_type ) ? 'Reply' : 'Topic',
+				'username'         => $username,
+				'user_profile_url' => $user_profile_url,
+				'topic_title'      => $topic_title,
+				'topic_url'        => $topic_url,
+				'forum_title'      => $forum_title,
+				'forum_url'        => $forum_url,
+				'date_time'        => gmdate( 'c', strtotime( $result['post_date'] ) ),
+			);
 		}
 	} catch ( Exception $e ) {
-		error_log( 'Recent activity multisite error: ' . $e->getMessage() );
-		$activities = array();
+		error_log( 'Recent activity transformation error: ' . $e->getMessage() );
 	} finally {
-		// Always restore current blog
 		restore_current_blog();
 	}
 
@@ -131,11 +123,7 @@ function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 }
 
 /**
- * WordPress shortcode handler for displaying recent community activity
- * Implements 10-minute caching to reduce database queries and improve performance
- *
- * @return string HTML output for recent activity display
- * @since 69.57
+ * Shortcode handler with 10-minute caching
  */
 function extrachill_recent_activity_shortcode() {
     $transient_name = 'extrachill_recent_activity';

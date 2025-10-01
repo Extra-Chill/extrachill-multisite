@@ -30,7 +30,7 @@ function ec_get_comment_author_link_multisite($comment) {
     }
 
     if (!empty($comment->comment_author_email)) {
-        switch_to_blog(2);
+        switch_to_blog( get_blog_id_from_url( 'community.extrachill.com', '/' ) );
         $community_user = get_user_by('email', $comment->comment_author_email);
         restore_current_blog();
 

@@ -27,7 +27,7 @@ Network-activated WordPress plugin providing centralized multisite functionality
 #### Multisite Data Access
 **Cross-Site Search Integration** (`inc/extrachill-main/multisite-search.php`):
 - **Real-Time Forum Search**: `ec_fetch_forum_results_multisite()` searches community forum from main site
-- **Hardcoded Blog IDs**: Uses `switch_to_blog()` with main=1, community=2, shop=3, app=4 (performance optimization)
+- **Domain-Based Site Resolution**: Uses WordPress native `get_blog_id_from_url()` with automatic blog-id-cache
 - **bbPress Integration**: Searches topic and reply post types with metadata filtering
 - **Error Handling**: Comprehensive logging and fallback mechanisms
 
@@ -44,10 +44,10 @@ Network-activated WordPress plugin providing centralized multisite functionality
 
 #### Commerce Integration
 **Ad-Free License System** (`inc/shop/ad-free-license.php`):
-- **Cross-Domain License Validation**: Uses `switch_to_blog(3)` to check shop site licenses
+- **Cross-Domain License Validation**: Domain-based site resolution to check shop site licenses
 - **WordPress Multisite Integration**: Follows established cross-site data access patterns
 - **User License Checking**: Validates ad-free access via multisite database lookup
-- **Performance Optimized**: Direct database queries with minimal overhead
+- **Performance Optimized**: Direct database queries with WordPress native caching
 
 #### Comment and Author Integration
 **Comment Author Links** (`inc/extrachill-main/comment-author-links.php`):
@@ -64,7 +64,7 @@ Network-activated WordPress plugin providing centralized multisite functionality
 **Blog Switching Architecture**:
 ```php
 // Standard pattern used throughout plugin
-switch_to_blog(2); // Community site
+switch_to_blog( get_blog_id_from_url( 'community.extrachill.com', '/' ) );
 try {
     // Cross-site database operations
     $results = get_posts($args);
@@ -73,11 +73,15 @@ try {
 }
 ```
 
-**Hardcoded Blog IDs** (Performance Optimization):
-- **Main Site**: Blog ID 1 (extrachill.com)
-- **Community Site**: Blog ID 2 (community.extrachill.com)
-- **Shop Site**: Blog ID 3 (shop.extrachill.com)
-- **App Site**: Blog ID 4 (app.extrachill.com - planned)
+**Domain-Based Site Resolution**:
+- **Main Site**: extrachill.com
+- **Community Site**: community.extrachill.com
+- **Shop Site**: shop.extrachill.com
+- **App Site**: app.extrachill.com (planning stage)
+- **Chat Site**: chat.extrachill.com
+- **Artist Site**: artist.extrachill.com
+- **Events Site**: events.extrachill.com
+- **Performance**: WordPress native `get_blog_id_from_url()` with automatic blog-id-cache
 
 ### Plugin Loading Strategy
 **Network Activation Requirements**:
@@ -99,7 +103,7 @@ try {
 - **Composer Autoloader**: Only for development dependencies (PHPUnit, PHPCS, WordPress standards)
 - **WordPress Standards**: Full compliance with network plugin development guidelines
 - **Security Implementation**: Network-wide admin access control and secure cross-site data access
-- **Performance Focus**: Direct database queries and hardcoded blog IDs for optimization
+- **Performance Focus**: Direct database queries with domain-based site resolution via `get_blog_id_from_url()` and automatic WordPress blog-id-cache
 
 ### Build System
 - **Network Plugin Build**: Uses `build.sh` script for production ZIP creation
@@ -128,7 +132,7 @@ try {
 
 ### Cross-Site Search
 **Forum Search Integration**:
-- Searches community forum (blog ID 2) from main site
+- Searches community forum from main site using domain-based resolution
 - Real-time search with no caching for fresh results
 - bbPress post type integration (topics and replies)
 - Metadata filtering for published content only
@@ -166,15 +170,15 @@ composer run test
 ```
 
 ### Build Output
-- **Production Package**: `dist/extrachill-multisite-{version}.zip`
+- **Production Package**: `/build/extrachill-multisite/` directory and `/build/extrachill-multisite.zip` file
 - **Network Plugin**: Must be installed in network plugins directory
 - **File Exclusions**: Development files, vendor/, .git/, build tools excluded
 
 ## Integration Guidelines
 
 ### Adding New Cross-Site Features
-1. **Follow Blog Switching Pattern**: Use `switch_to_blog()` with proper error handling
-2. **Hardcoded Blog IDs**: Use established blog ID constants for performance
+1. **Follow Blog Switching Pattern**: Use `switch_to_blog( get_blog_id_from_url( 'domain.extrachill.com', '/' ) )` with proper error handling
+2. **Domain-Based Resolution**: Use domain strings for maintainable, readable code
 3. **Network-Wide Loading**: Add new functionality to main plugin initialization
 4. **Security Checks**: Implement proper capability checks for network-wide features
 
@@ -189,12 +193,13 @@ composer run test
 ### Native Functions Used
 - **`switch_to_blog()`**: Cross-site database access
 - **`restore_current_blog()`**: Restore original site context
+- **`get_blog_id_from_url()`**: Domain-based blog ID resolution with automatic caching
 - **`is_multisite()`**: Multisite installation detection
 - **Network activation hooks**: Proper network plugin initialization
 
 ### Performance Optimizations
 - **Direct Database Queries**: Optimized cross-site data access
-- **Hardcoded Blog IDs**: Eliminates blog lookup overhead
+- **WordPress Native Caching**: `get_blog_id_from_url()` uses blog-id-cache automatically
 - **Minimal Context Switching**: Efficient blog switching patterns
 - **Error Handling**: Comprehensive error logging and fallback mechanisms
 

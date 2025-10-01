@@ -1,10 +1,6 @@
 <?php
 /**
- * Team Member Helper Functions
- *
- * Centralized helper functions for checking team member status across the multisite network.
- *
- * @package ExtraChillMultisite
+ * Team Member Helper Functions - Manual override and extrachill_team meta checking
  */
 
 if (!defined('ABSPATH')) {
@@ -12,12 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Check if user is a team member
- *
- * Checks manual override first, then falls back to extrachill_team meta.
- *
- * @param int $user_id User ID to check (default: current user)
- * @return bool True if team member, false otherwise
+ * Check team member status with manual override support
  */
 function ec_is_team_member($user_id = 0) {
     if (!$user_id) {
@@ -44,22 +35,19 @@ function ec_is_team_member($user_id = 0) {
 }
 
 /**
- * Check if user has account on main site (extrachill.com)
- *
- * @param int $user_id User ID to check
- * @return bool True if user has main site account, false otherwise
+ * Check if user has account on extrachill.com via domain-based site resolution
  */
 function ec_has_main_site_account($user_id) {
     if (!$user_id) {
         return false;
     }
 
-    $main_site_id = 1; // extrachill.com
     $has_account = false;
 
     try {
-        switch_to_blog($main_site_id);
-        $has_account = is_user_member_of_blog($user_id, $main_site_id);
+        $main_site_id = get_blog_id_from_url( 'extrachill.com', '/' );
+        switch_to_blog( $main_site_id );
+        $has_account = is_user_member_of_blog( $user_id, $main_site_id );
     } finally {
         restore_current_blog();
     }

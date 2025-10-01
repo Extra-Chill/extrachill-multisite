@@ -1,17 +1,10 @@
 <?php
 /**
- * Ad-Free License Validation Functions
- *
- * Handles ad-free license validation via WordPress multisite cross-site database lookup.
- * Uses switch_to_blog(3) to check shop site's license database from main site.
- *
- * @package ExtraChill
- * @since 69.57
+ * Ad-Free License Validation - Cross-site license checking from shop database
  */
 
 /**
- * Uses switch_to_blog(3) to check shop site's ad-free license table
- * following WordPress multisite cross-site data access pattern.
+ * Check if user has ad-free license via shop.extrachill.com database lookup
  */
 function is_user_ad_free($userDetails = null) {
     if (!is_user_logged_in()) {
@@ -29,7 +22,7 @@ function is_user_ad_free($userDetails = null) {
         return false;
     }
 
-    switch_to_blog(3);
+    switch_to_blog( get_blog_id_from_url( 'shop.extrachill.com', '/' ) );
 
     global $wpdb;
     $table = $wpdb->prefix . 'extrachill_ad_free';

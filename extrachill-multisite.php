@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: ExtraChill Multisite
+ * Plugin Name: Extra Chill Multisite
  * Plugin URI: https://extrachill.com
  * Description: Centralized multisite functionality for the ExtraChill Platform
  * Version: 1.0.0
@@ -42,8 +42,9 @@ function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/admin-access-control.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/extrachill-turnstile.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/team-members.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/newsletter-sendy-api.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/multisite-search.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/comment-author-links.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/multisite-search.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/recent-activity-feed.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/shop/ad-free-license.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community/main-site-comments.php';

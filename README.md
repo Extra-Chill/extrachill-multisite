@@ -24,7 +24,7 @@ This WordPress network plugin provides centralized multisite functionality acros
 
 - **Network Activated** - Single plugin serving all sites in the multisite network
 - **Direct Database Queries** - Uses `switch_to_blog()` for cross-site data access
-- **Performance Optimized** - Hardcoded blog IDs for maximum performance
+- **Performance Optimized** - Domain-based site resolution via `get_blog_id_from_url()` with WordPress blog-id-cache
 - **Security First** - Comprehensive admin access control and capability checks
 
 ## Requirements
