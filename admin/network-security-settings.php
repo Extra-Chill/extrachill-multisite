@@ -20,7 +20,7 @@ add_action( 'network_admin_menu', 'ec_add_network_security_menu' );
  */
 function ec_add_network_security_menu() {
     add_submenu_page(
-        'settings.php',
+        'extrachill-multisite',
         'ExtraChill Security',
         'ExtraChill Security',
         'manage_network_options',
@@ -58,7 +58,7 @@ function ec_handle_network_security_save() {
             'page' => 'extrachill-security',
             'updated' => 'true',
         ),
-        network_admin_url( 'settings.php' )
+        network_admin_url( 'admin.php' )
     );
 
     wp_redirect( $redirect_url );
@@ -76,7 +76,7 @@ function ec_render_network_security_page() {
     $is_configured = ec_is_turnstile_configured();
     ?>
     <div class="wrap">
-        <h1><?php _e( 'ExtraChill Security Settings', 'extrachill-multisite' ); ?></h1>
+        <h1><?php _e( 'Extra Chill Security Settings', 'extrachill-multisite' ); ?></h1>
 
         <?php if ( isset( $_GET['updated'] ) ): ?>
             <div class="notice notice-success is-dismissible">

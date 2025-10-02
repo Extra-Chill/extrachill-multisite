@@ -106,9 +106,11 @@ try {
 - **Performance Focus**: Direct database queries with domain-based site resolution via `get_blog_id_from_url()` and automatic WordPress blog-id-cache
 
 ### Build System
-- **Network Plugin Build**: Uses `build.sh` script for production ZIP creation
-- **Composer Integration**: Production builds use `composer install --no-dev`
-- **File Exclusion**: `.buildignore` patterns exclude development files and vendor directory
+- **Universal Build Script**: Symlinked to shared build script at `../../.github/build.sh`
+- **Auto-Detection**: Script auto-detects network plugin from `Network: true` header
+- **Production Build**: Creates `/build/extrachill-multisite/` directory and `/build/extrachill-multisite.zip` file (non-versioned)
+- **Composer Integration**: Production builds use `composer install --no-dev`, restores dev dependencies after
+- **File Exclusion**: `.buildignore` rsync patterns exclude development files and vendor directory
 - **Structure Validation**: Ensures network plugin integrity before packaging
 
 ## Dependencies

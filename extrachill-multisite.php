@@ -32,7 +32,7 @@ register_activation_hook( __FILE__, 'extrachill_multisite_activate' );
 function extrachill_multisite_activate() {
 	if ( ! is_multisite() ) {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
-		wp_die( 'ExtraChill Multisite plugin requires a WordPress multisite installation.' );
+		wp_die( 'Extra Chill Multisite plugin requires a WordPress multisite installation.' );
 	}
 }
 
@@ -50,6 +50,7 @@ function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community/main-site-comments.php';
 
 	if ( is_admin() && is_network_admin() ) {
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-security-settings.php';
 	}
 }
