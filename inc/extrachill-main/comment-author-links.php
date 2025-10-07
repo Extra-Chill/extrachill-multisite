@@ -12,13 +12,11 @@
 /**
  * Get proper comment author link based on multisite user existence
  *
- * Determines whether to link to:
- * - ExtraChill.com author page (if user exists on main site)
- * - Community bbPress profile (if user exists only on community site)
- * - Default WordPress behavior (for non-members)
+ * Priority: Main site author page > Community profile > Default WordPress
  *
+ * @since 69.57
  * @param WP_Comment $comment Comment object
- * @return string Properly formatted author link HTML
+ * @return string Author link HTML
  */
 function ec_get_comment_author_link_multisite($comment) {
     if ($comment->user_id > 0) {
@@ -46,9 +44,9 @@ function ec_get_comment_author_link_multisite($comment) {
 /**
  * Check if comment should use multisite linking logic
  *
- * Comments after the community migration date (Feb 9, 2024) use multisite linking.
- * Earlier comments use default WordPress behavior.
+ * Migration cutoff: Feb 9, 2024
  *
+ * @since 69.57
  * @param WP_Comment $comment Comment object
  * @return bool Whether to use multisite linking
  */

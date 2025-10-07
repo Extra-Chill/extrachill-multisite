@@ -12,28 +12,21 @@
 /**
  * Display main site comments for a specific user
  *
- * Fetches and displays comments from extrachill.com using multisite queries.
- * Uses switch_to_blog() to access main site data directly from the database.
- *
+ * @since 1.0.0
  * @param int $community_user_id User ID to fetch comments for
  * @return string HTML markup for comments display or error message
  */
 if (!function_exists('display_main_site_comments_for_user')) {
     function display_main_site_comments_for_user($community_user_id) {
-        // Validate user ID
         if (empty($community_user_id) || !is_numeric($community_user_id)) {
             return '<div class="bbpress-comments-error">Invalid user ID provided.</div>';
         }
 
-        // Fetch user data based on the community_user_id
         $user_info = get_userdata($community_user_id);
-        // Safely retrieve the user nicename, or use a placeholder if not found
         $user_nicename = $user_info ? $user_info->user_nicename : 'Unknown User';
 
-        // Switch to main site (extrachill.com) to fetch comments directly
         switch_to_blog( get_blog_id_from_url( 'extrachill.com', '/' ) );
 
-        // Fetch comments for this user from main site
         $user_comments = get_comments(array(
             'user_id' => $community_user_id,
             'status' => 'approve',
@@ -41,7 +34,6 @@ if (!function_exists('display_main_site_comments_for_user')) {
             'orderby' => 'comment_date_gmt'
         ));
 
-        // Build comments array in same format as REST API
         $comments = array();
         if (!empty($user_comments)) {
             foreach ($user_comments as $comment) {
@@ -64,12 +56,10 @@ if (!function_exists('display_main_site_comments_for_user')) {
             return '<div class="bbpress-comments-list"><h3>Comments Feed for <span class="comments-feed-user">' . esc_html($user_nicename) . '</span></h3><p>No comments found for this user.</p></div>';
         }
 
-        // Start building the output with the user's nicename in the title
         $output = "<div class=\"bbpress-comments-list\">";
         $output .= "<h3>Comments Feed for <span class='comments-feed-user'>{$user_nicename}</span></h3>";
 
         foreach ($comments as $comment) {
-            // Construct the direct comment permalink
             $comment_permalink = esc_url($comment['post_permalink'] . '#comment-' . $comment['comment_ID']);
 
             $output .= sprintf(
@@ -95,6 +85,7 @@ if (!function_exists('display_main_site_comments_for_user')) {
 /**
  * Get user's comment count from main site
  *
+ * @since 1.0.0
  * @param int $user_id User ID to check
  * @return int Comment count from main site
  */
@@ -104,7 +95,6 @@ if (!function_exists('get_user_main_site_comment_count')) {
             return 0;
         }
 
-        // Switch to main site to count comments
         switch_to_blog( get_blog_id_from_url( 'extrachill.com', '/' ) );
         $count = get_comments(array(
             'user_id' => $user_id,
@@ -120,9 +110,7 @@ if (!function_exists('get_user_main_site_comment_count')) {
 /**
  * Register custom query variable for comment feed URLs
  *
- * Enables user_id parameter in URLs like /blog-comments?user_id=123
- * for routing to specific user comment feeds.
- *
+ * @since 1.0.0
  * @param array $vars Existing query variables
  * @return array Modified query variables array
  */

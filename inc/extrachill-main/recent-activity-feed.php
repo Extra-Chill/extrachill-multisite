@@ -1,11 +1,21 @@
 <?php
-
 /**
- * Recent Activity Feed - Community forum activity using native multisite functions
+ * Recent Activity Feed
+ *
+ * Community forum activity aggregation using native multisite functions.
+ * Provides shortcode for displaying recent forum topics and replies.
+ *
+ * @package ExtraChill\Multisite
+ * @since 1.0.0
  */
 
 /**
- * Generate compact time difference strings (5m ago, 2h ago)
+ * Generate compact time difference strings
+ *
+ * @since 1.0.0
+ * @param int    $from Timestamp to calculate from
+ * @param string $to   Timestamp to calculate to (current time if empty)
+ * @return string Compact time difference (5m ago, 2h ago, etc.)
  */
 function custom_human_time_diff($from, $to = '') {
     if (empty($to)) {
@@ -39,7 +49,13 @@ function custom_human_time_diff($from, $to = '') {
 
 /**
  * Fetch recent activity from community site
- * Excludes forum ID 1494, searches topics/replies via extrachill_multisite_search()
+ *
+ * Uses centralized multisite search to query topics and replies.
+ * Excludes private forum (ID 1494).
+ *
+ * @since 1.0.0
+ * @param int $limit Number of activities to fetch. Default 10
+ * @return array Array of activity data or empty array
  */
 function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 	if ( ! is_multisite() ) {
@@ -71,10 +87,8 @@ function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 		return array();
 	}
 
-	// Transform search results to activity format
 	$activities = array();
 
-	// Switch to community site once to fetch bbPress metadata
 	switch_to_blog( get_blog_id_from_url( 'community.extrachill.com', '/' ) );
 
 	try {
@@ -82,7 +96,6 @@ function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 			$post_id   = $result['ID'];
 			$post_type = $result['post_type'];
 
-			// Get forum metadata
 			$forum_id = ( 'reply' === $post_type )
 				? get_post_meta( get_post_meta( $post_id, '_bbp_topic_id', true ), '_bbp_forum_id', true )
 				: get_post_meta( $post_id, '_bbp_forum_id', true );
@@ -90,14 +103,12 @@ function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 			$forum_title = get_the_title( $forum_id );
 			$forum_url   = get_permalink( $forum_id );
 
-			// Get topic information
 			$topic_title = ( 'reply' === $post_type )
 				? get_the_title( get_post_meta( $post_id, '_bbp_topic_id', true ) )
 				: $result['post_title'];
 
 			$topic_url = $result['permalink'];
 
-			// Get author information
 			$author_id        = $result['post_author'];
 			$username         = get_the_author_meta( 'display_name', $author_id );
 			$user_profile_url = get_author_posts_url( $author_id );
@@ -123,7 +134,12 @@ function ec_fetch_recent_activity_multisite( $limit = 10 ) {
 }
 
 /**
- * Shortcode handler with 10-minute caching
+ * Shortcode handler for recent activity display
+ *
+ * Caches results for 10 minutes to improve performance.
+ *
+ * @since 1.0.0
+ * @return string HTML output for recent activity display
  */
 function extrachill_recent_activity_shortcode() {
     $transient_name = 'extrachill_recent_activity';

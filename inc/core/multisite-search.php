@@ -1,10 +1,19 @@
 <?php
 /**
- * Centralized Multisite Search System - Universal cross-site post queries
+ * Centralized Multisite Search System
+ *
+ * Provides universal cross-site post queries and search functionality across
+ * the WordPress multisite network using domain-based site resolution.
+ *
+ * @package ExtraChill\Multisite
+ * @since 1.0.0
  */
 
 /**
  * Get all network sites with static caching
+ *
+ * @since 1.0.0
+ * @return array Array of site data (id, name, url) or empty array if not multisite
  */
 function extrachill_get_network_sites() {
 	static $sites_cache = null;
@@ -42,7 +51,11 @@ function extrachill_get_network_sites() {
 }
 
 /**
- * Resolve site URLs to blog IDs using get_blog_id_from_url()
+ * Resolve site URLs to blog IDs using WordPress native function with automatic caching
+ *
+ * @since 1.0.0
+ * @param array $site_urls Array of site URLs to resolve
+ * @return array Array of resolved blog IDs
  */
 function extrachill_resolve_site_urls( $site_urls ) {
 	if ( ! is_array( $site_urls ) || empty( $site_urls ) ) {
@@ -62,12 +75,20 @@ function extrachill_resolve_site_urls( $site_urls ) {
 }
 
 /**
- * Search across multisite network
- * Empty $site_urls = all sites. Supports meta_query for bbPress filtering.
+ * Search across multisite network with flexible site targeting
  *
- * @param string $search_term Search query string
- * @param array  $site_urls   Array of site URLs to search (empty = all sites)
- * @param array  $args        Query arguments (limit, offset, orderby, order, meta_query, return_count)
+ * @since 1.0.0
+ * @param string $search_term Search query string (empty for all posts)
+ * @param array  $site_urls   Site URLs to search (empty = all network sites)
+ * @param array  $args        Query arguments {
+ *     @type array  $post_status  Post status filter. Default ['publish']
+ *     @type int    $limit        Results per page. Default 10
+ *     @type int    $offset       Results offset. Default 0
+ *     @type array  $meta_query   Meta query for filtering (bbPress support)
+ *     @type string $orderby      Sort field. Default 'date'
+ *     @type string $order        Sort order. Default 'DESC'
+ *     @type bool   $return_count Return total count with results. Default false
+ * }
  * @return array Search results or array with 'results' and 'total' if return_count is true
  */
 function extrachill_multisite_search( $search_term, $site_urls = array(), $args = array() ) {
@@ -112,10 +133,7 @@ function extrachill_multisite_search( $search_term, $site_urls = array(), $args 
 				continue;
 			}
 
-			// Get all registered public post types on this site
 			$post_types = get_post_types( array( 'public' => true ), 'names' );
-
-			// Remove attachments from search
 			$post_types = array_diff( $post_types, array( 'attachment' ) );
 
 			if ( empty( $post_types ) ) {
@@ -171,7 +189,6 @@ function extrachill_multisite_search( $search_term, $site_urls = array(), $args 
 		restore_current_blog();
 	}
 
-	// Sort all results by date (cross-site)
 	if ( $args['orderby'] === 'date' ) {
 		usort( $all_results, function ( $a, $b ) use ( $args ) {
 			$comparison = strtotime( $b['post_date'] ) - strtotime( $a['post_date'] );
@@ -179,13 +196,9 @@ function extrachill_multisite_search( $search_term, $site_urls = array(), $args 
 		} );
 	}
 
-	// Get total before pagination
 	$total_results = count( $all_results );
-
-	// Apply pagination via array_slice (handles all edge cases)
 	$all_results = array_slice( $all_results, $args['offset'], $args['limit'] );
 
-	// Return with count if requested
 	if ( $args['return_count'] ) {
 		return array(
 			'results' => $all_results,
@@ -198,6 +211,12 @@ function extrachill_multisite_search( $search_term, $site_urls = array(), $args 
 
 /**
  * Generate contextual excerpt centered around search term
+ *
+ * @since 1.0.0
+ * @param string $content     Content to excerpt
+ * @param string $search_term Term to center excerpt around
+ * @param int    $word_limit  Maximum words in excerpt. Default 30
+ * @return string Contextual excerpt with ellipsis
  */
 function ec_get_contextual_excerpt_multisite( $content, $search_term, $word_limit = 30 ) {
 	$content = wp_strip_all_tags( $content );
@@ -217,6 +236,14 @@ function ec_get_contextual_excerpt_multisite( $content, $search_term, $word_limi
 	return implode( ' ', array_slice( $words, 0, $word_limit ) ) . '...';
 }
 
+/**
+ * Register fallback contextual excerpt function if not provided by theme
+ *
+ * Provides ec_get_contextual_excerpt() for themes that don't define it.
+ * Excludes extrachill-community theme which has its own implementation.
+ *
+ * @since 1.0.0
+ */
 if ( ! function_exists( 'ec_get_contextual_excerpt' ) ) {
 	if ( ! function_exists( 'ec_register_contextual_excerpt_fallback' ) ) {
 		function ec_register_contextual_excerpt_fallback() {

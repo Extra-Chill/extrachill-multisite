@@ -4,12 +4,16 @@ Network activated multisite functionality for the ExtraChill Platform.
 
 ## Overview
 
-This WordPress network plugin provides centralized multisite functionality across all sites in the ExtraChill network (extrachill.com, community.extrachill.com, shop.extrachill.com). It handles cross-site features like search, activity feeds, license validation, and admin access control.
+This WordPress network plugin provides centralized multisite functionality across all sites in the ExtraChill network (extrachill.com, community.extrachill.com, shop.extrachill.com, chat.extrachill.com, artist.extrachill.com, events.extrachill.com, app.extrachill.com). It handles cross-site features like universal search, network administration, security, team management, and commerce integration.
 
 ## Features
 
+- **Universal Multisite Search** - Search all network sites or specified sites with support for all public post types, meta queries, pagination, and contextual excerpts
+- **Network Admin Menu** - Consolidated top-level network admin menu for ExtraChill Platform settings
 - **Network-wide Admin Access Control** - Restricts wp-admin access to administrators only across all sites
-- **Cross-Site Search** - Unified search functionality across the multisite network
+- **Cloudflare Turnstile Integration** - Centralized captcha configuration accessible from all network sites
+- **Team Member Management** - Manual override system for team member status with cross-site account verification
+- **Newsletter Integration** - Network-wide subscription function for Sendy API integration
 - **Activity Feeds** - Cross-site activity integration using direct database queries
 - **License Validation** - Ad-free license validation across sites
 - **Comment Integration** - Cross-site comment author linking and display
@@ -25,7 +29,9 @@ This WordPress network plugin provides centralized multisite functionality acros
 - **Network Activated** - Single plugin serving all sites in the multisite network
 - **Direct Database Queries** - Uses `switch_to_blog()` for cross-site data access
 - **Performance Optimized** - Domain-based site resolution via `get_blog_id_from_url()` with WordPress blog-id-cache
-- **Security First** - Comprehensive admin access control and capability checks
+- **Centralized Configuration** - Network-wide settings stored via `get_site_option()` accessible from all sites
+- **Modular Organization** - Core functionality in `inc/core/`, site-specific features in dedicated directories, admin interface in `admin/`
+- **Security First** - Comprehensive admin access control, Cloudflare Turnstile integration, and capability checks
 
 ## Requirements
 

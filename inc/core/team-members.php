@@ -1,6 +1,12 @@
 <?php
 /**
- * Team Member Helper Functions - Manual override and extrachill_team meta checking
+ * Team Member Helper Functions
+ *
+ * Provides team member status checking with manual override support
+ * and main site account verification across the multisite network.
+ *
+ * @package ExtraChill\Multisite
+ * @since 1.0.0
  */
 
 if (!defined('ABSPATH')) {
@@ -9,6 +15,13 @@ if (!defined('ABSPATH')) {
 
 /**
  * Check team member status with manual override support
+ *
+ * Checks manual override meta first, then falls back to standard team meta.
+ * Supports both current user and specific user ID.
+ *
+ * @since 1.0.0
+ * @param int $user_id User ID to check (0 = current user)
+ * @return bool True if user is team member, false otherwise
  */
 function ec_is_team_member($user_id = 0) {
     if (!$user_id) {
@@ -19,7 +32,6 @@ function ec_is_team_member($user_id = 0) {
         return false;
     }
 
-    // Check manual override first
     $manual_override = get_user_meta($user_id, 'extrachill_team_manual_override', true);
 
     if ($manual_override === 'add') {
@@ -30,12 +42,17 @@ function ec_is_team_member($user_id = 0) {
         return false;
     }
 
-    // No override - check standard meta
     return get_user_meta($user_id, 'extrachill_team', true) == 1;
 }
 
 /**
- * Check if user has account on extrachill.com via domain-based site resolution
+ * Check if user has account on extrachill.com
+ *
+ * Uses domain-based site resolution to verify user membership on main site.
+ *
+ * @since 1.0.0
+ * @param int $user_id User ID to check
+ * @return bool True if user is member of main site, false otherwise
  */
 function ec_has_main_site_account($user_id) {
     if (!$user_id) {

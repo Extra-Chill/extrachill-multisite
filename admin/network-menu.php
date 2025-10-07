@@ -19,7 +19,10 @@ if ( ! defined( 'EXTRACHILL_MULTISITE_MENU_SLUG' ) ) {
 add_action( 'network_admin_menu', 'ec_add_network_multisite_menu' );
 
 /**
- * Add top-level network admin menu for ExtraChill Multisite
+ * Register top-level network admin menu
+ *
+ * Creates parent menu for all ExtraChill Platform network settings.
+ * Other plugins can add submenus using parent slug 'extrachill-multisite'.
  *
  * @since 1.0.0
  */
@@ -36,9 +39,9 @@ function ec_add_network_multisite_menu() {
 }
 
 /**
- * Redirect to first submenu page
+ * Redirect to first available submenu page
  *
- * Since the top-level menu is just a container, redirect to the first submenu item.
+ * Top-level menu acts as container, redirecting to security settings by default.
  *
  * @since 1.0.0
  */
