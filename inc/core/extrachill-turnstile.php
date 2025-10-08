@@ -103,6 +103,7 @@ function ec_render_turnstile_widget( $args = array() ) {
     $site_key = ec_get_turnstile_site_key();
     $defaults = array(
         'data-sitekey' => $site_key,
+        'data-size' => 'invisible',
         'class' => 'cf-turnstile',
     );
 
