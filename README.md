@@ -4,11 +4,10 @@ Network activated multisite functionality for the ExtraChill Platform.
 
 ## Overview
 
-This WordPress network plugin provides centralized multisite functionality across all sites in the ExtraChill network (extrachill.com, community.extrachill.com, shop.extrachill.com, chat.extrachill.com, artist.extrachill.com, events.extrachill.com, app.extrachill.com). It handles cross-site features like universal search, network administration, security, team management, and commerce integration.
+This WordPress network plugin provides centralized multisite functionality across all sites in the ExtraChill network (extrachill.com, community.extrachill.com, shop.extrachill.com, chat.extrachill.com, artist.extrachill.com, events.extrachill.com, app.extrachill.com). It handles cross-site features like network administration, security, team management, and commerce integration.
 
 ## Features
 
-- **Universal Multisite Search** - Search all network sites or specified sites with support for all public post types, meta queries, pagination, and contextual excerpts
 - **Network Admin Menu** - Consolidated top-level network admin menu for ExtraChill Platform settings
 - **Network-wide Admin Access Control** - Restricts wp-admin access to administrators only across all sites
 - **Cloudflare Turnstile Integration** - Centralized captcha configuration accessible from all network sites
@@ -17,6 +16,7 @@ This WordPress network plugin provides centralized multisite functionality acros
 - **Activity Feeds** - Cross-site activity integration using direct database queries
 - **License Validation** - Ad-free license validation across sites
 - **Comment Integration** - Cross-site comment author linking and display
+- **User Avatar Menu** - Network-wide avatar menu system with filter-based integration
 
 ## Installation
 

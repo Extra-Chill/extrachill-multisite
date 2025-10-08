@@ -2,8 +2,8 @@
 /**
  * Main Site Comments Integration
  *
- * Provides cross-domain comment display and management functionality
- * between community.extrachill.com and extrachill.com using WordPress multisite.
+ * Cross-domain comment display using WordPress multisite functions.
+ * Uses get_blog_id_from_url() with WordPress native blog-id-cache for performance.
  *
  * @package ExtraChillCommunity
  * @subpackage Core\Multisite
@@ -13,8 +13,8 @@
  * Display main site comments for a specific user
  *
  * @since 1.0.0
- * @param int $community_user_id User ID to fetch comments for
- * @return string HTML markup for comments display or error message
+ * @param int $community_user_id User ID
+ * @return string HTML markup or error message
  */
 if (!function_exists('display_main_site_comments_for_user')) {
     function display_main_site_comments_for_user($community_user_id) {
@@ -82,13 +82,6 @@ if (!function_exists('display_main_site_comments_for_user')) {
     }
 }
 
-/**
- * Get user's comment count from main site
- *
- * @since 1.0.0
- * @param int $user_id User ID to check
- * @return int Comment count from main site
- */
 if (!function_exists('get_user_main_site_comment_count')) {
     function get_user_main_site_comment_count($user_id) {
         if (empty($user_id) || !is_numeric($user_id)) {
@@ -107,13 +100,6 @@ if (!function_exists('get_user_main_site_comment_count')) {
     }
 }
 
-/**
- * Register custom query variable for comment feed URLs
- *
- * @since 1.0.0
- * @param array $vars Existing query variables
- * @return array Modified query variables array
- */
 if (!function_exists('extrachill_add_query_vars_filter')) {
     function extrachill_add_query_vars_filter($vars){
         $vars[] = "user_id";

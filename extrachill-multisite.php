@@ -40,24 +40,10 @@ add_action( 'plugins_loaded', 'extrachill_multisite_init' );
 
 function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/admin-access-control.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/assets.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/extrachill-turnstile.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/team-members.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/newsletter-sendy-api.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/multisite-search.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/comment-author-links.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/extrachill-main/recent-activity-feed.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/shop/ad-free-license.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community/main-site-comments.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community/create-community-user.php';
-
-	$current_blog_id = get_current_blog_id();
-	$community_blog_id = get_blog_id_from_url( 'community.extrachill.com', '/' );
-	$artist_blog_id = get_blog_id_from_url( 'artist.extrachill.com', '/' );
-
-	if ( in_array( $current_blog_id, array( $community_blog_id, $artist_blog_id ) ) ) {
-		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/user-avatar-menu.php';
-	}
 
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';

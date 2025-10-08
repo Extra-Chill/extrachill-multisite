@@ -2,8 +2,7 @@
 /**
  * Newsletter Sendy API Integration
  *
- * Minimal network-wide integration for newsletter subscriptions.
- * Provides subscription function that works with newsletter plugin.
+ * Bridge function delegating to extrachill-newsletter plugin for subscription processing.
  *
  * @package ExtraChill\Multisite
  * @since 1.0.0
@@ -14,17 +13,15 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Subscribe email via registered integration
  *
- * Handles subscription requests using the integration system.
- * Validates the integration exists and is enabled before processing.
- * Requires extrachill-newsletter plugin for helper functions.
+ * Delegates to extrachill-newsletter plugin. Validates integration exists and is enabled.
+ * Retrieves list ID from network settings, makes wp_remote_post to Sendy API.
  *
  * @since 1.0.0
- * @param string $email Email address to subscribe
+ * @param string $email Email address
  * @param string $context Integration context key
  * @return array Response with success status and message
  */
 function extrachill_multisite_subscribe( $email, $context ) {
-	// Check if newsletter plugin functions are available
 	if ( ! function_exists( 'get_newsletter_integrations' ) || ! function_exists( 'get_sendy_config' ) || ! function_exists( 'newsletter_integration_enabled' ) ) {
 		return array(
 			'success' => false,
@@ -43,7 +40,6 @@ function extrachill_multisite_subscribe( $email, $context ) {
 
 	$integration = $integrations[ $context ];
 
-	// Check if integration is enabled
 	if ( ! newsletter_integration_enabled( $integration['enable_key'] ) ) {
 		return array(
 			'success' => false,
@@ -51,7 +47,6 @@ function extrachill_multisite_subscribe( $email, $context ) {
 		);
 	}
 
-	// Get the list ID from integration config
 	$settings = get_site_option( 'extrachill_newsletter_settings', array() );
 	$list_id = isset( $settings[ $integration['list_id_key'] ] ) ? $settings[ $integration['list_id_key'] ] : '';
 
@@ -62,10 +57,8 @@ function extrachill_multisite_subscribe( $email, $context ) {
 		);
 	}
 
-	// Get Sendy configuration
 	$config = get_sendy_config();
 
-	// Validate email
 	if ( ! is_email( $email ) ) {
 		return array(
 			'success' => false,
@@ -73,7 +66,6 @@ function extrachill_multisite_subscribe( $email, $context ) {
 		);
 	}
 
-	// Prepare subscription data
 	$subscription_data = array(
 		'email' => $email,
 		'list' => $list_id,
@@ -81,7 +73,6 @@ function extrachill_multisite_subscribe( $email, $context ) {
 		'api_key' => $config['api_key'],
 	);
 
-	// Send subscription request
 	$response = wp_remote_post(
 		$config['sendy_url'] . '/subscribe',
 		array(
@@ -93,7 +84,6 @@ function extrachill_multisite_subscribe( $email, $context ) {
 		)
 	);
 
-	// Handle HTTP errors
 	if ( is_wp_error( $response ) ) {
 		error_log( 'Newsletter integration subscription failed: ' . $response->get_error_message() );
 		return array(
@@ -104,17 +94,14 @@ function extrachill_multisite_subscribe( $email, $context ) {
 
 	$response_body = wp_remote_retrieve_body( $response );
 
-	// Parse Sendy response
 	if ( $response_body === '1' || strpos( $response_body, 'Success' ) !== false ) {
 		return array(
 			'success' => true,
 			'message' => __( 'Successfully subscribed to newsletter', 'extrachill-multisite' ),
 		);
 	} else {
-		// Log specific Sendy error for debugging
 		error_log( sprintf( 'Newsletter integration subscription failed for %s via %s: %s', $email, $context, $response_body ) );
 
-		// Provide user-friendly error messages
 		if ( strpos( $response_body, 'Already subscribed' ) !== false ) {
 			return array(
 				'success' => false,

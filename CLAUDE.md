@@ -1,6 +1,8 @@
 # ExtraChill Multisite
 
-Network-activated WordPress plugin providing centralized multisite functionality for the ExtraChill Platform. Handles cross-site data access, admin security, search integration, and commerce features across the WordPress multisite network.
+Network-activated WordPress plugin providing centralized multisite functionality for the ExtraChill Platform. Handles cross-site data access, admin security, newsletter integration, and commerce features across the WordPress multisite network.
+
+**Note**: User management features (team members, user creation, profile URLs, avatar menu) have been extracted to the extrachill-users plugin.
 
 ## Plugin Information
 
@@ -35,16 +37,6 @@ Network-activated WordPress plugin providing centralized multisite functionality
 - Network-wide security settings management
 
 #### Multisite Data Access
-**Centralized Multisite Search System** (`inc/core/multisite-search.php`):
-- **Universal Cross-Site Queries**: `extrachill_multisite_search()` searches all network sites or specified sites
-- **Domain-Based Site Resolution**: Uses WordPress native `get_blog_id_from_url()` with automatic blog-id-cache
-- **Flexible Post Type Support**: Automatically searches all public post types (bbPress topics, replies, standard posts)
-- **Meta Query Support**: Full support for `meta_query` parameter for advanced filtering
-- **Pagination and Sorting**: Supports limit, offset, orderby, order parameters with cross-site date sorting
-- **Contextual Excerpts**: `ec_get_contextual_excerpt_multisite()` generates search term centered excerpts
-- **Network Site Discovery**: `extrachill_get_network_sites()` with static caching for performance
-- **Site URL Resolution**: `extrachill_resolve_site_urls()` converts domain strings to blog IDs
-
 **Recent Activity Feed** (`inc/extrachill-main/recent-activity-feed.php`):
 - Cross-site activity aggregation using native WordPress multisite functions
 - Performance-optimized data retrieval with direct database queries
@@ -62,12 +54,6 @@ Network-activated WordPress plugin providing centralized multisite functionality
 - **Key Management**: `ec_get_turnstile_site_key()`, `ec_get_turnstile_secret_key()`, `ec_update_turnstile_site_key()`
 - **Security-First**: Sanitization and validation for all configuration updates
 
-#### Team Management
-**Team Member System** (`inc/core/team-members.php`):
-- **Manual Override Support**: `extrachill_team_manual_override` user meta for explicit team status control
-- **Standard Team Checking**: `ec_is_team_member()` function with override precedence
-- **Main Site Account Verification**: `ec_has_main_site_account()` checks extrachill.com membership via blog switching
-- **Override Values**: 'add' forces team member status, 'remove' blocks team status
 
 #### Newsletter Integration
 **Newsletter Sendy API** (`inc/core/newsletter-sendy-api.php`):
@@ -93,18 +79,10 @@ Network-activated WordPress plugin providing centralized multisite functionality
 - **User License Checking**: Validates ad-free access via multisite database lookup
 - **Performance Optimized**: Direct database queries with WordPress native caching
 
-#### Comment and Author Integration
-**Comment Author Links** (`inc/extrachill-main/comment-author-links.php`):
-- Cross-site comment author information integration
-- Unified user experience across multisite network
-
+#### Comment Integration
 **Main Site Comments** (`inc/community/main-site-comments.php`):
 - Community site integration with main site commenting system
 - Seamless cross-domain comment functionality
-
-#### Community Integration
-**Community User Creation** (`inc/community/create-community-user.php`):
-- Minimal file (1 line) - placeholder for future community user functionality
 
 ## Technical Implementation
 
@@ -139,9 +117,8 @@ try {
 - Conditionally loads site-specific functionality
 
 **File Organization**:
-- **Core**: `inc/core/` - Network-wide functionality (multisite search, admin access control, Turnstile, team members, newsletter API)
-- **Main Site**: `inc/extrachill-main/` - Main site specific features (activity feed, comment author links)
-- **Community**: `inc/community/` - Community site integration features (main site comments, user creation placeholder)
+- **Core**: `inc/core/` - Network-wide functionality (admin access control, Turnstile, newsletter API)
+- **Community**: `inc/community/` - Community site integration features (main site comments)
 - **Shop**: `inc/shop/` - E-commerce and license functionality (ad-free license validation)
 - **Admin**: `admin/` - Network admin interface (network menu, security settings)
 
@@ -180,15 +157,6 @@ try {
 - **Cross-Site Data**: Uses WordPress multisite database structure for cross-site access
 
 ## Key Functionality
-
-### Universal Multisite Search
-**Centralized Search System**:
-- Searches all network sites or specified sites using `extrachill_multisite_search()`
-- Supports all public post types (posts, pages, bbPress topics/replies, custom post types)
-- Real-time search with no caching for fresh results
-- Meta query support for advanced filtering (e.g., bbPress metadata)
-- Cross-site pagination and date sorting
-- Contextual excerpts centered around search terms
 
 ### Network Administration
 **Consolidated Admin Menu**:
@@ -259,7 +227,7 @@ composer run test
 4. **Security Checks**: Implement proper capability checks for network-wide features
 
 ### Site-Specific Integration
-- **Core Features**: Add to `inc/core/` for network-wide functionality (search, security, team management)
+- **Core Features**: Add to `inc/core/` for network-wide functionality (admin access control, Turnstile, team members, newsletter API, user avatar menu, assets)
 - **Main Site Features**: Add to `inc/extrachill-main/` directory for extrachill.com specific features
 - **Community Features**: Add to `inc/community/` directory for community.extrachill.com integration
 - **Shop Features**: Add to `inc/shop/` directory for shop.extrachill.com commerce features
