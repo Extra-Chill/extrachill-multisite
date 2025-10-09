@@ -34,7 +34,11 @@ function ec_update_turnstile_secret_key( $secret_key ) {
  * @return bool True if verification successful
  */
 function ec_verify_turnstile_response( $response ) {
+    // Sanitize input
+    $response = sanitize_text_field( wp_unslash( $response ) );
+
     if ( empty( $response ) ) {
+        error_log( 'ExtraChill Turnstile: Empty response token received' );
         return false;
     }
 
@@ -48,7 +52,7 @@ function ec_verify_turnstile_response( $response ) {
     $verification_data = array(
         'secret' => $secret_key,
         'response' => $response,
-        'remoteip' => isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '',
+        'remoteip' => isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '',
     );
 
     $http_response = wp_remote_post( $verification_url, array(
@@ -76,11 +80,29 @@ function ec_verify_turnstile_response( $response ) {
     }
 
     if ( isset( $result['success'] ) && $result['success'] === true ) {
+        error_log( 'ExtraChill Turnstile: Verification successful' );
         return true;
     }
 
+    // Log detailed error information
     if ( isset( $result['error-codes'] ) && is_array( $result['error-codes'] ) ) {
-        error_log( 'ExtraChill Turnstile Verification Failed: ' . implode( ', ', $result['error-codes'] ) );
+        $error_messages = array(
+            'missing-input-secret' => 'Secret key is missing',
+            'invalid-input-secret' => 'Secret key is invalid',
+            'missing-input-response' => 'Response token is missing',
+            'invalid-input-response' => 'Response token is invalid or has expired',
+            'bad-request' => 'Bad request to Cloudflare API',
+            'timeout-or-duplicate' => 'Token has already been validated or request timed out',
+        );
+
+        $error_details = array();
+        foreach ( $result['error-codes'] as $error_code ) {
+            $error_details[] = isset( $error_messages[ $error_code ] )
+                ? $error_code . ' (' . $error_messages[ $error_code ] . ')'
+                : $error_code;
+        }
+
+        error_log( 'ExtraChill Turnstile Verification Failed: ' . implode( ', ', $error_details ) );
     } else {
         error_log( 'ExtraChill Turnstile Verification Unexpected Response: ' . $response_body );
     }
@@ -103,7 +125,9 @@ function ec_render_turnstile_widget( $args = array() ) {
     $site_key = ec_get_turnstile_site_key();
     $defaults = array(
         'data-sitekey' => $site_key,
-        'data-size' => 'invisible',
+        'data-size' => 'normal',
+        'data-theme' => 'auto',
+        'data-appearance' => 'interaction-only',
         'class' => 'cf-turnstile',
     );
 
