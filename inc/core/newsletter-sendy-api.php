@@ -2,7 +2,7 @@
 /**
  * Newsletter Sendy API Integration
  *
- * Bridge function delegating to extrachill-newsletter plugin for subscription processing.
+ * Centralized subscription bridge for extrachill-newsletter plugin integration system.
  *
  * @package ExtraChill\Multisite
  * @since 1.0.0
@@ -11,15 +11,11 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Subscribe email via registered integration
+ * Centralized newsletter subscription bridge for integration system.
  *
- * Delegates to extrachill-newsletter plugin. Validates integration exists and is enabled.
- * Retrieves list ID from network settings, makes wp_remote_post to Sendy API.
- *
- * @since 1.0.0
- * @param string $email Email address
- * @param string $context Integration context key
- * @return array Response with success status and message
+ * @param string $email   Email address.
+ * @param string $context Integration key (e.g., 'registration').
+ * @return array Response with success boolean and message string.
  */
 function extrachill_multisite_subscribe( $email, $context ) {
 	if ( ! function_exists( 'get_newsletter_integrations' ) || ! function_exists( 'get_sendy_config' ) || ! function_exists( 'newsletter_integration_enabled' ) ) {

@@ -20,7 +20,7 @@ Network-activated WordPress plugin providing centralized multisite functionality
 
 ### Plugin Loading Pattern
 - **Procedural WordPress Pattern**: Uses direct `require_once` includes for all plugin functionality
-- **Composer PSR-4 Configuration**: Exists in `composer.json` but ONLY used for development dependencies (PHPUnit, PHPCS)
+- **Composer PSR-4 Configuration**: PSR-4 autoload configuration exists in `composer.json` (line 14-16: `"ExtraChill\\Multisite\\": "inc/"`) but is unused for plugin code (reserved for future use). Composer autoload is ONLY actively used for development dependencies (PHPUnit, PHPCS).
 - **Network Plugin Structure**: Network-activated plugin providing functionality across all multisite installations
 - **Modular Loading**: Site-specific functionality loaded conditionally via direct includes in main plugin file
 
@@ -126,7 +126,7 @@ try {
 
 ### Code Organization
 - **Procedural Pattern**: Direct `require_once` includes throughout plugin architecture
-- **Composer Autoloader**: Only for development dependencies (PHPUnit, PHPCS, WordPress standards)
+- **Composer Autoloader**: PSR-4 autoload configuration exists but is unused for plugin code (reserved for future use). Composer autoload only actively used for development dependencies (PHPUnit, PHPCS, WordPress standards).
 - **WordPress Standards**: Full compliance with network plugin development guidelines
 - **Security Implementation**: Network-wide admin access control and secure cross-site data access
 - **Performance Focus**: Direct database queries with domain-based site resolution via `get_blog_id_from_url()` and automatic WordPress blog-id-cache
