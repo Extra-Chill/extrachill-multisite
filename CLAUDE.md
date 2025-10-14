@@ -107,7 +107,7 @@ try {
 - **Chat Site**: chat.extrachill.com
 - **Artist Site**: artist.extrachill.com
 - **Events Site**: events.extrachill.com
-- **Link Pages**: extrachill.link (handled by extrachill-artist-platform plugin, not mapped to a specific site)
+- **Link Pages**: extrachill.link (mapped to artist.extrachill.com via sunrise.php, handled by extrachill-artist-platform plugin)
 - **Performance**: WordPress native `get_blog_id_from_url()` with automatic blog-id-cache
 
 ### Plugin Loading Strategy
