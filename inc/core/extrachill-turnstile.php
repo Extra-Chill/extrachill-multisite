@@ -27,14 +27,9 @@ function ec_update_turnstile_secret_key( $secret_key ) {
 }
 
 /**
- * Verify Cloudflare Turnstile response
- *
- * @since 1.0.0
- * @param string $response Turnstile response token
- * @return bool True if verification successful
+ * Verify Cloudflare Turnstile response via API with comprehensive error logging
  */
 function ec_verify_turnstile_response( $response ) {
-    // Sanitize input
     $response = sanitize_text_field( wp_unslash( $response ) );
 
     if ( empty( $response ) ) {
@@ -84,25 +79,8 @@ function ec_verify_turnstile_response( $response ) {
         return true;
     }
 
-    // Log detailed error information
     if ( isset( $result['error-codes'] ) && is_array( $result['error-codes'] ) ) {
-        $error_messages = array(
-            'missing-input-secret' => 'Secret key is missing',
-            'invalid-input-secret' => 'Secret key is invalid',
-            'missing-input-response' => 'Response token is missing',
-            'invalid-input-response' => 'Response token is invalid or has expired',
-            'bad-request' => 'Bad request to Cloudflare API',
-            'timeout-or-duplicate' => 'Token has already been validated or request timed out',
-        );
-
-        $error_details = array();
-        foreach ( $result['error-codes'] as $error_code ) {
-            $error_details[] = isset( $error_messages[ $error_code ] )
-                ? $error_code . ' (' . $error_messages[ $error_code ] . ')'
-                : $error_code;
-        }
-
-        error_log( 'ExtraChill Turnstile Verification Failed: ' . implode( ', ', $error_details ) );
+        error_log( 'ExtraChill Turnstile Verification Failed: ' . implode( ', ', $result['error-codes'] ) );
     } else {
         error_log( 'ExtraChill Turnstile Verification Unexpected Response: ' . $response_body );
     }

@@ -23,7 +23,6 @@ define( 'EXTRACHILL_MULTISITE_PLUGIN_FILE', __FILE__ );
 define( 'EXTRACHILL_MULTISITE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EXTRACHILL_MULTISITE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-// Load development dependencies via Composer (PHPUnit, PHPCS)
 if ( file_exists( EXTRACHILL_MULTISITE_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'vendor/autoload.php';
 }
@@ -42,9 +41,7 @@ add_action( 'plugins_loaded', 'extrachill_multisite_init' );
 function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/admin-access-control.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/extrachill-turnstile.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/newsletter-sendy-api.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/shop/ad-free-license.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community/main-site-comments.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/cross-domain-auth.php';
 
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';
