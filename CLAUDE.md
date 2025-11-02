@@ -1,6 +1,6 @@
 # ExtraChill Multisite
 
-Network-activated WordPress plugin providing centralized multisite functionality for the ExtraChill Platform. Handles cross-site data access, admin security, and cross-domain authentication across the WordPress multisite network.
+Network-activated WordPress plugin providing centralized multisite functionality for the ExtraChill Platform. Handles cross-site data access, security features, and cross-domain authentication across the WordPress multisite network.
 
 **Note**: User management features (team members, user creation, profile URLs, avatar menu) have been extracted to the extrachill-users plugin. Newsletter subscription functionality has been consolidated into the extrachill-newsletter plugin.
 
@@ -36,13 +36,7 @@ Network-activated WordPress plugin providing centralized multisite functionality
 - Cloudflare Turnstile configuration interface in network admin
 - Network-wide security settings management
 
-#### Security and Access Control
-**Admin Access Control** (`inc/core/admin-access-control.php`):
-- **Network-Wide Security**: Restricts wp-admin access to administrators only
-- **WordPress Native Authentication**: Leverages WordPress multisite authentication system
-- **AJAX Exception**: Proper handling of AJAX requests without blocking functionality
-- **Redirect Logic**: Safe redirect to home URL for unauthorized access attempts
-
+#### Security Features
 **Cloudflare Turnstile Integration** (`inc/core/extrachill-turnstile.php`):
 - **Network-Wide Storage**: Centralized Turnstile configuration via `get_site_option()`
 - **Accessible from All Sites**: Functions available across entire multisite network
@@ -78,10 +72,12 @@ try {
 - **Main Site**: extrachill.com (blog ID 1)
 - **Community Site**: community.extrachill.com (blog ID 2)
 - **Shop Site**: shop.extrachill.com (blog ID 3)
-- **App Site**: app.extrachill.com (planning stage)
-- **Chat Site**: chat.extrachill.com (blog ID 5)
 - **Artist Site**: artist.extrachill.com (blog ID 4)
+- **Chat Site**: chat.extrachill.com (blog ID 5)
+- **App Site**: app.extrachill.com (blog ID 6, planning stage)
 - **Events Site**: events.extrachill.com (blog ID 7)
+- **Stream Site**: stream.extrachill.com (blog ID 8)
+- **Newsletter Site**: newsletter.extrachill.com (blog ID 9)
 - **Link Pages Domain**: extrachill.link (domain mapped to artist.extrachill.com blog ID 4 via .github/sunrise.php)
   - Domain mapping preserves extrachill.link URLs in frontend while operating on artist.extrachill.com backend
   - Cross-domain authentication via inc/core/cross-domain-auth.php sets cookies for both .extrachill.com and extrachill.link domains
@@ -97,7 +93,7 @@ try {
 - Conditionally loads site-specific functionality
 
 **File Organization**:
-- **Core**: `inc/core/` - Network-wide functionality (admin access control, Turnstile, cross-domain auth)
+- **Core**: `inc/core/` - Network-wide functionality (Turnstile, cross-domain auth)
 - **Admin**: `admin/` - Network admin interface (network menu, security settings)
 
 ## Development Standards
@@ -106,7 +102,7 @@ try {
 - **Procedural Pattern**: Direct `require_once` includes throughout plugin architecture
 - **Composer Autoloader**: PSR-4 autoload configuration exists but is unused for plugin code (reserved for future use). Composer autoload only actively used for development dependencies (PHPUnit, PHPCS, WordPress standards).
 - **WordPress Standards**: Full compliance with network plugin development guidelines
-- **Security Implementation**: Network-wide admin access control and secure cross-site data access
+- **Security Implementation**: Network-wide security features and secure cross-site data access
 - **Performance Focus**: Direct database queries with hardcoded blog IDs for optimal performance
 
 ### Build System
@@ -141,12 +137,6 @@ try {
 - Top-level network admin menu for all ExtraChill Platform settings
 - Extensible menu slug constant for other plugins
 - Security settings interface for Cloudflare Turnstile configuration
-
-### Admin Security
-**Network-Wide Access Control**:
-- Restricts wp-admin access to administrators across all sites
-- Maintains consistent security policy across multisite network
-- Preserves AJAX functionality while blocking unauthorized admin access
 
 **Cloudflare Turnstile**:
 - Centralized captcha configuration stored at network level
@@ -187,7 +177,7 @@ composer run test
 4. **Security Checks**: Implement proper capability checks for network-wide features
 
 ### Site-Specific Integration
-- **Core Features**: Add to `inc/core/` for network-wide functionality (admin access control, Turnstile, cross-domain auth)
+- **Core Features**: Add to `inc/core/` for network-wide functionality (Turnstile, cross-domain auth)
 - **Admin Features**: Add to `admin/` directory for network admin interface components
 
 ## WordPress Multisite Integration
@@ -207,8 +197,8 @@ composer run test
 ## Security Implementation
 
 ### Network-Wide Security
-- **Admin Access Restriction**: Consistent admin access control across all sites
-- **WordPress Native Authentication**: Leverages multisite user authentication system
+- **Turnstile Integration**: Centralized Cloudflare Turnstile captcha for bot prevention
+- **Cross-Domain Authentication**: Seamless authentication across .extrachill.com and extrachill.link domains
 - **Cross-Site Data Security**: Proper sanitization and escaping for cross-site operations
 - **Capability Checks**: Administrator-level verification for sensitive operations
 

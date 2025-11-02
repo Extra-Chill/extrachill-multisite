@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Extra Chill Multisite
  * Plugin URI: https://extrachill.com
- * Description: Centralized multisite functionality for the ExtraChill Platform
+ * Description: Centralized multisite functionality for the ExtraChill Platform across 9 network sites
  * Version: 1.0.0
  * Author: Chris Huber
  * Author URI: https://chubes.net
@@ -12,6 +12,9 @@
  * Requires PHP: 7.4
  * Text Domain: extrachill-multisite
  * Domain Path: /languages
+ *
+ * Architecture: Network-activated foundation providing cross-domain authentication,
+ * Cloudflare Turnstile security, and cross-site data access across all network sites.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -39,9 +42,7 @@ function extrachill_multisite_activate() {
 add_action( 'plugins_loaded', 'extrachill_multisite_init' );
 
 function extrachill_multisite_init() {
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/admin-access-control.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/extrachill-turnstile.php';
-	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/cross-domain-auth.php';
 
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';
