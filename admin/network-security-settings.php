@@ -143,7 +143,7 @@ function ec_render_network_security_page() {
             </p>
             <ul style="margin-left: 20px;">
                 <li><?php _e( 'Contact forms (extrachill-contact plugin)', 'extrachill-multisite' ); ?></li>
-                <li><?php _e( 'User registration (extrachill-community plugin)', 'extrachill-multisite' ); ?></li>
+                <li><?php _e( 'User registration (extrachill-users plugin)', 'extrachill-multisite' ); ?></li>
                 <li><?php _e( 'Newsletter subscriptions (extrachill-newsletter plugin)', 'extrachill-multisite' ); ?></li>
                 <li><?php _e( 'Festival tip submissions (extrachill-news-wire plugin)', 'extrachill-multisite' ); ?></li>
             </ul>
