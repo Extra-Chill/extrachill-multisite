@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.2] - 2025-12-08
+### Added
+- `ec_get_site_url()` helper function for logical site URL resolution
+
+### Changed
+- Corrected extrachill.link domain mapping to artist.extrachill.com
+- Fixed Turnstile verification failures affecting registration and contact forms
+- Added avatar menu for cross-platform reusability
+
+### Technical
+- Updated composer vendor package references
+
 ## [1.0.1] - 2025-12-08
 ### Added
 - Blog ID mapping system (`inc/core/blog-ids.php`) with comprehensive site routing

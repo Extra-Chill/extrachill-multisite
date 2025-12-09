@@ -111,3 +111,27 @@ function ec_get_blog_slug_by_id( $blog_id ) {
 
     return null;
 }
+
+/**
+ * Get a site URL by logical key.
+ *
+ * @param string $key Logical site key, e.g. 'main'.
+ * @return string|null Site URL or null if unknown.
+ */
+function ec_get_site_url( $key ) {
+    $domain_map = ec_get_domain_map();
+    $blog_id = ec_get_blog_id( $key );
+
+    if ( $blog_id === null ) {
+        return null;
+    }
+
+    // Find the domain for this blog ID
+    foreach ( $domain_map as $domain => $id ) {
+        if ( (int) $id === (int) $blog_id ) {
+            return 'https://' . $domain;
+        }
+    }
+
+    return null;
+}
