@@ -126,7 +126,13 @@ function ec_get_site_url( $key ) {
         return null;
     }
 
-    // Find the domain for this blog ID
+    // Allow override via filter (for dev environments, etc.)
+    $override_url = apply_filters( 'ec_site_url_override', null, $key, $blog_id );
+    if ( $override_url ) {
+        return $override_url;
+    }
+
+    // Default: return production domains
     foreach ( $domain_map as $domain => $id ) {
         if ( (int) $id === (int) $blog_id ) {
             return 'https://' . $domain;

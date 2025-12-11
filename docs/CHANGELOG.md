@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.3] - 2025-12-11
+### Added
+- `ec_site_url_override` filter hook in `ec_get_site_url()` for development environment URL overrides
+
 ## [1.0.2] - 2025-12-08
 ### Added
 - `ec_get_site_url()` helper function for logical site URL resolution
