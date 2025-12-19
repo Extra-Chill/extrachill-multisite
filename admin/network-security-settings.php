@@ -19,14 +19,14 @@ add_action( 'network_admin_menu', 'ec_add_network_security_menu' );
  * @since 1.0.0
  */
 function ec_add_network_security_menu() {
-    add_submenu_page(
-        'extrachill-multisite',
-        'ExtraChill Security',
-        'ExtraChill Security',
-        'manage_network_options',
-        'extrachill-security',
-        'ec_render_network_security_page'
-    );
+	add_submenu_page(
+		EXTRACHILL_MULTISITE_MENU_SLUG,
+		'Security Settings',
+		'Security',
+		'manage_network_options',
+		EXTRACHILL_MULTISITE_MENU_SLUG,
+		'ec_render_network_security_page'
+	);
 }
 
 add_action( 'network_admin_edit_extrachill_security', 'ec_handle_network_security_save' );
@@ -55,7 +55,7 @@ function ec_handle_network_security_save() {
     // Redirect back with success message
     $redirect_url = add_query_arg(
         array(
-            'page' => 'extrachill-security',
+            'page'    => EXTRACHILL_MULTISITE_MENU_SLUG,
             'updated' => 'true',
         ),
         network_admin_url( 'admin.php' )

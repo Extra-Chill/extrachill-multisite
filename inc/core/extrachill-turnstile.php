@@ -27,9 +27,16 @@ function ec_update_turnstile_secret_key( $secret_key ) {
 }
 
 /**
- * Verify Cloudflare Turnstile response via API with comprehensive error logging
+ * Verify Cloudflare Turnstile response via API with comprehensive error logging.
+ *
+ * Filterable via 'extrachill_bypass_turnstile_verification' for dev environments.
  */
 function ec_verify_turnstile_response( $response ) {
+    $bypass = apply_filters( 'extrachill_bypass_turnstile_verification', false );
+    if ( true === $bypass ) {
+        return true;
+    }
+
     $response = sanitize_text_field( wp_unslash( $response ) );
 
     if ( empty( $response ) ) {

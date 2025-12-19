@@ -14,7 +14,7 @@ if ( ! defined( 'EXTRACHILL_MULTISITE_MENU_SLUG' ) ) {
 	define( 'EXTRACHILL_MULTISITE_MENU_SLUG', 'extrachill-multisite' );
 }
 
-add_action( 'network_admin_menu', 'ec_add_network_multisite_menu' );
+add_action( 'network_admin_menu', 'ec_add_network_multisite_menu', 5 );
 
 function ec_add_network_multisite_menu() {
 	add_menu_page(
@@ -22,13 +22,8 @@ function ec_add_network_multisite_menu() {
 		'Extra Chill Multisite',
 		'manage_network_options',
 		EXTRACHILL_MULTISITE_MENU_SLUG,
-		'ec_render_multisite_menu_redirect',
+		null,
 		'dashicons-admin-multisite',
 		3
 	);
-}
-
-function ec_render_multisite_menu_redirect() {
-	wp_safe_redirect( network_admin_url( 'admin.php?page=extrachill-security' ) );
-	exit;
 }

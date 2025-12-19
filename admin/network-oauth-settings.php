@@ -1,0 +1,287 @@
+<?php
+/**
+ * ExtraChill Network OAuth Settings
+ *
+ * Network admin page for configuring OAuth provider credentials.
+ * Supports Google Sign-In and Apple Sign-In for unified authentication.
+ *
+ * @package ExtraChill\Multisite
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+add_action( 'network_admin_menu', 'ec_add_network_oauth_menu' );
+
+/**
+ * Add OAuth settings page to network admin menu
+ */
+function ec_add_network_oauth_menu() {
+	add_submenu_page(
+		EXTRACHILL_MULTISITE_MENU_SLUG,
+		'OAuth Settings',
+		'OAuth',
+		'manage_network_options',
+		'extrachill-oauth',
+		'ec_render_network_oauth_page'
+	);
+}
+
+add_action( 'network_admin_edit_extrachill_oauth', 'ec_handle_network_oauth_save' );
+
+/**
+ * Handle OAuth settings form submission
+ */
+function ec_handle_network_oauth_save() {
+	if ( ! current_user_can( 'manage_network_options' ) ) {
+		wp_die( __( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
+	}
+
+	check_admin_referer( 'ec_oauth_settings', 'ec_oauth_nonce' );
+
+	// Google OAuth
+	$google_client_id     = isset( $_POST['ec_google_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_client_id'] ) ) : '';
+	$google_client_secret = isset( $_POST['ec_google_client_secret'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_client_secret'] ) ) : '';
+
+	update_site_option( 'extrachill_google_client_id', $google_client_id );
+	update_site_option( 'extrachill_google_client_secret', $google_client_secret );
+
+	// Apple Sign-In
+	$apple_client_id   = isset( $_POST['ec_apple_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_apple_client_id'] ) ) : '';
+	$apple_team_id     = isset( $_POST['ec_apple_team_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_apple_team_id'] ) ) : '';
+	$apple_key_id      = isset( $_POST['ec_apple_key_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_apple_key_id'] ) ) : '';
+	$apple_private_key = isset( $_POST['ec_apple_private_key'] ) ? sanitize_textarea_field( wp_unslash( $_POST['ec_apple_private_key'] ) ) : '';
+
+	update_site_option( 'extrachill_apple_client_id', $apple_client_id );
+	update_site_option( 'extrachill_apple_team_id', $apple_team_id );
+	update_site_option( 'extrachill_apple_key_id', $apple_key_id );
+	update_site_option( 'extrachill_apple_private_key', $apple_private_key );
+
+	$redirect_url = add_query_arg(
+		array(
+			'page'    => 'extrachill-oauth',
+			'updated' => 'true',
+		),
+		network_admin_url( 'admin.php' )
+	);
+
+	wp_redirect( $redirect_url );
+	exit;
+}
+
+/**
+ * Check if Google OAuth is configured
+ */
+function ec_is_google_oauth_configured() {
+	$client_id     = get_site_option( 'extrachill_google_client_id', '' );
+	$client_secret = get_site_option( 'extrachill_google_client_secret', '' );
+	return ! empty( $client_id ) && ! empty( $client_secret );
+}
+
+/**
+ * Check if Apple Sign-In is configured
+ */
+function ec_is_apple_oauth_configured() {
+	$client_id   = get_site_option( 'extrachill_apple_client_id', '' );
+	$team_id     = get_site_option( 'extrachill_apple_team_id', '' );
+	$key_id      = get_site_option( 'extrachill_apple_key_id', '' );
+	$private_key = get_site_option( 'extrachill_apple_private_key', '' );
+	return ! empty( $client_id ) && ! empty( $team_id ) && ! empty( $key_id ) && ! empty( $private_key );
+}
+
+/**
+ * Render network OAuth settings page
+ */
+function ec_render_network_oauth_page() {
+	$google_client_id     = get_site_option( 'extrachill_google_client_id', '' );
+	$google_client_secret = get_site_option( 'extrachill_google_client_secret', '' );
+	$google_configured    = ec_is_google_oauth_configured();
+
+	$apple_client_id   = get_site_option( 'extrachill_apple_client_id', '' );
+	$apple_team_id     = get_site_option( 'extrachill_apple_team_id', '' );
+	$apple_key_id      = get_site_option( 'extrachill_apple_key_id', '' );
+	$apple_private_key = get_site_option( 'extrachill_apple_private_key', '' );
+	$apple_configured  = ec_is_apple_oauth_configured();
+	?>
+	<div class="wrap">
+		<h1><?php esc_html_e( 'Extra Chill OAuth Settings', 'extrachill-multisite' ); ?></h1>
+
+		<?php if ( isset( $_GET['updated'] ) ) : ?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'OAuth settings updated successfully.', 'extrachill-multisite' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<form method="post" action="edit.php?action=extrachill_oauth">
+			<?php wp_nonce_field( 'ec_oauth_settings', 'ec_oauth_nonce' ); ?>
+
+			<table class="form-table">
+				<tbody>
+					<!-- Google OAuth Section -->
+					<tr>
+						<th colspan="2">
+							<h2><?php esc_html_e( 'Google Sign-In', 'extrachill-multisite' ); ?></h2>
+							<p class="description">
+								<?php esc_html_e( 'Configure Google OAuth for "Continue with Google" authentication.', 'extrachill-multisite' ); ?>
+								<?php if ( $google_configured ) : ?>
+									<span style="color: #46b450; font-weight: bold;">&#10003; <?php esc_html_e( 'Configured', 'extrachill-multisite' ); ?></span>
+								<?php else : ?>
+									<span style="color: #dc3232; font-weight: bold;">&#9888; <?php esc_html_e( 'Not configured', 'extrachill-multisite' ); ?></span>
+								<?php endif; ?>
+							</p>
+						</th>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_google_client_id"><?php esc_html_e( 'Client ID', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="text"
+								   id="ec_google_client_id"
+								   name="ec_google_client_id"
+								   value="<?php echo esc_attr( $google_client_id ); ?>"
+								   class="regular-text"
+								   placeholder="123456789-abc.apps.googleusercontent.com" />
+							<p class="description">
+								<?php esc_html_e( 'OAuth 2.0 Client ID from Google Cloud Console.', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_google_client_secret"><?php esc_html_e( 'Client Secret', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="password"
+								   id="ec_google_client_secret"
+								   name="ec_google_client_secret"
+								   value="<?php echo esc_attr( $google_client_secret ); ?>"
+								   class="regular-text"
+								   placeholder="GOCSPX-..." />
+							<p class="description">
+								<?php esc_html_e( 'OAuth 2.0 Client Secret. Keep this confidential.', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+
+					<!-- Apple Sign-In Section -->
+					<tr>
+						<th colspan="2" style="padding-top: 30px;">
+							<h2><?php esc_html_e( 'Apple Sign-In', 'extrachill-multisite' ); ?></h2>
+							<p class="description">
+								<?php esc_html_e( 'Configure Apple Sign-In for "Continue with Apple" authentication.', 'extrachill-multisite' ); ?>
+								<?php if ( $apple_configured ) : ?>
+									<span style="color: #46b450; font-weight: bold;">&#10003; <?php esc_html_e( 'Configured', 'extrachill-multisite' ); ?></span>
+								<?php else : ?>
+									<span style="color: #dc3232; font-weight: bold;">&#9888; <?php esc_html_e( 'Not configured', 'extrachill-multisite' ); ?></span>
+								<?php endif; ?>
+							</p>
+						</th>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_apple_client_id"><?php esc_html_e( 'Services ID', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="text"
+								   id="ec_apple_client_id"
+								   name="ec_apple_client_id"
+								   value="<?php echo esc_attr( $apple_client_id ); ?>"
+								   class="regular-text"
+								   placeholder="com.extrachill.auth" />
+							<p class="description">
+								<?php esc_html_e( 'Services ID identifier from Apple Developer Portal.', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_apple_team_id"><?php esc_html_e( 'Team ID', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="text"
+								   id="ec_apple_team_id"
+								   name="ec_apple_team_id"
+								   value="<?php echo esc_attr( $apple_team_id ); ?>"
+								   class="regular-text"
+								   placeholder="ABC123DEF4" />
+							<p class="description">
+								<?php esc_html_e( 'Your Apple Developer Team ID (10 characters).', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_apple_key_id"><?php esc_html_e( 'Key ID', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="text"
+								   id="ec_apple_key_id"
+								   name="ec_apple_key_id"
+								   value="<?php echo esc_attr( $apple_key_id ); ?>"
+								   class="regular-text"
+								   placeholder="XYZ789GHI0" />
+							<p class="description">
+								<?php esc_html_e( 'Key ID for your Sign In with Apple private key.', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_apple_private_key"><?php esc_html_e( 'Private Key', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<textarea id="ec_apple_private_key"
+									  name="ec_apple_private_key"
+									  rows="6"
+									  class="large-text code"
+									  placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"><?php echo esc_textarea( $apple_private_key ); ?></textarea>
+							<p class="description">
+								<?php esc_html_e( 'Contents of your .p8 private key file. Keep this confidential.', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<?php submit_button( __( 'Save OAuth Settings', 'extrachill-multisite' ) ); ?>
+		</form>
+
+		<div class="card" style="margin-top: 20px; max-width: 800px;">
+			<h3><?php esc_html_e( 'Google Setup Instructions', 'extrachill-multisite' ); ?></h3>
+			<ol>
+				<li><?php esc_html_e( 'Go to Google Cloud Console (console.cloud.google.com)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Create a new project or select an existing one', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Navigate to APIs & Services > Credentials', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Create OAuth 2.0 Client ID (Web application type)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Add authorized JavaScript origins for your domains', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Copy the Client ID and Client Secret', 'extrachill-multisite' ); ?></li>
+			</ol>
+		</div>
+
+		<div class="card" style="margin-top: 20px; max-width: 800px;">
+			<h3><?php esc_html_e( 'Apple Setup Instructions', 'extrachill-multisite' ); ?></h3>
+			<ol>
+				<li><?php esc_html_e( 'Go to Apple Developer Portal (developer.apple.com)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Navigate to Certificates, Identifiers & Profiles', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Create a Services ID with Sign In with Apple enabled', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Configure your domain and return URLs', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Create a Key with Sign In with Apple enabled', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Download the .p8 key file and copy its contents here', 'extrachill-multisite' ); ?></li>
+			</ol>
+		</div>
+	</div>
+
+	<style>
+		.card {
+			background: #fff;
+			border: 1px solid #ccd0d4;
+			border-radius: 4px;
+			padding: 20px;
+			margin: 20px 0;
+		}
+		.card h3 {
+			margin-top: 0;
+		}
+	</style>
+	<?php
+}

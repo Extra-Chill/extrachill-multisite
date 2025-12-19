@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0] - 2025-12-19
+### Added
+- Network OAuth settings page for Google Sign-In and Apple Sign-In configuration
+- Network Payments settings page for Stripe Connect configuration
+- Documentation for blog ID helper functions and usage patterns
+- Documentation for cross-domain authentication patterns
+- Documentation for Cloudflare Turnstile integration in registration forms
+
 ## [1.0.3] - 2025-12-11
 ### Added
 - `ec_site_url_override` filter hook in `ec_get_site_url()` for development environment URL overrides
