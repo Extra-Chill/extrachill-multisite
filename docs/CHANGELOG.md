@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2025-12-19
+### Changed
+- Refactored OAuth helper functions to dedicated `inc/core/oauth-helpers.php` module for better code organization
+- Moved `ec_is_google_oauth_configured()` and `ec_is_apple_oauth_configured()` from `admin/network-oauth-settings.php` to core module
+
 ## [1.1.0] - 2025-12-19
 ### Added
 - Network OAuth settings page for Google Sign-In and Apple Sign-In configuration
