@@ -21,6 +21,24 @@ function ec_is_google_oauth_configured() {
 }
 
 /**
+ * Get Google iOS client ID.
+ *
+ * @return string iOS client ID or empty string.
+ */
+function ec_get_google_ios_client_id() {
+	return get_site_option( 'extrachill_google_ios_client_id', '' );
+}
+
+/**
+ * Get Google Android client ID.
+ *
+ * @return string Android client ID or empty string.
+ */
+function ec_get_google_android_client_id() {
+	return get_site_option( 'extrachill_google_android_client_id', '' );
+}
+
+/**
  * Check if Apple Sign-In is configured.
  *
  * @return bool True if all required Apple credentials are set.

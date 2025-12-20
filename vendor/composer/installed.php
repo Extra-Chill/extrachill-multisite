@@ -3,7 +3,7 @@
         'name' => 'extrachill/multisite',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3022e3866611ee6794761def3e4e50a5ed5c9cc8',
+        'reference' => 'db8266d847e440a8e0e590a4c943e8680600b72a',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'extrachill/multisite' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3022e3866611ee6794761def3e4e50a5ed5c9cc8',
+            'reference' => 'db8266d847e440a8e0e590a4c943e8680600b72a',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

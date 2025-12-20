@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0] - 2025-12-20
+### Added
+- iOS OAuth Client ID field in network OAuth settings page for native iOS app authentication
+- Android OAuth Client ID field in network OAuth settings page for native Android app authentication
+- `ec_get_google_ios_client_id()` helper function to retrieve iOS OAuth client identifier
+- `ec_get_google_android_client_id()` helper function to retrieve Android OAuth client identifier
+- Setup instructions for iOS and Android OAuth client creation in network settings
+
+### Changed
+- Updated README.md to document OAuth and Payment Provider Settings features
+- Enhanced network OAuth settings page with iOS and Android configuration fields
+- Improved OAuth settings form layout with aligned variable declarations
+
 ## [1.1.1] - 2025-12-19
 ### Changed
 - Refactored OAuth helper functions to dedicated `inc/core/oauth-helpers.php` module for better code organization

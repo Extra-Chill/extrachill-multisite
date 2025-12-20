@@ -39,11 +39,15 @@ function ec_handle_network_oauth_save() {
 	check_admin_referer( 'ec_oauth_settings', 'ec_oauth_nonce' );
 
 	// Google OAuth
-	$google_client_id     = isset( $_POST['ec_google_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_client_id'] ) ) : '';
-	$google_client_secret = isset( $_POST['ec_google_client_secret'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_client_secret'] ) ) : '';
+	$google_client_id         = isset( $_POST['ec_google_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_client_id'] ) ) : '';
+	$google_client_secret     = isset( $_POST['ec_google_client_secret'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_client_secret'] ) ) : '';
+	$google_ios_client_id     = isset( $_POST['ec_google_ios_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_ios_client_id'] ) ) : '';
+	$google_android_client_id = isset( $_POST['ec_google_android_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_google_android_client_id'] ) ) : '';
 
 	update_site_option( 'extrachill_google_client_id', $google_client_id );
 	update_site_option( 'extrachill_google_client_secret', $google_client_secret );
+	update_site_option( 'extrachill_google_ios_client_id', $google_ios_client_id );
+	update_site_option( 'extrachill_google_android_client_id', $google_android_client_id );
 
 	// Apple Sign-In
 	$apple_client_id   = isset( $_POST['ec_apple_client_id'] ) ? sanitize_text_field( wp_unslash( $_POST['ec_apple_client_id'] ) ) : '';
@@ -72,9 +76,11 @@ function ec_handle_network_oauth_save() {
  * Render network OAuth settings page
  */
 function ec_render_network_oauth_page() {
-	$google_client_id     = get_site_option( 'extrachill_google_client_id', '' );
-	$google_client_secret = get_site_option( 'extrachill_google_client_secret', '' );
-	$google_configured    = ec_is_google_oauth_configured();
+	$google_client_id         = get_site_option( 'extrachill_google_client_id', '' );
+	$google_client_secret     = get_site_option( 'extrachill_google_client_secret', '' );
+	$google_ios_client_id     = get_site_option( 'extrachill_google_ios_client_id', '' );
+	$google_android_client_id = get_site_option( 'extrachill_google_android_client_id', '' );
+	$google_configured        = ec_is_google_oauth_configured();
 
 	$apple_client_id   = get_site_option( 'extrachill_apple_client_id', '' );
 	$apple_team_id     = get_site_option( 'extrachill_apple_team_id', '' );
@@ -139,6 +145,38 @@ function ec_render_network_oauth_page() {
 								   placeholder="GOCSPX-..." />
 							<p class="description">
 								<?php esc_html_e( 'OAuth 2.0 Client Secret. Keep this confidential.', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_google_ios_client_id"><?php esc_html_e( 'iOS Client ID', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="text"
+								   id="ec_google_ios_client_id"
+								   name="ec_google_ios_client_id"
+								   value="<?php echo esc_attr( $google_ios_client_id ); ?>"
+								   class="regular-text"
+								   placeholder="123456789-xyz.apps.googleusercontent.com" />
+							<p class="description">
+								<?php esc_html_e( 'OAuth 2.0 Client ID for iOS app (created with iOS application type).', 'extrachill-multisite' ); ?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="ec_google_android_client_id"><?php esc_html_e( 'Android Client ID', 'extrachill-multisite' ); ?></label>
+						</th>
+						<td>
+							<input type="text"
+								   id="ec_google_android_client_id"
+								   name="ec_google_android_client_id"
+								   value="<?php echo esc_attr( $google_android_client_id ); ?>"
+								   class="regular-text"
+								   placeholder="123456789-abc.apps.googleusercontent.com" />
+							<p class="description">
+								<?php esc_html_e( 'OAuth 2.0 Client ID for Android app (created with Android application type and SHA-1 fingerprint).', 'extrachill-multisite' ); ?>
 							</p>
 						</td>
 					</tr>
@@ -228,6 +266,7 @@ function ec_render_network_oauth_page() {
 
 		<div class="card" style="margin-top: 20px; max-width: 800px;">
 			<h3><?php esc_html_e( 'Google Setup Instructions', 'extrachill-multisite' ); ?></h3>
+			<p><strong><?php esc_html_e( 'Web Client (required for web and token verification):', 'extrachill-multisite' ); ?></strong></p>
 			<ol>
 				<li><?php esc_html_e( 'Go to Google Cloud Console (console.cloud.google.com)', 'extrachill-multisite' ); ?></li>
 				<li><?php esc_html_e( 'Create a new project or select an existing one', 'extrachill-multisite' ); ?></li>
@@ -235,6 +274,19 @@ function ec_render_network_oauth_page() {
 				<li><?php esc_html_e( 'Create OAuth 2.0 Client ID (Web application type)', 'extrachill-multisite' ); ?></li>
 				<li><?php esc_html_e( 'Add authorized JavaScript origins for your domains', 'extrachill-multisite' ); ?></li>
 				<li><?php esc_html_e( 'Copy the Client ID and Client Secret', 'extrachill-multisite' ); ?></li>
+			</ol>
+			<p><strong><?php esc_html_e( 'iOS Client (for native mobile app):', 'extrachill-multisite' ); ?></strong></p>
+			<ol>
+				<li><?php esc_html_e( 'Create another OAuth 2.0 Client ID (iOS application type)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Enter your iOS bundle ID (e.g., com.extrachill.app)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Copy the iOS Client ID', 'extrachill-multisite' ); ?></li>
+			</ol>
+			<p><strong><?php esc_html_e( 'Android Client (for native mobile app):', 'extrachill-multisite' ); ?></strong></p>
+			<ol>
+				<li><?php esc_html_e( 'Create another OAuth 2.0 Client ID (Android application type)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Enter your Android package name (e.g., com.extrachill.app)', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Add SHA-1 certificate fingerprint for your signing key', 'extrachill-multisite' ); ?></li>
+				<li><?php esc_html_e( 'Copy the Android Client ID', 'extrachill-multisite' ); ?></li>
 			</ol>
 		</div>
 

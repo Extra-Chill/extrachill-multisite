@@ -10,6 +10,8 @@ This WordPress network plugin serves as the **network administration foundation*
 
 - **Network Admin Menu Consolidation** - Centralized top-level network admin menu for all ExtraChill Platform settings and configuration
 - **Cloudflare Turnstile Integration** - Network-wide captcha management and configuration accessible from all network sites
+- **OAuth Provider Settings** - Network-wide Google OAuth configuration with helper functions for extrachill-users integration
+- **Payment Provider Settings** - Network-wide Stripe configuration for extrachill-shop integration
 
 ## Purpose
 
