@@ -32,7 +32,8 @@ function ec_update_turnstile_secret_key( $secret_key ) {
  * Filterable via 'extrachill_bypass_turnstile_verification' for dev environments.
  */
 function ec_verify_turnstile_response( $response ) {
-    $bypass = apply_filters( 'extrachill_bypass_turnstile_verification', false );
+    $is_local_environment = defined( 'WP_ENVIRONMENT_TYPE' ) && WP_ENVIRONMENT_TYPE === 'local';
+    $bypass              = $is_local_environment || (bool) apply_filters( 'extrachill_bypass_turnstile_verification', false );
     if ( true === $bypass ) {
         return true;
     }

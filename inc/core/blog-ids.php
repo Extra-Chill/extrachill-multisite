@@ -40,6 +40,11 @@ if ( ! defined( 'EC_BLOG_ID_HOROSCOPE' ) ) {
     define( 'EC_BLOG_ID_HOROSCOPE', 11 );
 }
 
+// Platform Artist ID (Extra-Chill artist profile on artist.extrachill.com).
+if ( ! defined( 'EC_PLATFORM_ARTIST_ID' ) ) {
+    define( 'EC_PLATFORM_ARTIST_ID', 12114 );
+}
+
 /**
  * Return associative map of blog IDs keyed by logical slug.
  *

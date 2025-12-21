@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.1] - 2025-12-20
+### Added
+- Network Shipping Settings admin page for Shippo API key configuration and shipping label integration
+- `EC_PLATFORM_ARTIST_ID` constant (value: 12114) for internal artist profile identification
+- Automatic Turnstile verification bypass for local development environments (WP_ENVIRONMENT_TYPE = 'local')
+
+### Changed
+- Enhanced `ec_verify_turnstile_response()` with environment-aware bypass logic for streamlined local testing
+
 ## [1.2.0] - 2025-12-20
 ### Added
 - iOS OAuth Client ID field in network OAuth settings page for native iOS app authentication
