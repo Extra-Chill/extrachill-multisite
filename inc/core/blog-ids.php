@@ -151,3 +151,30 @@ function ec_get_site_url( $key ) {
 
     return null;
 }
+
+/**
+ * Get all network domains as allowed redirect hosts.
+ *
+ * Derives hosts from ec_get_domain_map() for single source of truth.
+ *
+ * @return array List of allowed host domains.
+ */
+function ec_get_allowed_redirect_hosts() {
+    $domain_map = ec_get_domain_map();
+    $hosts = array_keys( $domain_map );
+
+    return apply_filters( 'ec_allowed_redirect_hosts', $hosts );
+}
+
+/**
+ * Register network domains as allowed redirect targets.
+ *
+ * Enables wp_safe_redirect() to work across all network subdomains.
+ *
+ * @param array $hosts Existing allowed hosts.
+ * @return array Modified allowed hosts including network domains.
+ */
+function ec_filter_allowed_redirect_hosts( $hosts ) {
+    return array_unique( array_merge( $hosts, ec_get_allowed_redirect_hosts() ) );
+}
+add_filter( 'allowed_redirect_hosts', 'ec_filter_allowed_redirect_hosts' );

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1] - 2025-12-23
+### Added
+- `ec_get_allowed_redirect_hosts()` function to retrieve all network domains as allowed redirect hosts from domain map
+- `ec_filter_allowed_redirect_hosts()` function to register network domains as allowed redirect targets for wp_safe_redirect()
+- Automatic registration of all network subdomains as allowed redirect hosts via allowed_redirect_hosts filter
+- `ec_allowed_redirect_hosts` filter for extensibility of allowed redirect hosts list
+
 ## [1.3.0] - 2025-12-22
 ### Added
 - Support for wire.extrachill.com site (Blog ID 11) with EC_BLOG_ID_WIRE constant
