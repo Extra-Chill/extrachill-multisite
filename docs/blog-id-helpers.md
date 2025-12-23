@@ -30,7 +30,8 @@ define( 'EC_BLOG_ID_EVENTS', 7 );         // events.extrachill.com
 define( 'EC_BLOG_ID_STREAM', 8 );         // stream.extrachill.com
 define( 'EC_BLOG_ID_NEWSLETTER', 9 );     // newsletter.extrachill.com
 define( 'EC_BLOG_ID_DOCS', 10 );          // docs.extrachill.com
-define( 'EC_BLOG_ID_HOROSCOPE', 11 );     // horoscope.extrachill.com (planned)
+define( 'EC_BLOG_ID_WIRE', 11 );          // wire.extrachill.com
+define( 'EC_BLOG_ID_HOROSCOPE', 12 );     // horoscope.extrachill.com (planned)
 ```
 
 **Note**: Blog ID 6 is unused (historical artifact from site deletion)
@@ -80,7 +81,8 @@ try {
 - `'stream'` - Live streaming (Blog ID 8)
 - `'newsletter'` - Newsletter site (Blog ID 9)
 - `'docs'` - Documentation (Blog ID 10)
-- `'horoscope'` - Horoscopes (Blog ID 11)
+- `'wire'` - Wire (Blog ID 11)
+- `'horoscope'` - Horoscopes (Blog ID 12)
 
 ### ec_get_blog_ids() - Associative Map
 
@@ -304,7 +306,8 @@ $blog_id = $domain_map[ $_SERVER['HTTP_HOST'] ] ?? 1;
 | Stream | stream.extrachill.com | 8 | `stream` | Active |
 | Newsletter | newsletter.extrachill.com | 9 | `newsletter` | Active |
 | Docs | docs.extrachill.com | 10 | `docs` | Active |
-| Horoscope | horoscope.extrachill.com | 11 | `horoscope` | Planned |
+| Wire | wire.extrachill.com | 11 | `wire` | Active |
+| Horoscope | horoscope.extrachill.com | 12 | `horoscope` | Planned |
 
 ### Domain Mapping
 

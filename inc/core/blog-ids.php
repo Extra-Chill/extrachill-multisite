@@ -36,8 +36,11 @@ if ( ! defined( 'EC_BLOG_ID_NEWSLETTER' ) ) {
 if ( ! defined( 'EC_BLOG_ID_DOCS' ) ) {
     define( 'EC_BLOG_ID_DOCS', 10 );
 }
+if ( ! defined( 'EC_BLOG_ID_WIRE' ) ) {
+    define( 'EC_BLOG_ID_WIRE', 11 );
+}
 if ( ! defined( 'EC_BLOG_ID_HOROSCOPE' ) ) {
-    define( 'EC_BLOG_ID_HOROSCOPE', 11 );
+    define( 'EC_BLOG_ID_HOROSCOPE', 12 );
 }
 
 // Platform Artist ID (Extra-Chill artist profile on artist.extrachill.com).
@@ -61,6 +64,7 @@ function ec_get_blog_ids() {
         'stream'     => EC_BLOG_ID_STREAM,
         'newsletter' => EC_BLOG_ID_NEWSLETTER,
         'docs'       => EC_BLOG_ID_DOCS,
+        'wire'       => EC_BLOG_ID_WIRE,
         'horoscope'  => EC_BLOG_ID_HOROSCOPE,
     );
 }
@@ -94,6 +98,7 @@ function ec_get_domain_map() {
         'stream.extrachill.com' => EC_BLOG_ID_STREAM,
         'newsletter.extrachill.com' => EC_BLOG_ID_NEWSLETTER,
         'docs.extrachill.com'   => EC_BLOG_ID_DOCS,
+        'wire.extrachill.com'   => EC_BLOG_ID_WIRE,
         'horoscope.extrachill.com' => EC_BLOG_ID_HOROSCOPE,
         // Domain mapping for link pages.
         'extrachill.link'       => EC_BLOG_ID_ARTIST,

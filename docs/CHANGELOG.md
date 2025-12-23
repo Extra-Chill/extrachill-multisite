@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0] - 2025-12-22
+### Added
+- Support for wire.extrachill.com site (Blog ID 11) with EC_BLOG_ID_WIRE constant
+- Legacy path redirects module (`inc/core/legacy-path-redirects.php`) for `/festival-wire` URLs to wire.extrachill.com
+- Updated site count and blog ID mappings in documentation
+
+### Changed
+- Moved EC_BLOG_ID_HOROSCOPE from 11 to 12 to accommodate wire site
+- Updated blog ID arrays and helper functions to include wire site
+- Updated README.md site count description (9 active sites, IDs 1-5,7-11)
+- Updated docs/blog-id-helpers.md with wire site documentation and horoscope ID correction
+
 ## [1.2.1] - 2025-12-20
 ### Added
 - Network Shipping Settings admin page for Shippo API key configuration and shipping label integration
