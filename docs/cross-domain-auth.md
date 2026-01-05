@@ -1,5 +1,9 @@
 # Cross-Domain Authentication
 
+## Scope
+
+This document describes current cross-domain authentication behavior.
+
 ## Overview
 
 The Extra Chill Platform implements WordPress native multisite authentication across multiple domains (`.extrachill.com` subdomains and `extrachill.link` domain mapping). This document explains how cross-domain authentication works, enabling seamless login/logout across all network sites while maintaining security.
@@ -315,9 +319,8 @@ if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wp_rest' ) ) {
 
 **Authentication Methods**:
 1. Cookie authentication (logged-in users)
-2. Nonce verification (same-domain requests)
-3. Basic auth (API clients)
-4. JWT tokens (third-party apps) - if configured
+2. REST nonces for same-origin browser requests
+3. Bearer access + refresh tokens for first-party clients (mobile app and other non-browser clients)
 
 ## Security Considerations
 
@@ -351,9 +354,13 @@ if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wp_rest' ) ) {
 
 **2FA Support**: Two-factor authentication available (plugin dependent)
 
-## Troubleshooting
+## Notes
 
-### User Not Logged In on Other Sites
+### Cookie attribute handling
+
+Cross-domain auth relies on WordPress multisite cookies plus domain mapping in `.github/sunrise.php`. Cookie behavior is configured in WordPress configuration (and the hosting/proxy layer), not via a dedicated `extrachill-api` cookie patch file.
+
+### Cookie domain expectations
 
 **Check 1: Cookie Domain Configuration**
 ```php
@@ -370,7 +377,7 @@ define( 'COOKIE_DOMAIN', '.extrachill.com' );
 - Check `wp_users` table (exists)
 - Check `wp_usermeta` for user capabilities
 
-### Login Loop (Login, Then Redirected to Login)
+### Session consistency expectations
 
 **Common Causes**:
 - Cookie not being set (secure flag issue)
@@ -378,13 +385,13 @@ define( 'COOKIE_DOMAIN', '.extrachill.com' );
 - User not member of current blog
 - Session expired
 
-**Debug Steps**:
-1. Check browser developer tools → Application → Cookies
-2. Verify `wordpress_logged_in_*` cookie exists
-3. Verify cookie domain includes current site
-4. Check user membership in `wp_usermeta`
+**Debug Signals**:
+- The browser stores `wordpress_logged_in_*` and `wordpress_sec_*` cookies for `.extrachill.com`.
+- The request host matches the cookie domain and uses HTTPS.
+- The current user is a member of the current blog where required (WordPress multisite).
 
-### Logout Not Working on All Sites
+
+### Logout behavior expectations
 
 **Likely Cause**: User is member of multiple blogs with different cache
 

@@ -4,7 +4,7 @@ Network-activated WordPress plugin providing the network administration foundati
 
 ## Overview
 
-This WordPress network plugin serves as the **network administration foundation** for the ExtraChill multisite network, providing essential network-wide functionality that supports all 9 active sites (Blog IDs 1–5, 7–11) with docs site at Blog ID 10; future support for the planned horoscope site (Blog ID 12).
+This WordPress network plugin serves as the **network administration foundation** for the ExtraChill multisite network, providing essential network-wide functionality that supports all 11 active sites (Blog IDs 1–5, 7–12).
 
 ## Features
 
@@ -20,9 +20,7 @@ This plugin maintains focused responsibility for network administration infrastr
 
 ## Installation
 
-1. Upload the plugin to `/wp-content/plugins/`
-2. Network activate the plugin in WordPress multisite admin
-3. The plugin automatically provides functionality across all network sites
+Installation steps are intentionally omitted from this documentation set.
 
 ## Architecture
 
@@ -38,20 +36,3 @@ This plugin maintains focused responsibility for network administration infrastr
 - WordPress 5.0+
 - WordPress Multisite installation
 - PHP 7.4+
-
-## Development
-
-```bash
-# Install dependencies
-composer install
-
-# Run tests
-composer test
-
-# Create production build
-./build.sh
-```
-
-## License
-
-GPL v2 or later

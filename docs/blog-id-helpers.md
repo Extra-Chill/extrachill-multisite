@@ -2,19 +2,11 @@
 
 ## Overview
 
-The Extra Chill Platform uses a hardcoded blog ID system for performance optimization. All 9 active WordPress multisite sites have predetermined blog IDs that never change. This document explains why blog IDs are hardcoded, how to use the blog ID helper functions, and when to use hardcoded values vs. dynamic discovery.
+The Extra Chill Platform uses a canonical blog ID map (constants + helper functions) for performance and consistency. The network includes 11 active sites (Blog ID 6 is unused; Blog ID 12 is reserved for horoscopes). This document describes the helper functions in `inc/core/blog-ids.php` and the rules for using them.
 
-## Why Hardcode Blog IDs?
+## Why Centralize Blog IDs?
 
-### Performance Optimization
-
-**Zero Database Queries**: Hardcoded constants eliminate database lookups for known site IDs
-
-**Direct Multisite Operations**: Faster `switch_to_blog()` calls without site discovery
-
-**Network Architecture Decision**: Blog IDs are fixed infrastructure, not dynamic configuration
-
-**Example Impact**: Retrieving newsletter site (Blog ID 9) takes 0 queries vs. 1-2 queries with dynamic lookup
+Blog IDs are fixed infrastructure for this multisite network. Centralizing them in `inc/core/blog-ids.php` provides a single source of truth and avoids ad-hoc numeric IDs throughout the codebase.
 
 ## Blog ID Constants
 
@@ -34,13 +26,13 @@ define( 'EC_BLOG_ID_WIRE', 11 );          // wire.extrachill.com
 define( 'EC_BLOG_ID_HOROSCOPE', 12 );     // horoscope.extrachill.com (planned)
 ```
 
-**Note**: Blog ID 6 is unused (historical artifact from site deletion)
+**Note**: Blog ID 6 is unused (historical artifact from site deletion).
 
 ## Using Blog ID Functions
 
-### ec_get_blog_id() - Recommended Approach
+### ec_get_blog_id() - Single Source of Truth
 
-**Purpose**: Get blog ID by logical slug, abstraction layer
+**Purpose**: Get blog ID by logical slug. This is the **preferred method** for runtime blog ID resolution.
 
 **Parameters**: `$key` (string) - Logical site key
 
@@ -48,20 +40,15 @@ define( 'EC_BLOG_ID_HOROSCOPE', 12 );     // horoscope.extrachill.com (planned)
 
 **Usage Pattern**:
 ```php
-// Instead of hardcoding blog ID numbers
+// RECOMMENDED PATTERN
 $blog_id = ec_get_blog_id( 'newsletter' );
-
-// Safely handle unknown blog IDs
-if ( ! $blog_id = ec_get_blog_id( 'newsletter' ) ) {
-    wp_die( 'Newsletter site not configured' );
-}
-
-// Use in multisite operations
-try {
-    switch_to_blog( $blog_id );
-    $newsletters = get_posts( array( 'post_type' => 'newsletter' ) );
-} finally {
-    restore_current_blog();
+if ( $blog_id ) {
+    try {
+        switch_to_blog( $blog_id );
+        // ...
+    } finally {
+        restore_current_blog();
+    }
 }
 ```
 
@@ -69,7 +56,7 @@ try {
 - Readable, self-documenting code
 - Centralized single source of truth
 - Easy to update if blog ID ever changes
-- Works with functions that might not exist
+- Works with functions that might not exist (when paired with `function_exists()`)
 
 **Valid Keys**:
 - `'main'` - Main site (Blog ID 1)
@@ -86,7 +73,7 @@ try {
 
 ### ec_get_blog_ids() - Associative Map
 
-**Purpose**: Get complete map of all blog IDs
+**Purpose**: Get complete map of all blog IDs.
 
 **Returns**: Associative array with slugs as keys, blog IDs as values
 
@@ -97,16 +84,11 @@ $blogs = ec_get_blog_ids();
 foreach ( $blogs as $slug => $blog_id ) {
     // Process all network sites
 }
-
-// Check if site exists
-if ( array_key_exists( 'newsletter', ec_get_blog_ids() ) ) {
-    // Newsletter site exists
-}
 ```
 
 ### ec_get_blog_slug_by_id() - Reverse Lookup
 
-**Purpose**: Get logical slug from numeric blog ID
+**Purpose**: Get logical slug from numeric blog ID.
 
 **Parameters**: `$blog_id` (int) - Numeric blog ID
 
@@ -116,15 +98,11 @@ if ( array_key_exists( 'newsletter', ec_get_blog_ids() ) ) {
 ```php
 // Get site name from blog ID (useful in hooks)
 $slug = ec_get_blog_slug_by_id( get_current_blog_id() );
-
-if ( $slug === 'newsletter' ) {
-    // Special handling for newsletter site
-}
 ```
 
 ### ec_get_site_url() - Production URLs
 
-**Purpose**: Get production site URL by logical slug
+**Purpose**: Get production site URL by logical slug.
 
 **Parameters**: `$key` (string) - Logical site slug
 
@@ -134,60 +112,47 @@ if ( $slug === 'newsletter' ) {
 ```php
 // Get link to another site
 $newsletter_url = ec_get_site_url( 'newsletter' );
-echo sprintf( '<a href="%s">Newsletter</a>', esc_url( $newsletter_url ) );
-
-// Safe with null check
-if ( $url = ec_get_site_url( 'newsletter' ) ) {
-    // Use URL
-}
 ```
 
-**Overridable**: Fires `ec_site_url_override` filter for dev environment customization
+**Overridable**: Fires `ec_site_url_override` filter for dev environment customization.
 
 ## When to Use What
 
-### Use ec_get_blog_id() for:
+### Use `ec_get_blog_id()` for:
 
-✅ Multisite operations in plugins  
-✅ When you need blog ID from plugin code  
-✅ When other plugins might check function existence  
-✅ Safe default approach (works even if function not defined)
+- **ALL** runtime plugin/theme code
+- **ALL** `switch_to_blog()` operations
+- contexts where dependencies may be inactive (pair with `function_exists()`)
 
-**Example**:
+**Standard Pattern**:
 ```php
 if ( function_exists( 'ec_get_blog_id' ) ) {
     $blog_id = ec_get_blog_id( 'newsletter' );
-} else {
-    // Fallback for multisite without extrachill-multisite
-    $blog_id = 9;
+    if ( $blog_id ) {
+        try {
+            switch_to_blog( $blog_id );
+            // ...
+        } finally {
+            restore_current_blog();
+        }
+    }
 }
 ```
 
 ### Use Constants (EC_BLOG_ID_*) for:
 
-✅ When extrachill-multisite is guaranteed (network-activated)  
-✅ When performance is critical (zero function call overhead)  
-✅ Direct numeric comparisons
-
-**Example**:
-```php
-// Direct comparison with constant
-if ( get_current_blog_id() === EC_BLOG_ID_NEWSLETTER ) {
-    // Load newsletter-specific functionality
-}
-```
+- Cases where a numeric constant is explicitly needed (e.g., direct comparisons in `sunrise.php`).
 
 ### Use Numeric Values (Hardcoded) for:
 
-❌ Almost never - use functions instead  
-✅ Only in `.github/sunrise.php` (executes before WordPress loads)  
-✅ In comments to document which site is which
+❌ **NEVER** in plugin/theme code - use `ec_get_blog_id()` instead.  
+✅ Only in `.github/sunrise.php` (executes before WordPress loads).  
+✅ In comments to document which site is which.
 
 **Don't Do This**:
 ```php
-// Bad - hardcoded in plugin code
-$blog_id = 9; // newsletter site
-switch_to_blog( $blog_id );
+// Bad - hardcoded in plugin/theme code
+switch_to_blog( 9 );
 ```
 
 **Do This Instead**:
@@ -202,93 +167,20 @@ if ( $blog_id = ec_get_blog_id( 'newsletter' ) ) {
 
 ### Safe Blog Switching
 
-**Required Pattern**: Always use try/finally to restore blog context
+**Required Pattern**: Always use try/finally to restore blog context.
 
 ```php
 // CORRECT - Always restore even if error occurs
-try {
-    switch_to_blog( $blog_id );
-    // Perform operations in target blog context
-    $posts = get_posts( array( 'post_type' => 'post' ) );
-} finally {
-    restore_current_blog();
-}
-```
-
-**Why try/finally?**
-- Error in blog context doesn't leave blog switched
-- Prevents data corruption from incorrect blog context
-- Essential for production stability
-
-### Nested Blog Switching
-
-**Safe Pattern**: Track blog stack manually
-
-```php
-$current_blog = get_current_blog_id();
-try {
-    switch_to_blog( $other_blog_id );
-    // First operation
-    
-    // If you need another blog:
-    $blog_a = get_current_blog_id();
-    switch_to_blog( $blog_b );
-    // Second operation
-    restore_current_blog(); // Back to $blog_a
-    
-    // Back to first blog context
-} finally {
-    if ( get_current_blog_id() !== $current_blog ) {
-        restore_current_blog();
-    }
-}
-```
-
-### Query Multiple Sites
-
-```php
-// Get posts from multiple sites
-$blogs = array(
-    ec_get_blog_id( 'main' ),
-    ec_get_blog_id( 'community' ),
-    ec_get_blog_id( 'artist' ),
-);
-
-$all_posts = array();
-foreach ( $blogs as $blog_id ) {
+$blog_id = ec_get_blog_id( 'artist' );
+if ( $blog_id ) {
     try {
         switch_to_blog( $blog_id );
-        $all_posts = array_merge(
-            $all_posts,
-            get_posts( array( 'posts_per_page' => -1 ) )
-        );
+        // Perform operations in target blog context
     } finally {
         restore_current_blog();
     }
 }
 ```
-
-## Domain to Blog ID Mapping
-
-### ec_get_domain_map()
-
-**Purpose**: Maps all domains to blog IDs for routing
-
-**Returns**: Associative array of domain → blog ID pairs
-
-**Includes**:
-- All .extrachill.com subdomains
-- extrachill.link domain mapping (→ Blog ID 4)
-- www.extrachill.link domain variant
-
-**Usage Pattern**:
-```php
-// Determine blog from domain (used in routing)
-$domain_map = ec_get_domain_map();
-$blog_id = $domain_map[ $_SERVER['HTTP_HOST'] ] ?? 1;
-```
-
-**Note**: Sunrise.php handles domain routing before WordPress loads, not plugin code
 
 ## Blog ID Knowledge Base
 
@@ -309,78 +201,12 @@ $blog_id = $domain_map[ $_SERVER['HTTP_HOST'] ] ?? 1;
 | Wire | wire.extrachill.com | 11 | `wire` | Active |
 | Horoscope | horoscope.extrachill.com | 12 | `horoscope` | Planned |
 
-### Domain Mapping
-
-- `extrachill.link` → Blog ID 4 (artist.extrachill.com)
-- `www.extrachill.link` → Blog ID 4 (artist.extrachill.com)
-
-## Adding a New Site
-
-### If Network Expands
-
-**Steps to add site at Blog ID 12**:
-
-1. **Create WordPress site** at subdomain or domain
-2. **Assign Blog ID 12** during creation
-3. **Update blog-ids.php**:
-   ```php
-   if ( ! defined( 'EC_BLOG_ID_NEWSITE' ) ) {
-       define( 'EC_BLOG_ID_NEWSITE', 12 );
-   }
-   ```
-4. **Update ec_get_blog_ids()** function:
-   ```php
-   return array(
-       // ... existing entries ...
-       'newsite'   => EC_BLOG_ID_NEWSITE,
-   );
-   ```
-5. **Update ec_get_domain_map()** if new domain:
-   ```php
-   'newsite.extrachill.com' => EC_BLOG_ID_NEWSITE,
-   ```
-6. **No code changes needed** in other plugins (use function to retrieve)
-
 ## Forbidden Patterns
 
 **Do NOT**:
-- Hardcode `9` or any blog ID in plugin code (use `ec_get_blog_id()`)
-- Hardcode blog ID mapping in plugins (only in blog-ids.php)
-- Assume blog ID without verification
-- Create per-site copies of blog ID constants
-- Skip the try/finally pattern in blog switching
+- Hardcode `9` or any blog ID in plugin code (use `ec_get_blog_id()`).
+- Hardcode blog ID mapping in plugins (only in `blog-ids.php`).
+- Assume blog ID without verification.
+- Skip the try/finally pattern in blog switching.
+- Use blog IDs from options (blog IDs are infrastructure, not configuration).
 
-## Performance Considerations
-
-### Constant vs. Function Call
-
-**Constant** (`EC_BLOG_ID_NEWSLETTER`):
-- 0 function calls
-- Fastest possible access
-- Best: use in tight loops if needed
-
-**Function** (`ec_get_blog_id( 'newsletter' )`):
-- 1 function call
-- Array lookup (~20 bytes memory)
-- Acceptable overhead for clarity
-
-**Recommendation**: Use function in production code for maintainability, speed difference is negligible
-
-### Network Options vs. Blog IDs
-
-**Never store blog IDs in options**:
-- Blog IDs are infrastructure, not configuration
-- Options require database query
-- Blog IDs are fixed and known
-
-**Good Use of Network Options**:
-- Sendy API keys (extrachill-newsletter)
-- Turnstile configuration (extrachill-multisite)
-- Feature flags or runtime configuration
-
-## Related Documentation
-
-- [extrachill-multisite AGENTS.md - Blog ID Management](../AGENTS.md#blog-id-management)
-- [Root AGENTS.md - Hardcoded Blog IDs](../../AGENTS.md#5-performance-optimization)
-- [NETWORK-ARCHITECTURE.md](../../../.github/NETWORK-ARCHITECTURE.md)
-- [WordPress Multisite Handbook](https://developer.wordpress.org/plugins/multisite/)

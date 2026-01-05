@@ -1,0 +1,87 @@
+<?php
+/**
+ * Cross-Site Links - Main Loader
+ *
+ * Unified cross-site navigation system for the Extra Chill multisite network.
+ * Provides taxonomy archive linking, user profile linking, and artist profile linking
+ * between sites with content existence verification.
+ *
+ * @package ExtraChillMultisite
+ * @since 1.4.0
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Load cross-site link components.
+require_once __DIR__ . '/taxonomy-links.php';
+require_once __DIR__ . '/entity-links.php';
+require_once __DIR__ . '/renderers.php';
+
+/**
+ * Get taxonomy-to-site mapping
+ *
+ * Defines which sites use which shared taxonomies.
+ * Sites are referenced by their logical key (used with ec_get_blog_id).
+ *
+ * @return array Taxonomy slug => array of site keys
+ */
+function ec_get_taxonomy_site_map() {
+	return apply_filters(
+		'ec_taxonomy_site_map',
+		array(
+			'venue'    => array( 'main', 'events' ),
+			'location' => array( 'main', 'events', 'wire' ),
+			'artist'   => array( 'main', 'shop', 'artist' ),
+			'festival' => array( 'main', 'events', 'wire' ),
+		)
+	);
+}
+
+/**
+ * Get human-readable labels for sites
+ *
+ * Used when displaying cross-site links to users.
+ *
+ * @return array Site key => label
+ */
+function ec_get_site_labels() {
+	return apply_filters(
+		'ec_site_labels',
+		array(
+			'main'      => __( 'Blog', 'extrachill-multisite' ),
+			'events'    => __( 'Events', 'extrachill-multisite' ),
+			'community' => __( 'Community', 'extrachill-multisite' ),
+			'shop'      => __( 'Shop', 'extrachill-multisite' ),
+			'artist'    => __( 'Artist Platform', 'extrachill-multisite' ),
+			'wire'      => __( 'News Wire', 'extrachill-multisite' ),
+			'docs'      => __( 'Documentation', 'extrachill-multisite' ),
+		)
+	);
+}
+
+/**
+ * Get current site's logical key
+ *
+ * Reverse lookup to find the site key for the current blog.
+ *
+ * @return string|null Site key or null if not in mapping
+ */
+function ec_get_current_site_key() {
+	$current_blog_id = get_current_blog_id();
+	$blog_ids        = ec_get_blog_ids();
+
+	foreach ( $blog_ids as $key => $blog_id ) {
+		if ( $blog_id === $current_blog_id ) {
+			return $key;
+		}
+	}
+
+	return null;
+}
+
+// Register display hooks.
+add_action( 'extrachill_archive_below_description', 'ec_render_cross_site_taxonomy_links' );
+add_action( 'extrachill_after_author_bio', 'ec_render_cross_site_user_links' );
+add_action( 'extrachill_archive_header_actions', 'ec_render_cross_site_artist_archive_links' );

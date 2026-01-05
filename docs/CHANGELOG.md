@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0] - 2026-01-05
+### Added
+- Unified Cross-Site Links system (`inc/cross-site-links/`) for network-wide navigation
+- Taxonomy archive cross-linking with content existence verification
+- User profile and artist profile cross-site link resolution
+- Support for Blog ID 12 (Horoscope) as an active site
+- Enhanced documentation for cross-domain authentication and REST nonces
+
+### Changed
+- Updated network site count to 11 active sites (IDs 1-5, 7-12)
+- Refined Blog ID helper documentation with recommended patterns
+
 ## [1.3.1] - 2025-12-23
 ### Added
 - `ec_get_allowed_redirect_hosts()` function to retrieve all network domains as allowed redirect hosts from domain map
