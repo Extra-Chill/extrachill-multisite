@@ -43,9 +43,11 @@ if ( ! defined( 'EC_BLOG_ID_HOROSCOPE' ) ) {
     define( 'EC_BLOG_ID_HOROSCOPE', 12 );
 }
 
-// Platform Artist ID (Extra-Chill artist profile on artist.extrachill.com).
+// Platform Artist ID (Extra Chill artist profile on artist.extrachill.com).
+// Dynamic lookup from network option with production fallback.
 if ( ! defined( 'EC_PLATFORM_ARTIST_ID' ) ) {
-    define( 'EC_PLATFORM_ARTIST_ID', 12114 );
+    $ec_platform_artist_id = get_site_option( 'ec_platform_artist_id', 12114 );
+    define( 'EC_PLATFORM_ARTIST_ID', (int) $ec_platform_artist_id );
 }
 
 /**

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.2] - 2026-01-05
+### Added
+- Dynamic lookup for `EC_PLATFORM_ARTIST_ID` from network options with fallback to production ID.
+- User-managed artist profile links in cross-site user link resolution via `ec_get_artists_for_user()`.
+
+### Changed
+- Refined cross-site user link resolution to include links to published artist profiles managed by the user.
+
 ## [1.4.1] - 2026-01-05
 ### Added
 - REST API integration for cross-site taxonomy counts (Main, Events, Shop, Wire)

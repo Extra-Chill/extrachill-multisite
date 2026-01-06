@@ -158,7 +158,7 @@ add_filter( 'comment_form_defaults', 'ec_customize_comment_form_logged_in' );
 /**
  * Get cross-site links for a user
  *
- * Returns links to community profile and author archive if they exist.
+ * Returns links to community profile, author archive, and artist profiles if they exist.
  *
  * @param int $user_id User ID.
  * @return array Array of link data.
@@ -202,6 +202,31 @@ function ec_get_cross_site_user_links( $user_id ) {
 				}
 			} finally {
 				restore_current_blog();
+			}
+		}
+	}
+
+	// Check artist profiles user manages.
+	if ( 'artist' !== $current_site_key && function_exists( 'ec_get_artists_for_user' ) ) {
+		$artist_ids = ec_get_artists_for_user( $user_id );
+		if ( ! empty( $artist_ids ) ) {
+			$artist_blog_id = ec_get_blog_id( 'artist' );
+			if ( $artist_blog_id ) {
+				switch_to_blog( $artist_blog_id );
+				try {
+					foreach ( $artist_ids as $artist_id ) {
+						$artist_post = get_post( $artist_id );
+						if ( $artist_post && 'publish' === $artist_post->post_status ) {
+							$links[] = array(
+								'type'  => 'artist_profile',
+								'url'   => get_permalink( $artist_id ),
+								'label' => $artist_post->post_title,
+							);
+						}
+					}
+				} finally {
+					restore_current_blog();
+				}
 			}
 		}
 	}
