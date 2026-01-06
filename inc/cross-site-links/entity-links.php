@@ -323,40 +323,52 @@ function ec_get_artist_blog_archive_url( $artist_slug ) {
 }
 
 /**
- * Get cross-site links for an artist
+ * Get cross-site links for an artist profile page
+ *
+ * Returns links to blog coverage, upcoming events, and shop products.
+ * Used on artist.extrachill.com profile pages.
  *
  * @param string $artist_slug Artist slug.
- * @param string $context     Context: 'profile' (on artist platform) or 'archive' (on blog).
  * @return array Array of link data.
  */
-function ec_get_cross_site_artist_links( $artist_slug, $context = 'archive' ) {
+function ec_get_cross_site_artist_links( $artist_slug ) {
 	if ( empty( $artist_slug ) ) {
 		return array();
 	}
 
 	$links = array();
 
-	if ( 'archive' === $context ) {
-		// On blog archive, link to artist profile.
-		$profile = ec_get_artist_profile_by_slug( $artist_slug );
-		if ( $profile && ! empty( $profile['permalink'] ) ) {
-			$links[] = array(
-				'type'  => 'artist_profile',
-				'url'   => $profile['permalink'],
-				'label' => __( 'View Artist Profile', 'extrachill-multisite' ),
-			);
-		}
-	} elseif ( 'profile' === $context ) {
-		// On artist profile, link to blog archive.
-		$archive = ec_get_artist_blog_archive_url( $artist_slug );
-		if ( $archive ) {
-			$links[] = array(
-				'type'  => 'blog_archive',
-				'url'   => $archive['url'],
-				'label' => __( 'View Blog Coverage', 'extrachill-multisite' ),
-				'count' => $archive['count'],
-			);
-		}
+	// Blog coverage
+	$archive = ec_get_artist_blog_archive_url( $artist_slug );
+	if ( $archive ) {
+		$links[] = array(
+			'type'  => 'blog_archive',
+			'url'   => $archive['url'],
+			'label' => __( 'Blog', 'extrachill-multisite' ),
+			'count' => $archive['count'],
+		);
+	}
+
+	// Upcoming events via REST API
+	$events = ec_get_events_upcoming_count_via_api( $artist_slug, 'artist' );
+	if ( $events && $events['count'] > 0 ) {
+		$links[] = array(
+			'type'  => 'events',
+			'url'   => $events['url'],
+			'label' => __( 'Events', 'extrachill-multisite' ),
+			'count' => $events['count'],
+		);
+	}
+
+	// Shop products via REST API
+	$shop = ec_get_shop_taxonomy_count_via_api( $artist_slug, 'artist' );
+	if ( $shop && $shop['count'] > 0 ) {
+		$links[] = array(
+			'type'  => 'shop',
+			'url'   => $shop['url'],
+			'label' => __( 'Shop', 'extrachill-multisite' ),
+			'count' => $shop['count'],
+		);
 	}
 
 	return $links;

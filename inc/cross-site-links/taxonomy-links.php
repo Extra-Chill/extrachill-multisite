@@ -4,6 +4,8 @@
  *
  * Functions for linking taxonomy archives across sites in the multisite network.
  * Only returns links to sites where the term exists and has published content.
+ * Main, Events, Shop, and Wire sites use REST APIs for accurate counts.
+ * Artist site uses slug-based matching to artist_profile CPT.
  *
  * @package ExtraChillMultisite
  * @since 1.4.0
@@ -17,7 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Get cross-site links for a taxonomy term where content exists
  *
  * Checks each mapped site for the term and returns links only where
- * the term exists with at least one published post.
+ * the term exists with at least one published post. Events and Shop
+ * sites use REST APIs for accurate counts.
  *
  * @param WP_Term|int $term     Term object or term ID.
  * @param string      $taxonomy Taxonomy slug.
@@ -45,6 +48,11 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 	$target_sites     = $taxonomy_site_map[ $taxonomy ];
 	$current_site_key = ec_get_current_site_key();
 	$site_labels      = ec_get_site_labels();
+	$main_blog_id     = ec_get_blog_id( 'main' );
+	$events_blog_id   = ec_get_blog_id( 'events' );
+	$shop_blog_id     = ec_get_blog_id( 'shop' );
+	$wire_blog_id     = ec_get_blog_id( 'wire' );
+	$artist_blog_id   = ec_get_blog_id( 'artist' );
 	$links            = array();
 
 	foreach ( $target_sites as $site_key ) {
@@ -58,12 +66,37 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 			continue;
 		}
 
-		$term_data = ec_check_term_on_site( $term->slug, $taxonomy, $blog_id );
+		// Use REST APIs for consistent cross-site data access.
+		// Artist site uses slug-based profile matching (CPT, not taxonomy).
+		if ( $blog_id === $artist_blog_id && 'artist' === $taxonomy ) {
+			$artist_profile = ec_get_artist_profile_by_slug( $term->slug );
+			$term_data      = $artist_profile ? array(
+				'count' => 1,
+				'url'   => $artist_profile['permalink'],
+			) : null;
+		} elseif ( $blog_id === $main_blog_id ) {
+			$term_data = ec_get_blog_taxonomy_count_via_api( $term->slug, $taxonomy );
+		} elseif ( $blog_id === $events_blog_id ) {
+			$term_data = ec_get_events_upcoming_count_via_api( $term->slug, $taxonomy );
+		} elseif ( $blog_id === $shop_blog_id ) {
+			$term_data = ec_get_shop_taxonomy_count_via_api( $term->slug, $taxonomy );
+		} elseif ( $blog_id === $wire_blog_id ) {
+			$term_data = ec_get_wire_taxonomy_count_via_api( $term->slug, $taxonomy );
+		} else {
+			$term_data = ec_check_term_on_site( $term->slug, $taxonomy, $blog_id );
+		}
+
 		if ( ! $term_data || $term_data['count'] < 1 ) {
 			continue;
 		}
 
-		$url = ec_build_term_archive_url( $term->slug, $taxonomy, $blog_id );
+		// REST APIs return URL directly, otherwise build it
+		if ( isset( $term_data['url'] ) ) {
+			$url = $term_data['url'];
+		} else {
+			$url = ec_build_term_archive_url( $term->slug, $taxonomy, $blog_id );
+		}
+
 		if ( ! $url ) {
 			continue;
 		}
@@ -78,6 +111,150 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 	}
 
 	return $links;
+}
+
+/**
+ * Get upcoming event count via internal REST API
+ *
+ * Uses rest_do_request() for zero HTTP overhead internal call.
+ *
+ * @param string $term_slug Term slug.
+ * @param string $taxonomy  Taxonomy slug.
+ * @return array|null Array with 'count' and 'url', or null if not found.
+ */
+function ec_get_events_upcoming_count_via_api( $term_slug, $taxonomy ) {
+	$request = new WP_REST_Request( 'GET', '/extrachill/v1/events/upcoming-counts' );
+	$request->set_query_params(
+		array(
+			'taxonomy' => $taxonomy,
+			'slug'     => $term_slug,
+		)
+	);
+
+	$response = rest_do_request( $request );
+
+	if ( $response->is_error() ) {
+		return null;
+	}
+
+	$data = $response->get_data();
+	if ( empty( $data ) || ! isset( $data['count'] ) ) {
+		return null;
+	}
+
+	return array(
+		'term_id' => null,
+		'count'   => (int) $data['count'],
+		'url'     => isset( $data['url'] ) ? $data['url'] : null,
+	);
+}
+
+/**
+ * Get shop product count via internal REST API
+ *
+ * Uses rest_do_request() for zero HTTP overhead internal call.
+ *
+ * @param string $term_slug Term slug.
+ * @param string $taxonomy  Taxonomy slug.
+ * @return array|null Array with 'count' and 'url', or null if not found.
+ */
+function ec_get_shop_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+	$request = new WP_REST_Request( 'GET', '/extrachill/v1/shop/taxonomy-counts' );
+	$request->set_query_params(
+		array(
+			'taxonomy' => $taxonomy,
+			'slug'     => $term_slug,
+		)
+	);
+
+	$response = rest_do_request( $request );
+
+	if ( $response->is_error() ) {
+		return null;
+	}
+
+	$data = $response->get_data();
+	if ( empty( $data ) || ! isset( $data['count'] ) ) {
+		return null;
+	}
+
+	return array(
+		'term_id' => null,
+		'count'   => (int) $data['count'],
+		'url'     => isset( $data['url'] ) ? $data['url'] : null,
+	);
+}
+
+/**
+ * Get wire post count via internal REST API
+ *
+ * Uses rest_do_request() for zero HTTP overhead internal call.
+ *
+ * @param string $term_slug Term slug.
+ * @param string $taxonomy  Taxonomy slug.
+ * @return array|null Array with 'count' and 'url', or null if not found.
+ */
+function ec_get_wire_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+	$request = new WP_REST_Request( 'GET', '/extrachill/v1/wire/taxonomy-counts' );
+	$request->set_query_params(
+		array(
+			'taxonomy' => $taxonomy,
+			'slug'     => $term_slug,
+		)
+	);
+
+	$response = rest_do_request( $request );
+
+	if ( $response->is_error() ) {
+		return null;
+	}
+
+	$data = $response->get_data();
+	if ( empty( $data ) || ! isset( $data['count'] ) ) {
+		return null;
+	}
+
+	return array(
+		'term_id' => null,
+		'count'   => (int) $data['count'],
+		'url'     => isset( $data['url'] ) ? $data['url'] : null,
+	);
+}
+
+/**
+ * Get blog post count via internal REST API
+ *
+ * Uses rest_do_request() for zero HTTP overhead internal call.
+ *
+ * @param string $term_slug Term slug.
+ * @param string $taxonomy  Taxonomy slug.
+ * @return array|null Array with 'count' and 'url', or null if not found.
+ */
+function ec_get_blog_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+	$request = new WP_REST_Request( 'GET', '/extrachill/v1/blog/taxonomy-counts' );
+	$request->set_query_params(
+		array(
+			'taxonomy' => $taxonomy,
+			'slug'     => $term_slug,
+		)
+	);
+
+	$response = rest_do_request( $request );
+
+	if ( $response->is_error() ) {
+		return null;
+	}
+
+	$data = $response->get_data();
+	if ( empty( $data ) || ! isset( $data['count'] ) ) {
+		return null;
+	}
+
+	return array(
+		'term_id' => null,
+		'count'   => (int) $data['count'],
+		'url'     => isset( $data['url'] ) ? $data['url'] : null,
+	);
 }
 
 /**

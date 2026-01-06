@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.1] - 2026-01-05
+### Added
+- REST API integration for cross-site taxonomy counts (Main, Events, Shop, Wire)
+- Internal REST API calls via `rest_do_request()` for zero-overhead data retrieval
+- Support for `events` site in artist taxonomy mapping
+
+### Changed
+- Refactored `ec_get_cross_site_artist_links` to use REST API for upcoming events and shop products
+- Optimized `ec_get_cross_site_term_links` to use REST APIs for accurate cross-site content counts
+- Removed `extrachill_archive_header_actions` hook for artist archive profile links (now handled via REST-backed resolution)
+- Updated artist profile link resolution to use CPT matching on artist site instead of taxonomy
+
 ## [1.4.0] - 2026-01-05
 ### Added
 - Unified Cross-Site Links system (`inc/cross-site-links/`) for network-wide navigation

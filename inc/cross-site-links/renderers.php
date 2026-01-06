@@ -65,36 +65,10 @@ function ec_render_cross_site_user_links( $user_id ) {
 }
 
 /**
- * Render artist profile button on artist taxonomy archives
- *
- * Hooked to: extrachill_archive_header_actions
- */
-function ec_render_cross_site_artist_archive_links() {
-	if ( ! is_tax( 'artist' ) ) {
-		return;
-	}
-
-	$term = get_queried_object();
-	if ( ! ( $term instanceof WP_Term ) || empty( $term->slug ) ) {
-		return;
-	}
-
-	$links = ec_get_cross_site_artist_links( $term->slug, 'archive' );
-	if ( empty( $links ) ) {
-		return;
-	}
-
-	echo '<div class="ec-cross-site-links ec-cross-site-artist-links">';
-	foreach ( $links as $link ) {
-		ec_cross_site_link_button( $link );
-	}
-	echo '</div>';
-}
-
-/**
- * Render blog coverage button on artist profiles
+ * Render cross-site links on artist profiles
  *
  * Called directly by artist platform plugin template.
+ * Shows links to blog coverage, events, and shop.
  *
  * @param string $artist_slug Artist profile slug.
  */
@@ -103,7 +77,7 @@ function ec_render_cross_site_artist_profile_links( $artist_slug ) {
 		return;
 	}
 
-	$links = ec_get_cross_site_artist_links( $artist_slug, 'profile' );
+	$links = ec_get_cross_site_artist_links( $artist_slug );
 	if ( empty( $links ) ) {
 		return;
 	}

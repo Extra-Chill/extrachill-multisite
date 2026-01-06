@@ -33,7 +33,7 @@ function ec_get_taxonomy_site_map() {
 		array(
 			'venue'    => array( 'main', 'events' ),
 			'location' => array( 'main', 'events', 'wire' ),
-			'artist'   => array( 'main', 'shop', 'artist' ),
+			'artist'   => array( 'main', 'events', 'shop', 'artist' ),
 			'festival' => array( 'main', 'events', 'wire' ),
 		)
 	);
@@ -84,4 +84,3 @@ function ec_get_current_site_key() {
 // Register display hooks.
 add_action( 'extrachill_archive_below_description', 'ec_render_cross_site_taxonomy_links' );
 add_action( 'extrachill_after_author_bio', 'ec_render_cross_site_user_links' );
-add_action( 'extrachill_archive_header_actions', 'ec_render_cross_site_artist_archive_links' );
