@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once __DIR__ . '/taxonomy-links.php';
 require_once __DIR__ . '/entity-links.php';
 require_once __DIR__ . '/renderers.php';
+require_once __DIR__ . '/canonical-authority.php';
 
 /**
  * Get taxonomy-to-site mapping

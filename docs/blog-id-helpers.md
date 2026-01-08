@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Extra Chill Platform uses a canonical blog ID map (constants + helper functions) for performance and consistency. The network includes 11 active sites (Blog ID 6 is unused; Blog ID 12 is reserved for horoscopes). This document describes the helper functions in `inc/core/blog-ids.php` and the rules for using them.
+The Extra Chill Platform uses a canonical blog ID map (constants + helper functions) for performance and consistency. The network includes 11 active sites (Blog ID 6 is unused). This document describes the helper functions in `inc/core/blog-ids.php` and the rules for using them.
 
 ## Why Centralize Blog IDs?
 
@@ -23,7 +23,7 @@ define( 'EC_BLOG_ID_STREAM', 8 );         // stream.extrachill.com
 define( 'EC_BLOG_ID_NEWSLETTER', 9 );     // newsletter.extrachill.com
 define( 'EC_BLOG_ID_DOCS', 10 );          // docs.extrachill.com
 define( 'EC_BLOG_ID_WIRE', 11 );          // wire.extrachill.com
-define( 'EC_BLOG_ID_HOROSCOPE', 12 );     // horoscope.extrachill.com (planned)
+define( 'EC_BLOG_ID_HOROSCOPE', 12 );     // horoscope.extrachill.com
 ```
 
 **Note**: Blog ID 6 is unused (historical artifact from site deletion).
@@ -199,7 +199,7 @@ if ( $blog_id ) {
 | Newsletter | newsletter.extrachill.com | 9 | `newsletter` | Active |
 | Docs | docs.extrachill.com | 10 | `docs` | Active |
 | Wire | wire.extrachill.com | 11 | `wire` | Active |
-| Horoscope | horoscope.extrachill.com | 12 | `horoscope` | Planned |
+| Horoscope | horoscope.extrachill.com | 12 | `horoscope` | Active |
 
 ## Forbidden Patterns
 

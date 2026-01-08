@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.3] - 2026-01-08
+### Added
+- Object Cache Pro configuration via `objectcache_config` filter to mark `co-authors-plus` as a non-prefetchable group.
+- Canonical authority resolution for shared taxonomy archives across the multisite network.
+
+### Changed
+- Plugin initialization now loads the Object Cache Pro config module and canonical authority resolver.
+
 ## [1.4.2] - 2026-01-05
 ### Added
 - Dynamic lookup for `EC_PLATFORM_ARTIST_ID` from network options with fallback to production ID.

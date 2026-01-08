@@ -358,7 +358,13 @@ if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wp_rest' ) ) {
 
 ### Cookie attribute handling
 
-Cross-domain auth relies on WordPress multisite cookies plus domain mapping in `.github/sunrise.php`. Cookie behavior is configured in WordPress configuration (and the hosting/proxy layer), not via a dedicated `extrachill-api` cookie patch file.
+Cross-domain auth relies on:
+
+- WordPress multisite cookies for `.extrachill.com` subdomains
+- Domain mapping via `.github/sunrise.php` for `extrachill.link`
+- A small cookie header patch in `extrachill-api/inc/auth/extrachill-link-auth.php` that appends `SameSite=None; Secure` to WordPress auth cookies so cross-domain REST requests from `extrachill.link` can remain authenticated
+
+Cookie domain configuration still lives in WordPress configuration (and the hosting/proxy layer).
 
 ### Cookie domain expectations
 

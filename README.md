@@ -18,15 +18,12 @@ This WordPress network plugin serves as the **network administration foundation*
 This plugin maintains focused responsibility for network administration infrastructure. Historical features like user management, search, and newsletter integration have been successfully migrated to specialized plugins (extrachill-users, extrachill-search, extrachill-newsletter) following the platform's single responsibility principle.
 
 
-## Installation
-
-Installation steps are intentionally omitted from this documentation set.
 
 ## Architecture
 
 - **Network Activated** - Single plugin serving all sites in the multisite network
 - **Direct Database Queries** - Uses `switch_to_blog()` for cross-site data access
-- **Performance Optimized** - Dynamic site discovery with automatic WordPress blog-id-cache
+- **Performance Optimized** - Central blog ID + domain map helpers for fast cross-site resolution
 - **Centralized Configuration** - Network-wide settings stored via `get_site_option()` accessible from all sites
 - **Modular Organization** - Core functionality in `inc/core/`, site-specific features in dedicated directories, admin interface in `admin/`
 - **Security First** - Comprehensive admin access control, Cloudflare Turnstile integration, and capability checks
