@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.4] - 2026-01-19
+
+### Added
+- Added music-specific taxonomy badge colors (festivals, locations, venues, artists)
+- Added artist dropdown filter for song-meanings and music-history categories
+- Added EC footer bottom menu links via theme filter
+
 ## [1.4.3] - 2026-01-08
 ### Added
 - Object Cache Pro configuration via `objectcache_config` filter to mark `co-authors-plus` as a non-prefetchable group.

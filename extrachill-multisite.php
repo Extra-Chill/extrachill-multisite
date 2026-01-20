@@ -3,7 +3,7 @@
  * Plugin Name: Extra Chill Multisite
  * Plugin URI: https://extrachill.com
  * Description: Network administration foundation for the ExtraChill Platform. Provides network-wide Cloudflare Turnstile integration and consolidated network admin menu.
- * Version: 1.4.3
+ * Version: 1.4.4
  * Author: Chris Huber
  * Author URI: https://chubes.net
  * Network: true
@@ -45,6 +45,15 @@ function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/object-cache-config.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/core/legacy-path-redirects.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/cross-site-links/cross-site-links.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/footer-main-menu.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/network-dropdown.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/site-title.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/admin-menu.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/404-content.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/dns-prefetch.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/filter-bar.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/footer-links.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/assets.php';
 
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';
