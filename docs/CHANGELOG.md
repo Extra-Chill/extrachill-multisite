@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.5] - 2026-01-19
+
+### Added
+- Added theme integration hooks for 404 content, admin menu, DNS prefetch, footer main menu, network dropdown, and site title
+- Updated cross-site links and canonical authority system
+- Improved admin settings pages (OAuth, payments, security, shipping)
+- Updated blog IDs and Turnstile integration
+- Removed vendor directory from git tracking (now gitignored)
+
 ## [1.4.4] - 2026-01-19
 
 ### Added
