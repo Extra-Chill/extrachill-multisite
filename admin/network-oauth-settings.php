@@ -33,7 +33,7 @@ add_action( 'network_admin_edit_extrachill_oauth', 'ec_handle_network_oauth_save
  */
 function ec_handle_network_oauth_save() {
 	if ( ! current_user_can( 'manage_network_options' ) ) {
-		wp_die( __( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
+		wp_die( esc_html__( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
 	}
 
 	check_admin_referer( 'ec_oauth_settings', 'ec_oauth_nonce' );
@@ -68,7 +68,7 @@ function ec_handle_network_oauth_save() {
 		network_admin_url( 'admin.php' )
 	);
 
-	wp_redirect( $redirect_url );
+	wp_safe_redirect( $redirect_url );
 	exit;
 }
 
@@ -122,11 +122,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_google_client_id"
-								   name="ec_google_client_id"
-								   value="<?php echo esc_attr( $google_client_id ); ?>"
-								   class="regular-text"
-								   placeholder="123456789-abc.apps.googleusercontent.com" />
+									id="ec_google_client_id"
+									name="ec_google_client_id"
+									value="<?php echo esc_attr( $google_client_id ); ?>"
+									class="regular-text"
+									placeholder="123456789-abc.apps.googleusercontent.com" />
 							<p class="description">
 								<?php esc_html_e( 'OAuth 2.0 Client ID from Google Cloud Console.', 'extrachill-multisite' ); ?>
 							</p>
@@ -138,11 +138,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="password"
-								   id="ec_google_client_secret"
-								   name="ec_google_client_secret"
-								   value="<?php echo esc_attr( $google_client_secret ); ?>"
-								   class="regular-text"
-								   placeholder="GOCSPX-..." />
+									id="ec_google_client_secret"
+									name="ec_google_client_secret"
+									value="<?php echo esc_attr( $google_client_secret ); ?>"
+									class="regular-text"
+									placeholder="GOCSPX-..." />
 							<p class="description">
 								<?php esc_html_e( 'OAuth 2.0 Client Secret. Keep this confidential.', 'extrachill-multisite' ); ?>
 							</p>
@@ -154,11 +154,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_google_ios_client_id"
-								   name="ec_google_ios_client_id"
-								   value="<?php echo esc_attr( $google_ios_client_id ); ?>"
-								   class="regular-text"
-								   placeholder="123456789-xyz.apps.googleusercontent.com" />
+									id="ec_google_ios_client_id"
+									name="ec_google_ios_client_id"
+									value="<?php echo esc_attr( $google_ios_client_id ); ?>"
+									class="regular-text"
+									placeholder="123456789-xyz.apps.googleusercontent.com" />
 							<p class="description">
 								<?php esc_html_e( 'OAuth 2.0 Client ID for iOS app (created with iOS application type).', 'extrachill-multisite' ); ?>
 							</p>
@@ -170,11 +170,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_google_android_client_id"
-								   name="ec_google_android_client_id"
-								   value="<?php echo esc_attr( $google_android_client_id ); ?>"
-								   class="regular-text"
-								   placeholder="123456789-abc.apps.googleusercontent.com" />
+									id="ec_google_android_client_id"
+									name="ec_google_android_client_id"
+									value="<?php echo esc_attr( $google_android_client_id ); ?>"
+									class="regular-text"
+									placeholder="123456789-abc.apps.googleusercontent.com" />
 							<p class="description">
 								<?php esc_html_e( 'OAuth 2.0 Client ID for Android app (created with Android application type and SHA-1 fingerprint).', 'extrachill-multisite' ); ?>
 							</p>
@@ -201,11 +201,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_apple_client_id"
-								   name="ec_apple_client_id"
-								   value="<?php echo esc_attr( $apple_client_id ); ?>"
-								   class="regular-text"
-								   placeholder="com.extrachill.auth" />
+									id="ec_apple_client_id"
+									name="ec_apple_client_id"
+									value="<?php echo esc_attr( $apple_client_id ); ?>"
+									class="regular-text"
+									placeholder="com.extrachill.auth" />
 							<p class="description">
 								<?php esc_html_e( 'Services ID identifier from Apple Developer Portal.', 'extrachill-multisite' ); ?>
 							</p>
@@ -217,11 +217,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_apple_team_id"
-								   name="ec_apple_team_id"
-								   value="<?php echo esc_attr( $apple_team_id ); ?>"
-								   class="regular-text"
-								   placeholder="ABC123DEF4" />
+									id="ec_apple_team_id"
+									name="ec_apple_team_id"
+									value="<?php echo esc_attr( $apple_team_id ); ?>"
+									class="regular-text"
+									placeholder="ABC123DEF4" />
 							<p class="description">
 								<?php esc_html_e( 'Your Apple Developer Team ID (10 characters).', 'extrachill-multisite' ); ?>
 							</p>
@@ -233,11 +233,11 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_apple_key_id"
-								   name="ec_apple_key_id"
-								   value="<?php echo esc_attr( $apple_key_id ); ?>"
-								   class="regular-text"
-								   placeholder="XYZ789GHI0" />
+									id="ec_apple_key_id"
+									name="ec_apple_key_id"
+									value="<?php echo esc_attr( $apple_key_id ); ?>"
+									class="regular-text"
+									placeholder="XYZ789GHI0" />
 							<p class="description">
 								<?php esc_html_e( 'Key ID for your Sign In with Apple private key.', 'extrachill-multisite' ); ?>
 							</p>
@@ -249,10 +249,10 @@ function ec_render_network_oauth_page() {
 						</th>
 						<td>
 							<textarea id="ec_apple_private_key"
-									  name="ec_apple_private_key"
-									  rows="6"
-									  class="large-text code"
-									  placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"><?php echo esc_textarea( $apple_private_key ); ?></textarea>
+										name="ec_apple_private_key"
+										rows="6"
+										class="large-text code"
+										placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"><?php echo esc_textarea( $apple_private_key ); ?></textarea>
 							<p class="description">
 								<?php esc_html_e( 'Contents of your .p8 private key file. Keep this confidential.', 'extrachill-multisite' ); ?>
 							</p>

@@ -13,7 +13,7 @@ add_action( 'template_redirect', 'ec_handle_legacy_path_redirects', 1 );
 
 function ec_handle_legacy_path_redirects() {
 	$main_blog_id = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( 'main' ) : null;
-	if ( $main_blog_id === null || (int) $main_blog_id !== (int) get_current_blog_id() ) {
+	if ( null === $main_blog_id || (int) $main_blog_id !== (int) get_current_blog_id() ) {
 		return;
 	}
 
@@ -22,7 +22,7 @@ function ec_handle_legacy_path_redirects() {
 	}
 
 	$request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-	$path = wp_parse_url( $request_uri, PHP_URL_PATH );
+	$path        = wp_parse_url( $request_uri, PHP_URL_PATH );
 	if ( ! is_string( $path ) ) {
 		return;
 	}

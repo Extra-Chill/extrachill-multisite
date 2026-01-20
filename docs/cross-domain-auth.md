@@ -408,8 +408,8 @@ define( 'COOKIE_DOMAIN', '.extrachill.com' );
 
 ## Cross-References
 
-- [extrachill-multisite AGENTS.md - Blog ID Management](../AGENTS.md#blog-id-management)
-- [extrachill-users AGENTS.md](../extrachill-users/AGENTS.md) - Authentication system
+- [extrachill-multisite CLAUDE.md - Blog ID Management](../CLAUDE.md#blog-id-management)
+- [extrachill-users CLAUDE.md](../extrachill-users/CLAUDE.md) - Authentication system
 - [.github/sunrise.php](../../../.github/sunrise.php) - Domain mapping implementation
 - [WordPress Multisite Handbook](https://developer.wordpress.org/plugins/multisite/)
 - [WordPress Security Handbook](https://developer.wordpress.org/plugins/security/)

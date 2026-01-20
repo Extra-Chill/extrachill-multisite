@@ -11,19 +11,19 @@
 defined( 'ABSPATH' ) || exit;
 
 function ec_get_turnstile_site_key() {
-    return get_site_option( 'ec_turnstile_site_key', '' );
+	return get_site_option( 'ec_turnstile_site_key', '' );
 }
 
 function ec_get_turnstile_secret_key() {
-    return get_site_option( 'ec_turnstile_secret_key', '' );
+	return get_site_option( 'ec_turnstile_secret_key', '' );
 }
 
 function ec_update_turnstile_site_key( $site_key ) {
-    return update_site_option( 'ec_turnstile_site_key', sanitize_text_field( $site_key ) );
+	return update_site_option( 'ec_turnstile_site_key', sanitize_text_field( $site_key ) );
 }
 
 function ec_update_turnstile_secret_key( $secret_key ) {
-    return update_site_option( 'ec_turnstile_secret_key', sanitize_text_field( $secret_key ) );
+	return update_site_option( 'ec_turnstile_secret_key', sanitize_text_field( $secret_key ) );
 }
 
 /**
@@ -32,107 +32,110 @@ function ec_update_turnstile_secret_key( $secret_key ) {
  * Filterable via 'extrachill_bypass_turnstile_verification' for dev environments.
  */
 function ec_verify_turnstile_response( $response ) {
-    $is_local_environment = defined( 'WP_ENVIRONMENT_TYPE' ) && WP_ENVIRONMENT_TYPE === 'local';
-    $bypass              = $is_local_environment || (bool) apply_filters( 'extrachill_bypass_turnstile_verification', false );
-    if ( true === $bypass ) {
-        return true;
-    }
+	$is_local_environment = defined( 'WP_ENVIRONMENT_TYPE' ) && WP_ENVIRONMENT_TYPE === 'local';
+	$bypass               = $is_local_environment || (bool) apply_filters( 'extrachill_bypass_turnstile_verification', false );
+	if ( true === $bypass ) {
+		return true;
+	}
 
-    $response = sanitize_text_field( wp_unslash( $response ) );
+	$response = sanitize_text_field( wp_unslash( $response ) );
 
-    if ( empty( $response ) ) {
-        error_log( 'ExtraChill Turnstile: Empty response token received' );
-        return false;
-    }
+	if ( empty( $response ) ) {
+		error_log( 'ExtraChill Turnstile: Empty response token received' );
+		return false;
+	}
 
-    $secret_key = ec_get_turnstile_secret_key();
-    if ( empty( $secret_key ) ) {
-        error_log( 'ExtraChill Turnstile: Secret key not configured in network settings' );
-        return false;
-    }
+	$secret_key = ec_get_turnstile_secret_key();
+	if ( empty( $secret_key ) ) {
+		error_log( 'ExtraChill Turnstile: Secret key not configured in network settings' );
+		return false;
+	}
 
-    $verification_url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-    $verification_data = array(
-        'secret' => $secret_key,
-        'response' => $response,
-        'remoteip' => isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '',
-    );
+	$verification_url  = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+	$verification_data = array(
+		'secret'   => $secret_key,
+		'response' => $response,
+		'remoteip' => isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '',
+	);
 
-    $http_response = wp_remote_post( $verification_url, array(
-        'body' => $verification_data,
-        'timeout' => 15,
-    ) );
+	$http_response = wp_remote_post(
+		$verification_url,
+		array(
+			'body'    => $verification_data,
+			'timeout' => 15,
+		)
+	);
 
-    if ( is_wp_error( $http_response ) ) {
-        error_log( 'ExtraChill Turnstile Verification Error: ' . $http_response->get_error_message() );
-        return false;
-    }
+	if ( is_wp_error( $http_response ) ) {
+		error_log( 'ExtraChill Turnstile Verification Error: ' . $http_response->get_error_message() );
+		return false;
+	}
 
-    $response_code = wp_remote_retrieve_response_code( $http_response );
-    if ( $response_code !== 200 ) {
-        error_log( 'ExtraChill Turnstile Verification HTTP Error: Code ' . $response_code . ' Body: ' . wp_remote_retrieve_body( $http_response ) );
-        return false;
-    }
+	$response_code = wp_remote_retrieve_response_code( $http_response );
+	if ( 200 !== $response_code ) {
+		error_log( 'ExtraChill Turnstile Verification HTTP Error: Code ' . $response_code . ' Body: ' . wp_remote_retrieve_body( $http_response ) );
+		return false;
+	}
 
-    $response_body = wp_remote_retrieve_body( $http_response );
-    $result = json_decode( $response_body, true );
+	$response_body = wp_remote_retrieve_body( $http_response );
+	$result        = json_decode( $response_body, true );
 
-    if ( $result === null ) {
-        error_log( 'ExtraChill Turnstile Verification JSON Decode Error: Body - ' . $response_body );
-        return false;
-    }
+	if ( null === $result ) {
+		error_log( 'ExtraChill Turnstile Verification JSON Decode Error: Body - ' . $response_body );
+		return false;
+	}
 
-    if ( isset( $result['success'] ) && $result['success'] === true ) {
-        error_log( 'ExtraChill Turnstile: Verification successful' );
-        return true;
-    }
+	if ( isset( $result['success'] ) && true === $result['success'] ) {
+		error_log( 'ExtraChill Turnstile: Verification successful' );
+		return true;
+	}
 
-    if ( isset( $result['error-codes'] ) && is_array( $result['error-codes'] ) ) {
-        error_log( 'ExtraChill Turnstile Verification Failed: ' . implode( ', ', $result['error-codes'] ) );
-    } else {
-        error_log( 'ExtraChill Turnstile Verification Unexpected Response: ' . $response_body );
-    }
+	if ( isset( $result['error-codes'] ) && is_array( $result['error-codes'] ) ) {
+		error_log( 'ExtraChill Turnstile Verification Failed: ' . implode( ', ', $result['error-codes'] ) );
+	} else {
+		error_log( 'ExtraChill Turnstile Verification Unexpected Response: ' . $response_body );
+	}
 
-    return false;
+	return false;
 }
 
 function ec_is_turnstile_configured() {
-    $site_key = ec_get_turnstile_site_key();
-    $secret_key = ec_get_turnstile_secret_key();
+	$site_key   = ec_get_turnstile_site_key();
+	$secret_key = ec_get_turnstile_secret_key();
 
-    return ! empty( $site_key ) && ! empty( $secret_key );
+	return ! empty( $site_key ) && ! empty( $secret_key );
 }
 
 function ec_render_turnstile_widget( $args = array() ) {
-    if ( ! ec_is_turnstile_configured() ) {
-        return '';
-    }
+	if ( ! ec_is_turnstile_configured() ) {
+		return '';
+	}
 
-    $site_key = ec_get_turnstile_site_key();
-    $defaults = array(
-        'data-sitekey' => $site_key,
-        'data-size' => 'normal',
-        'data-theme' => 'auto',
-        'data-appearance' => 'interaction-only',
-        'class' => 'cf-turnstile',
-    );
+	$site_key = ec_get_turnstile_site_key();
+	$defaults = array(
+		'data-sitekey'    => $site_key,
+		'data-size'       => 'normal',
+		'data-theme'      => 'auto',
+		'data-appearance' => 'interaction-only',
+		'class'           => 'cf-turnstile',
+	);
 
-    $args = wp_parse_args( $args, $defaults );
+	$args = wp_parse_args( $args, $defaults );
 
-    $attributes = '';
-    foreach ( $args as $key => $value ) {
-        if ( $key === 'class' ) {
-            $attributes .= sprintf( ' class="%s"', esc_attr( $value ) );
-        } else {
-            $attributes .= sprintf( ' %s="%s"', esc_attr( $key ), esc_attr( $value ) );
-        }
-    }
+	$attributes = '';
+	foreach ( $args as $key => $value ) {
+		if ( 'class' === $key ) {
+			$attributes .= sprintf( ' class="%s"', esc_attr( $value ) );
+		} else {
+			$attributes .= sprintf( ' %s="%s"', esc_attr( $key ), esc_attr( $value ) );
+		}
+	}
 
-    return sprintf( '<div%s></div>', $attributes );
+	return sprintf( '<div%s></div>', $attributes );
 }
 
 function ec_enqueue_turnstile_script( $handle = 'cloudflare-turnstile' ) {
-    if ( ec_is_turnstile_configured() ) {
-        wp_enqueue_script( $handle, 'https://challenges.cloudflare.com/turnstile/v0/api.js', array(), null, true );
-    }
+	if ( ec_is_turnstile_configured() ) {
+		wp_enqueue_script( $handle, 'https://challenges.cloudflare.com/turnstile/v0/api.js', array(), null, true );
+	}
 }

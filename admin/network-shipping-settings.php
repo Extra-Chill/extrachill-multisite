@@ -32,7 +32,7 @@ add_action( 'network_admin_edit_extrachill_shipping', 'ec_handle_network_shippin
  */
 function ec_handle_network_shipping_save() {
 	if ( ! current_user_can( 'manage_network_options' ) ) {
-		wp_die( __( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
+		wp_die( esc_html__( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
 	}
 
 	check_admin_referer( 'ec_shipping_settings', 'ec_shipping_nonce' );
@@ -49,7 +49,7 @@ function ec_handle_network_shipping_save() {
 		network_admin_url( 'admin.php' )
 	);
 
-	wp_redirect( $redirect_url );
+	wp_safe_redirect( $redirect_url );
 	exit;
 }
 
@@ -93,11 +93,11 @@ function ec_render_network_shipping_page() {
 						</th>
 						<td>
 							<input type="password"
-								   id="ec_shippo_api_key"
-								   name="ec_shippo_api_key"
-								   value="<?php echo esc_attr( $api_key ); ?>"
-								   class="regular-text"
-								   placeholder="shippo_live_..." />
+									id="ec_shippo_api_key"
+									name="ec_shippo_api_key"
+									value="<?php echo esc_attr( $api_key ); ?>"
+									class="regular-text"
+									placeholder="shippo_live_..." />
 							<p class="description">
 								<?php esc_html_e( 'Your Shippo API token. Keep this confidential.', 'extrachill-multisite' ); ?>
 							</p>

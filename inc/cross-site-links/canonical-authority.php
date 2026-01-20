@@ -41,11 +41,11 @@ function ec_get_taxonomy_canonical_config() {
 				'condition' => null,
 			),
 			'location' => array(
-				'canonical' => 'events',
-				'condition' => null,
+				'canonical' => array( 'main', 'wire', 'events' ),
+				'condition' => 'has_posts',
 			),
 			'festival' => array(
-				'canonical' => array( 'main', 'wire', 'events' ),
+				'canonical' => array( 'wire', 'main', 'events' ),
 				'condition' => 'has_posts',
 			),
 		)
@@ -159,7 +159,7 @@ function ec_artist_profile_has_image( $slug ) {
 			return false;
 		}
 
-		$artist_id = (int) $posts[0];
+		$artist_id    = (int) $posts[0];
 		$thumbnail_id = get_post_thumbnail_id( $artist_id );
 
 		return ! empty( $thumbnail_id );
@@ -219,6 +219,13 @@ function ec_resolve_term_canonical( $slug, $taxonomy, $site_key ) {
  * @return string|null Canonical URL or null if no site qualifies or current site is canonical.
  */
 function ec_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition, $current_site_key ) {
+	if ( 'festival' === $taxonomy ) {
+		$festival_canonical = ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_site_key );
+		if ( null !== $festival_canonical ) {
+			return $festival_canonical;
+		}
+	}
+
 	foreach ( $site_keys as $site_key ) {
 		$blog_id = ec_get_blog_id( $site_key );
 		if ( ! $blog_id ) {
@@ -241,6 +248,107 @@ function ec_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition,
 
 	// No site in cascade has content, remain self-canonical.
 	return null;
+}
+
+/**
+ * Resolve canonical for festival taxonomy.
+ *
+ * Canonical order uses normal site cascade rules, but if both wire and main
+ * qualify, published post count is used as a tie-breaker between them.
+ *
+ * @param string      $slug             Festival term slug.
+ * @param array       $site_keys        Priority-ordered site keys.
+ * @param string|null $condition        Condition type ('has_posts' or null).
+ * @param string      $current_site_key Current site key.
+ * @return string|null Canonical URL, null for self-canonical, or null to defer.
+ */
+function ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_site_key ) {
+	$qualified_sites = array();
+
+	foreach ( $site_keys as $site_key ) {
+		$blog_id = ec_get_blog_id( $site_key );
+		if ( ! $blog_id ) {
+			continue;
+		}
+
+		if ( ec_site_has_taxonomy_content( $slug, 'festival', $blog_id, $condition ) ) {
+			$qualified_sites[] = $site_key;
+		}
+	}
+
+	if ( empty( $qualified_sites ) ) {
+		return null;
+	}
+
+	$wire_has_content = in_array( 'wire', $qualified_sites, true );
+	$main_has_content = in_array( 'main', $qualified_sites, true );
+
+	// If both main and wire qualify, use post count tie-breaker.
+	if ( $wire_has_content && $main_has_content ) {
+		$wire_count = ec_get_festival_term_post_count( $slug, 'wire' );
+		$main_count = ec_get_festival_term_post_count( $slug, 'main' );
+
+		if ( $wire_count > $main_count ) {
+			return ( 'wire' === $current_site_key ) ? null : ec_resolve_term_canonical( $slug, 'festival', 'wire' );
+		}
+
+		// Blog wins on tie or if it has more.
+		return ( 'main' === $current_site_key ) ? null : ec_resolve_term_canonical( $slug, 'festival', 'main' );
+	}
+
+	// Default: first qualifying site in cascade order.
+	$canonical_site_key = $qualified_sites[0];
+	return ( $canonical_site_key === $current_site_key ) ? null : ec_resolve_term_canonical( $slug, 'festival', $canonical_site_key );
+}
+
+/**
+ * Get published post count for a festival term on a site.
+ *
+ * Used as tie-breaker between wire and main when both qualify.
+ *
+ * @param string $slug     Festival term slug.
+ * @param string $site_key Site key.
+ * @return int Published post count.
+ */
+function ec_get_festival_term_post_count( $slug, $site_key ) {
+	$blog_id = ec_get_blog_id( $site_key );
+	if ( ! $blog_id ) {
+		return 0;
+	}
+
+	switch_to_blog( $blog_id );
+	try {
+		if ( ! taxonomy_exists( 'festival' ) ) {
+			return 0;
+		}
+
+		$term = get_term_by( 'slug', $slug, 'festival' );
+		if ( ! $term || is_wp_error( $term ) ) {
+			return 0;
+		}
+
+		$post_types = get_taxonomy( 'festival' )->object_type;
+		$query      = new WP_Query(
+			array(
+				'post_type'      => $post_types,
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+				'no_found_rows'  => false,
+				'posts_per_page' => 1,
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'festival',
+						'field'    => 'term_id',
+						'terms'    => $term->term_id,
+					),
+				),
+			)
+		);
+
+		return (int) $query->found_posts;
+	} finally {
+		restore_current_blog();
+	}
 }
 
 /**

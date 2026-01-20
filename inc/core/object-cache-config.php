@@ -26,8 +26,8 @@ add_filter( 'objectcache_config', 'extrachill_object_cache_config' );
  */
 function extrachill_object_cache_config( $config ) {
 	$config['non_prefetchable_groups'] = array_merge(
-		$config['non_prefetchable_groups'] ?? [],
-		[ 'co-authors-plus' ]
+		$config['non_prefetchable_groups'] ?? array(),
+		array( 'co-authors-plus' )
 	);
 	return $config;
 }

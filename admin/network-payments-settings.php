@@ -33,7 +33,7 @@ add_action( 'network_admin_edit_extrachill_payments', 'ec_handle_network_payment
  */
 function ec_handle_network_payments_save() {
 	if ( ! current_user_can( 'manage_network_options' ) ) {
-		wp_die( __( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
+		wp_die( esc_html__( 'You do not have permission to access this page.', 'extrachill-multisite' ) );
 	}
 
 	check_admin_referer( 'ec_payments_settings', 'ec_payments_nonce' );
@@ -54,7 +54,7 @@ function ec_handle_network_payments_save() {
 		network_admin_url( 'admin.php' )
 	);
 
-	wp_redirect( $redirect_url );
+	wp_safe_redirect( $redirect_url );
 	exit;
 }
 
@@ -100,11 +100,11 @@ function ec_render_network_payments_page() {
 						</th>
 						<td>
 							<input type="password"
-								   id="ec_stripe_secret_key"
-								   name="ec_stripe_secret_key"
-								   value="<?php echo esc_attr( $secret_key ); ?>"
-								   class="regular-text"
-								   placeholder="sk_live_..." />
+									id="ec_stripe_secret_key"
+									name="ec_stripe_secret_key"
+									value="<?php echo esc_attr( $secret_key ); ?>"
+									class="regular-text"
+									placeholder="sk_live_..." />
 							<p class="description">
 								<?php esc_html_e( 'Your Stripe secret API key. Keep this confidential.', 'extrachill-multisite' ); ?>
 							</p>
@@ -116,11 +116,11 @@ function ec_render_network_payments_page() {
 						</th>
 						<td>
 							<input type="text"
-								   id="ec_stripe_publishable_key"
-								   name="ec_stripe_publishable_key"
-								   value="<?php echo esc_attr( $publishable_key ); ?>"
-								   class="regular-text"
-								   placeholder="pk_live_..." />
+									id="ec_stripe_publishable_key"
+									name="ec_stripe_publishable_key"
+									value="<?php echo esc_attr( $publishable_key ); ?>"
+									class="regular-text"
+									placeholder="pk_live_..." />
 							<p class="description">
 								<?php esc_html_e( 'Your Stripe publishable API key. Used for frontend integration.', 'extrachill-multisite' ); ?>
 							</p>
@@ -132,11 +132,11 @@ function ec_render_network_payments_page() {
 						</th>
 						<td>
 							<input type="password"
-								   id="ec_stripe_webhook_secret"
-								   name="ec_stripe_webhook_secret"
-								   value="<?php echo esc_attr( $webhook_secret ); ?>"
-								   class="regular-text"
-								   placeholder="whsec_..." />
+									id="ec_stripe_webhook_secret"
+									name="ec_stripe_webhook_secret"
+									value="<?php echo esc_attr( $webhook_secret ); ?>"
+									class="regular-text"
+									placeholder="whsec_..." />
 							<p class="description">
 								<?php esc_html_e( 'Webhook signing secret for verifying Stripe webhook events.', 'extrachill-multisite' ); ?>
 							</p>

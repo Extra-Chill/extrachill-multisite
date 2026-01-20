@@ -1,0 +1,35 @@
+/**
+ * 404 Error Page Styles
+ *
+ * Extra Chill specific 404 error page styling.
+ *
+ * @package ExtraChill\Multisite
+ */
+
+.error-404 {
+	padding-bottom: var(--spacing-lg);
+}
+
+.error-404 .page-content {
+	max-width: var(--form-width);
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* 404 Error Links */
+.error-404-links {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-md);
+	align-items: center;
+	margin-top: var(--spacing-lg);
+}
+
+@media (min-width: 600px) {
+	.error-404-links {
+		flex-direction: row;
+		justify-content: center;
+	}
+}

@@ -51,13 +51,17 @@ function ec_get_site_labels() {
 	return apply_filters(
 		'ec_site_labels',
 		array(
-			'main'      => __( 'Blog', 'extrachill-multisite' ),
-			'events'    => __( 'Events', 'extrachill-multisite' ),
-			'community' => __( 'Community', 'extrachill-multisite' ),
-			'shop'      => __( 'Shop', 'extrachill-multisite' ),
-			'artist'    => __( 'Artist Platform', 'extrachill-multisite' ),
-			'wire'      => __( 'News Wire', 'extrachill-multisite' ),
-			'docs'      => __( 'Documentation', 'extrachill-multisite' ),
+			'main'       => __( 'Blog', 'extrachill-multisite' ),
+			'community'  => __( 'Community', 'extrachill-multisite' ),
+			'shop'       => __( 'Shop', 'extrachill-multisite' ),
+			'artist'     => __( 'Artist Platform', 'extrachill-multisite' ),
+			'chat'       => __( 'Chat', 'extrachill-multisite' ),
+			'events'     => __( 'Events', 'extrachill-multisite' ),
+			'stream'     => __( 'Stream', 'extrachill-multisite' ),
+			'newsletter' => __( 'Newsletter', 'extrachill-multisite' ),
+			'docs'       => __( 'Docs', 'extrachill-multisite' ),
+			'wire'       => __( 'News Wire', 'extrachill-multisite' ),
+			'horoscope'  => __( 'Horoscope', 'extrachill-multisite' ),
 		)
 	);
 }

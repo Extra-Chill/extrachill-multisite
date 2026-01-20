@@ -22,7 +22,7 @@ This plugin maintains focused responsibility for network administration infrastr
 ## Architecture
 
 - **Network Activated** - Single plugin serving all sites in the multisite network
-- **Direct Database Queries** - Uses `switch_to_blog()` for cross-site data access
+- **Cross-Site Data Access** - Uses `switch_to_blog()` / `restore_current_blog()` for cross-site operations
 - **Performance Optimized** - Central blog ID + domain map helpers for fast cross-site resolution
 - **Centralized Configuration** - Network-wide settings stored via `get_site_option()` accessible from all sites
 - **Modular Organization** - Core functionality in `inc/core/`, site-specific features in dedicated directories, admin interface in `admin/`
