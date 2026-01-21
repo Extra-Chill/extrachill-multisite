@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [1.4.8] - 2026-01-21
 
 - Add descriptive cross-site taxonomy link button labels with term name and content type
 
