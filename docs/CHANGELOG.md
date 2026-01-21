@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Register social links data via extrachill_social_links_data filter for footer icons
+
 ## [1.4.5] - 2026-01-19
 
 ### Added
