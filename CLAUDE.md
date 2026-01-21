@@ -4,9 +4,9 @@
 
 ## Plugin Information
 
-- **Name**: Extra Chill Multisite
-- **Version**: 1.3.1
-- **Text Domain**: `extrachill-multisite`
+ - **Name**: Extra Chill Multisite
+ - **Version**: 1.4.5
+ - **Text Domain**: `extrachill-multisite`
 - **Author**: Chris Huber
 - **Author URI**: https://chubes.net
 - **License**: GPL v2 or later
@@ -52,11 +52,12 @@ extrachill-multisite/
 │   │   ├── legacy-path-redirects.php   # Legacy URL redirects
 │   │   ├── oauth-helpers.php           # OAuth helper functions for Google OAuth
 │   │   └── object-cache-config.php     # Object cache configuration
-│   ├── cross-site-links/               # Cross-site linking system
-│   │   ├── cross-site-links.php        # Loader + mapping/labels + hook registration
-│   │   ├── entity-links.php            # User profile + artist profile resolution
-│   │   ├── renderers.php               # Button renderers for theme hooks
-│   │   └── taxonomy-links.php          # Taxonomy archive linking
+ │   ├── cross-site-links/               # Cross-site linking system
+ │   │   ├── canonical-authority.php      # Canonical URL resolution for taxonomies
+ │   │   ├── cross-site-links.php        # Loader + mapping/labels + hook registration
+ │   │   ├── entity-links.php            # User profile + artist profile resolution
+ │   │   ├── renderers.php               # Button renderers for theme hooks
+ │   │   └── taxonomy-links.php          # Taxonomy archive linking
 │   ├── theme/                          # Theme integration hooks
 │   │   ├── 404-content.php             # Custom 404 page content
 │   │   ├── admin-menu.php              # Admin menu customizations
@@ -397,6 +398,7 @@ add_action( 'wp_enqueue_scripts', function() {
 **Purpose**: Provide unified cross-site navigation patterns (taxonomy archives, user profiles, artist profiles) across the 11-site network.
 
 **Core Modules**:
+- `inc/cross-site-links/canonical-authority.php`  canonical URL resolution for shared taxonomy archives.
 - `inc/cross-site-links/cross-site-links.php`  loader + mapping/labels + hook registration.
 - `inc/cross-site-links/taxonomy-links.php`  taxonomy archive linking (REST-backed counts for main/events/shop/wire).
 - `inc/cross-site-links/entity-links.php`  user profile linking + artist profile resolution.
@@ -411,6 +413,11 @@ add_action( 'wp_enqueue_scripts', function() {
 - `ec_render_cross_site_taxonomy_links()` (hook: `extrachill_archive_below_description`)  renders taxonomy link buttons on `is_tax()`.
 - `ec_render_cross_site_user_links( $user_id )` (hook: `extrachill_after_author_bio`)  renders user link buttons on author pages.
 - `ec_render_cross_site_artist_profile_links( $artist_slug )`  renders links on artist profile surfaces.
+
+**Canonical Authority Functions** (`inc/cross-site-links/canonical-authority.php`):
+- `ec_get_canonical_authority_url( $term, $taxonomy )`  Returns canonical URL for taxonomy archive across sites.
+- `ec_get_taxonomy_canonical_config()`  Defines which site is canonical for each shared taxonomy.
+- `ec_artist_profile_has_image( $slug )`  Checks if artist profile has a featured image.
 
 **Integration**: This system centralizes cross-site navigation so plugins and the theme do not duplicate blog switching and link resolution logic.
 
