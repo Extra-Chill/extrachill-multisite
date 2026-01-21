@@ -45,10 +45,10 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 		return array();
 	}
 
-	$target_sites     = $taxonomy_site_map[ $taxonomy ];
-	$current_site_key = ec_get_current_site_key();
-	$site_labels      = ec_get_site_labels();
-	$main_blog_id     = ec_get_blog_id( 'main' );
+	$target_sites         = $taxonomy_site_map[ $taxonomy ];
+	$current_site_key     = ec_get_current_site_key();
+	$content_type_labels  = ec_get_site_content_type_labels();
+	$main_blog_id         = ec_get_blog_id( 'main' );
 	$events_blog_id   = ec_get_blog_id( 'events' );
 	$shop_blog_id     = ec_get_blog_id( 'shop' );
 	$wire_blog_id     = ec_get_blog_id( 'wire' );
@@ -102,11 +102,12 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 		}
 
 		$links[] = array(
-			'blog_id'  => $blog_id,
-			'site_key' => $site_key,
-			'url'      => $url,
-			'label'    => isset( $site_labels[ $site_key ] ) ? $site_labels[ $site_key ] : ucfirst( $site_key ),
-			'count'    => $term_data['count'],
+			'blog_id'   => $blog_id,
+			'site_key'  => $site_key,
+			'url'       => $url,
+			'label'     => isset( $content_type_labels[ $site_key ] ) ? $content_type_labels[ $site_key ] : ucfirst( $site_key ),
+			'term_name' => $term->name,
+			'count'     => $term_data['count'],
 		);
 	}
 

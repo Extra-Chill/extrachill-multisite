@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add descriptive cross-site taxonomy link button labels with term name and content type
+
 ## [1.4.7] - 2026-01-21
 
 - Register social links data via extrachill_social_links_data filter for footer icons

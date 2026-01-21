@@ -67,6 +67,27 @@ function ec_get_site_labels() {
 }
 
 /**
+ * Get content-type-specific labels for sites
+ *
+ * Used in cross-site taxonomy links to describe content types.
+ * Example: "Charleston Blog Posts (5)" instead of "Blog (5)"
+ *
+ * @return array Site key => content type label
+ */
+function ec_get_site_content_type_labels() {
+	return apply_filters(
+		'ec_site_content_type_labels',
+		array(
+			'main'   => __( 'Blog Posts', 'extrachill-multisite' ),
+			'events' => __( 'Events', 'extrachill-multisite' ),
+			'shop'   => __( 'Shop', 'extrachill-multisite' ),
+			'wire'   => __( 'Wire Posts', 'extrachill-multisite' ),
+			'artist' => __( 'Artist Profile', 'extrachill-multisite' ),
+		)
+	);
+}
+
+/**
  * Get current site's logical key
  *
  * Reverse lookup to find the site key for the current blog.

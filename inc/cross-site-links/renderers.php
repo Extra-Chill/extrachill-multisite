@@ -92,7 +92,10 @@ function ec_render_cross_site_artist_profile_links( $artist_slug ) {
 /**
  * Render a single cross-site link button
  *
- * @param array  $link  Link data with 'url', 'label', and optional 'count'.
+ * Builds descriptive labels: "{Term Name} {Content Type} ({Count})"
+ * Example: "Charleston Blog Posts (5)" instead of "Blog (5)"
+ *
+ * @param array  $link  Link data with 'url', 'label', optional 'term_name', and optional 'count'.
  * @param string $class Additional CSS class.
  */
 function ec_cross_site_link_button( $link, $class = '' ) {
@@ -105,7 +108,17 @@ function ec_cross_site_link_button( $link, $class = '' ) {
 		$button_class .= ' ' . esc_attr( $class );
 	}
 
-	$label = esc_html( $link['label'] );
+	// Build descriptive label: "{Term Name} {Content Type} ({Count})".
+	$label_parts = array();
+
+	if ( ! empty( $link['term_name'] ) ) {
+		$label_parts[] = esc_html( $link['term_name'] );
+	}
+
+	$label_parts[] = esc_html( $link['label'] );
+
+	$label = implode( ' ', $label_parts );
+
 	if ( isset( $link['count'] ) && $link['count'] > 0 ) {
 		$label .= ' (' . (int) $link['count'] . ')';
 	}
