@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $user_email Optional. Email address for lookup.
  * @return string Community profile URL or empty string.
  */
-function ec_get_user_community_profile_url( $user_id, $user_email = '' ) {
+function extrachill_get_user_community_profile_url( $user_id, $user_email = '' ) {
 	$community_blog_id = ec_get_blog_id( 'community' );
 	if ( ! $community_blog_id ) {
 		return '';
@@ -55,7 +55,7 @@ function ec_get_user_community_profile_url( $user_id, $user_email = '' ) {
  * @param int $user_id User ID.
  * @return string Author archive URL or empty string.
  */
-function ec_get_user_author_archive_url( $user_id ) {
+function extrachill_get_user_author_archive_url( $user_id ) {
 	$user_id = absint( $user_id );
 	if ( ! $user_id ) {
 		return '';
@@ -85,13 +85,13 @@ function ec_get_user_author_archive_url( $user_id ) {
  * @param string $user_email Optional. User email for lookup.
  * @return string User profile URL.
  */
-function ec_get_user_profile_url( $user_id, $user_email = '' ) {
-	$community_url = ec_get_user_community_profile_url( $user_id, $user_email );
+function extrachill_get_user_profile_url( $user_id, $user_email = '' ) {
+	$community_url = extrachill_get_user_community_profile_url( $user_id, $user_email );
 	if ( ! empty( $community_url ) ) {
 		return $community_url;
 	}
 
-	$author_archive_url = ec_get_user_author_archive_url( $user_id );
+	$author_archive_url = extrachill_get_user_author_archive_url( $user_id );
 	if ( ! empty( $author_archive_url ) ) {
 		return $author_archive_url;
 	}
@@ -105,8 +105,8 @@ function ec_get_user_profile_url( $user_id, $user_email = '' ) {
  * @param WP_Comment $comment Comment object.
  * @return string Author link HTML.
  */
-function ec_get_comment_author_link_multisite( $comment ) {
-	$author_url = ec_get_user_profile_url( $comment->user_id, $comment->comment_author_email );
+function extrachill_get_comment_author_link_multisite( $comment ) {
+	$author_url = extrachill_get_user_profile_url( $comment->user_id, $comment->comment_author_email );
 
 	if ( $comment->user_id > 0 ) {
 		return '<a href="' . esc_url( $author_url ) . '">' . get_comment_author( $comment ) . '</a>';
@@ -121,7 +121,7 @@ function ec_get_comment_author_link_multisite( $comment ) {
  * @param WP_Comment $comment Comment object.
  * @return bool True if comment after Feb 9, 2024.
  */
-function ec_should_use_multisite_comment_links( $comment ) {
+function extrachill_should_use_multisite_comment_links( $comment ) {
 	$comment_date = strtotime( $comment->comment_date );
 	$cutoff_date  = strtotime( '2024-02-09 00:00:00' );
 
@@ -134,7 +134,7 @@ function ec_should_use_multisite_comment_links( $comment ) {
  * @param array $defaults Comment form defaults.
  * @return array Modified defaults.
  */
-function ec_customize_comment_form_logged_in( $defaults ) {
+function extrachill_customize_comment_form_logged_in( $defaults ) {
 	if ( ! is_user_logged_in() ) {
 		return $defaults;
 	}
@@ -153,7 +153,7 @@ function ec_customize_comment_form_logged_in( $defaults ) {
 
 	return $defaults;
 }
-add_filter( 'comment_form_defaults', 'ec_customize_comment_form_logged_in' );
+add_filter( 'comment_form_defaults', 'extrachill_customize_comment_form_logged_in' );
 
 /**
  * Get cross-site links for a user
@@ -163,18 +163,18 @@ add_filter( 'comment_form_defaults', 'ec_customize_comment_form_logged_in' );
  * @param int $user_id User ID.
  * @return array Array of link data.
  */
-function ec_get_cross_site_user_links( $user_id ) {
+function extrachill_get_cross_site_user_links( $user_id ) {
 	$user_id = absint( $user_id );
 	if ( ! $user_id ) {
 		return array();
 	}
 
 	$links            = array();
-	$current_site_key = ec_get_current_site_key();
+	$current_site_key = extrachill_get_current_site_key();
 
 	// Check community profile.
 	if ( 'community' !== $current_site_key ) {
-		$community_url = ec_get_user_community_profile_url( $user_id );
+		$community_url = extrachill_get_user_community_profile_url( $user_id );
 		if ( ! empty( $community_url ) ) {
 			$links[] = array(
 				'type'  => 'community_profile',
@@ -240,7 +240,7 @@ function ec_get_cross_site_user_links( $user_id ) {
  * @param string $slug Artist profile slug.
  * @return array|false Array with 'id' and 'permalink', or false.
  */
-function ec_get_artist_profile_by_slug( $slug ) {
+function extrachill_get_artist_profile_by_slug( $slug ) {
 	$slug = sanitize_title( (string) $slug );
 	if ( empty( $slug ) ) {
 		return false;
@@ -293,7 +293,7 @@ function ec_get_artist_profile_by_slug( $slug ) {
  * @param string $artist_slug Artist slug to search for.
  * @return array|null Array with 'url' and 'count', or null if not found.
  */
-function ec_get_artist_blog_archive_url( $artist_slug ) {
+function extrachill_get_artist_blog_archive_url( $artist_slug ) {
 	if ( empty( $artist_slug ) ) {
 		return null;
 	}
@@ -356,7 +356,7 @@ function ec_get_artist_blog_archive_url( $artist_slug ) {
  * @param string $artist_slug Artist slug.
  * @return array Array of link data.
  */
-function ec_get_cross_site_artist_links( $artist_slug ) {
+function extrachill_get_cross_site_artist_links( $artist_slug ) {
 	if ( empty( $artist_slug ) ) {
 		return array();
 	}
@@ -364,7 +364,7 @@ function ec_get_cross_site_artist_links( $artist_slug ) {
 	$links = array();
 
 	// Blog coverage
-	$archive = ec_get_artist_blog_archive_url( $artist_slug );
+	$archive = extrachill_get_artist_blog_archive_url( $artist_slug );
 	if ( $archive ) {
 		$links[] = array(
 			'type'  => 'blog_archive',
@@ -375,7 +375,7 @@ function ec_get_cross_site_artist_links( $artist_slug ) {
 	}
 
 	// Upcoming events via REST API
-	$events = ec_get_events_upcoming_count_via_api( $artist_slug, 'artist' );
+	$events = extrachill_get_events_upcoming_count_via_api( $artist_slug, 'artist' );
 	if ( $events && $events['count'] > 0 ) {
 		$links[] = array(
 			'type'  => 'events',
@@ -386,7 +386,7 @@ function ec_get_cross_site_artist_links( $artist_slug ) {
 	}
 
 	// Shop products via REST API
-	$shop = ec_get_shop_taxonomy_count_via_api( $artist_slug, 'artist' );
+	$shop = extrachill_get_shop_taxonomy_count_via_api( $artist_slug, 'artist' );
 	if ( $shop && $shop['count'] > 0 ) {
 		$links[] = array(
 			'type'  => 'shop',

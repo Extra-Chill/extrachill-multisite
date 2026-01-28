@@ -28,9 +28,9 @@ require_once __DIR__ . '/canonical-authority.php';
  *
  * @return array Taxonomy slug => array of site keys
  */
-function ec_get_taxonomy_site_map() {
+function extrachill_get_taxonomy_site_map() {
 	return apply_filters(
-		'ec_taxonomy_site_map',
+		'extrachill_taxonomy_site_map',
 		array(
 			'venue'    => array( 'main', 'events' ),
 			'location' => array( 'main', 'events', 'wire', 'community' ),
@@ -47,9 +47,9 @@ function ec_get_taxonomy_site_map() {
  *
  * @return array Site key => label
  */
-function ec_get_site_labels() {
+function extrachill_get_site_labels() {
 	return apply_filters(
-		'ec_site_labels',
+		'extrachill_site_labels',
 		array(
 			'main'       => __( 'Blog', 'extrachill-multisite' ),
 			'community'  => __( 'Community', 'extrachill-multisite' ),
@@ -74,9 +74,9 @@ function ec_get_site_labels() {
  *
  * @return array Site key => content type label
  */
-function ec_get_site_content_type_labels() {
+function extrachill_get_site_content_type_labels() {
 	return apply_filters(
-		'ec_site_content_type_labels',
+		'extrachill_site_content_type_labels',
 		array(
 			'main'   => __( 'Blog Posts', 'extrachill-multisite' ),
 			'events' => __( 'Events', 'extrachill-multisite' ),
@@ -95,7 +95,7 @@ function ec_get_site_content_type_labels() {
  *
  * @return string|null Site key or null if not in mapping
  */
-function ec_get_current_site_key() {
+function extrachill_get_current_site_key() {
 	$current_blog_id = get_current_blog_id();
 	$blog_ids        = ec_get_blog_ids();
 
@@ -109,5 +109,5 @@ function ec_get_current_site_key() {
 }
 
 // Register display hooks.
-add_action( 'extrachill_archive_below_description', 'ec_render_cross_site_taxonomy_links' );
-add_action( 'extrachill_after_author_bio', 'ec_render_cross_site_user_links' );
+add_action( 'extrachill_archive_below_description', 'extrachill_render_cross_site_taxonomy_links' );
+add_action( 'extrachill_after_author_bio', 'extrachill_render_cross_site_user_links' );

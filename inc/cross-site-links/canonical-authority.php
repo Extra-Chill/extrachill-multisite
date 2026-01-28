@@ -28,9 +28,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array Taxonomy slug => canonical configuration
  */
-function ec_get_taxonomy_canonical_config() {
+function extrachill_get_taxonomy_canonical_config() {
 	return apply_filters(
-		'ec_taxonomy_canonical_config',
+		'extrachill_taxonomy_canonical_config',
 		array(
 			'artist'   => array(
 				'canonical' => 'artist',
@@ -64,7 +64,7 @@ function ec_get_taxonomy_canonical_config() {
  * @param string      $taxonomy Taxonomy slug.
  * @return string|null Canonical URL or null if self-canonical.
  */
-function ec_get_canonical_authority_url( $term, $taxonomy ) {
+function extrachill_get_canonical_authority_url( $term, $taxonomy ) {
 	if ( is_int( $term ) ) {
 		$term = get_term( $term, $taxonomy );
 	}
@@ -73,7 +73,7 @@ function ec_get_canonical_authority_url( $term, $taxonomy ) {
 		return null;
 	}
 
-	$config = ec_get_taxonomy_canonical_config();
+	$config = extrachill_get_taxonomy_canonical_config();
 	if ( ! isset( $config[ $taxonomy ] ) ) {
 		return null;
 	}
@@ -81,11 +81,11 @@ function ec_get_canonical_authority_url( $term, $taxonomy ) {
 	$taxonomy_config  = $config[ $taxonomy ];
 	$canonical        = $taxonomy_config['canonical'];
 	$condition        = $taxonomy_config['condition'] ?? null;
-	$current_site_key = ec_get_current_site_key();
+	$current_site_key = extrachill_get_current_site_key();
 
 	// Handle priority cascade (array of sites).
 	if ( is_array( $canonical ) ) {
-		return ec_resolve_cascade_canonical( $term->slug, $taxonomy, $canonical, $condition, $current_site_key );
+		return extrachill_resolve_cascade_canonical( $term->slug, $taxonomy, $canonical, $condition, $current_site_key );
 	}
 
 	// Handle single canonical site.
@@ -96,11 +96,11 @@ function ec_get_canonical_authority_url( $term, $taxonomy ) {
 
 	// Artist taxonomy has special handling (profile CPT, not taxonomy term).
 	if ( 'artist' === $taxonomy && 'artist' === $canonical ) {
-		return ec_resolve_artist_canonical( $term->slug );
+		return extrachill_resolve_artist_canonical( $term->slug );
 	}
 
 	// Standard taxonomy term canonical.
-	return ec_resolve_term_canonical( $term->slug, $taxonomy, $canonical );
+	return extrachill_resolve_term_canonical( $term->slug, $taxonomy, $canonical );
 }
 
 /**
@@ -112,12 +112,12 @@ function ec_get_canonical_authority_url( $term, $taxonomy ) {
  * @param string $slug Artist slug.
  * @return string|null Canonical URL or null if profile doesn't qualify.
  */
-function ec_resolve_artist_canonical( $slug ) {
-	if ( ! ec_artist_profile_has_image( $slug ) ) {
+function extrachill_resolve_artist_canonical( $slug ) {
+	if ( ! extrachill_artist_profile_has_image( $slug ) ) {
 		return null;
 	}
 
-	$profile = ec_get_artist_profile_by_slug( $slug );
+	$profile = extrachill_get_artist_profile_by_slug( $slug );
 	if ( ! $profile ) {
 		return null;
 	}
@@ -131,7 +131,7 @@ function ec_resolve_artist_canonical( $slug ) {
  * @param string $slug Artist slug.
  * @return bool True if profile exists with image.
  */
-function ec_artist_profile_has_image( $slug ) {
+function extrachill_artist_profile_has_image( $slug ) {
 	$slug = sanitize_title( (string) $slug );
 	if ( empty( $slug ) ) {
 		return false;
@@ -178,7 +178,7 @@ function ec_artist_profile_has_image( $slug ) {
  * @param string $site_key Canonical site key.
  * @return string|null Canonical URL or null if term doesn't exist.
  */
-function ec_resolve_term_canonical( $slug, $taxonomy, $site_key ) {
+function extrachill_resolve_term_canonical( $slug, $taxonomy, $site_key ) {
 	$blog_id = ec_get_blog_id( $site_key );
 	if ( ! $blog_id ) {
 		return null;
@@ -218,9 +218,9 @@ function ec_resolve_term_canonical( $slug, $taxonomy, $site_key ) {
  * @param string   $current_site_key Current site's key.
  * @return string|null Canonical URL or null if no site qualifies or current site is canonical.
  */
-function ec_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition, $current_site_key ) {
+function extrachill_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition, $current_site_key ) {
 	if ( 'festival' === $taxonomy ) {
-		$festival_canonical = ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_site_key );
+		$festival_canonical = extrachill_resolve_festival_canonical( $slug, $site_keys, $condition, $current_site_key );
 		if ( null !== $festival_canonical ) {
 			return $festival_canonical;
 		}
@@ -232,7 +232,7 @@ function ec_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition,
 			continue;
 		}
 
-		$has_content = ec_site_has_taxonomy_content( $slug, $taxonomy, $blog_id, $condition );
+		$has_content = extrachill_site_has_taxonomy_content( $slug, $taxonomy, $blog_id, $condition );
 
 		if ( $has_content ) {
 			// This site is the canonical authority.
@@ -242,7 +242,7 @@ function ec_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition,
 			}
 
 			// Build and return the canonical URL.
-			return ec_resolve_term_canonical( $slug, $taxonomy, $site_key );
+			return extrachill_resolve_term_canonical( $slug, $taxonomy, $site_key );
 		}
 	}
 
@@ -262,7 +262,7 @@ function ec_resolve_cascade_canonical( $slug, $taxonomy, $site_keys, $condition,
  * @param string      $current_site_key Current site key.
  * @return string|null Canonical URL, null for self-canonical, or null to defer.
  */
-function ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_site_key ) {
+function extrachill_resolve_festival_canonical( $slug, $site_keys, $condition, $current_site_key ) {
 	$qualified_sites = array();
 
 	foreach ( $site_keys as $site_key ) {
@@ -271,7 +271,7 @@ function ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_
 			continue;
 		}
 
-		if ( ec_site_has_taxonomy_content( $slug, 'festival', $blog_id, $condition ) ) {
+		if ( extrachill_site_has_taxonomy_content( $slug, 'festival', $blog_id, $condition ) ) {
 			$qualified_sites[] = $site_key;
 		}
 	}
@@ -285,20 +285,20 @@ function ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_
 
 	// If both main and wire qualify, use post count tie-breaker.
 	if ( $wire_has_content && $main_has_content ) {
-		$wire_count = ec_get_festival_term_post_count( $slug, 'wire' );
-		$main_count = ec_get_festival_term_post_count( $slug, 'main' );
+		$wire_count = extrachill_get_festival_term_post_count( $slug, 'wire' );
+		$main_count = extrachill_get_festival_term_post_count( $slug, 'main' );
 
 		if ( $wire_count > $main_count ) {
-			return ( 'wire' === $current_site_key ) ? null : ec_resolve_term_canonical( $slug, 'festival', 'wire' );
+			return ( 'wire' === $current_site_key ) ? null : extrachill_resolve_term_canonical( $slug, 'festival', 'wire' );
 		}
 
 		// Blog wins on tie or if it has more.
-		return ( 'main' === $current_site_key ) ? null : ec_resolve_term_canonical( $slug, 'festival', 'main' );
+		return ( 'main' === $current_site_key ) ? null : extrachill_resolve_term_canonical( $slug, 'festival', 'main' );
 	}
 
 	// Default: first qualifying site in cascade order.
 	$canonical_site_key = $qualified_sites[0];
-	return ( $canonical_site_key === $current_site_key ) ? null : ec_resolve_term_canonical( $slug, 'festival', $canonical_site_key );
+	return ( $canonical_site_key === $current_site_key ) ? null : extrachill_resolve_term_canonical( $slug, 'festival', $canonical_site_key );
 }
 
 /**
@@ -310,7 +310,7 @@ function ec_resolve_festival_canonical( $slug, $site_keys, $condition, $current_
  * @param string $site_key Site key.
  * @return int Published post count.
  */
-function ec_get_festival_term_post_count( $slug, $site_key ) {
+function extrachill_get_festival_term_post_count( $slug, $site_key ) {
 	$blog_id = ec_get_blog_id( $site_key );
 	if ( ! $blog_id ) {
 		return 0;
@@ -360,7 +360,7 @@ function ec_get_festival_term_post_count( $slug, $site_key ) {
  * @param string|null $condition Condition type.
  * @return bool True if site has qualifying content.
  */
-function ec_site_has_taxonomy_content( $slug, $taxonomy, $blog_id, $condition ) {
+function extrachill_site_has_taxonomy_content( $slug, $taxonomy, $blog_id, $condition ) {
 	switch_to_blog( $blog_id );
 	try {
 		if ( ! taxonomy_exists( $taxonomy ) ) {

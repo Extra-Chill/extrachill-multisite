@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *               - label: string
  *               - count: int
  */
-function ec_get_cross_site_term_links( $term, $taxonomy ) {
+function extrachill_get_cross_site_term_links( $term, $taxonomy ) {
 	if ( is_int( $term ) ) {
 		$term = get_term( $term, $taxonomy );
 	}
@@ -40,14 +40,14 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 		return array();
 	}
 
-	$taxonomy_site_map = ec_get_taxonomy_site_map();
+	$taxonomy_site_map = extrachill_get_taxonomy_site_map();
 	if ( ! isset( $taxonomy_site_map[ $taxonomy ] ) ) {
 		return array();
 	}
 
 	$target_sites         = $taxonomy_site_map[ $taxonomy ];
-	$current_site_key     = ec_get_current_site_key();
-	$content_type_labels  = ec_get_site_content_type_labels();
+	$current_site_key     = extrachill_get_current_site_key();
+	$content_type_labels  = extrachill_get_site_content_type_labels();
 	$main_blog_id      = ec_get_blog_id( 'main' );
 	$events_blog_id    = ec_get_blog_id( 'events' );
 	$shop_blog_id      = ec_get_blog_id( 'shop' );
@@ -70,23 +70,23 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 		// Use REST APIs for consistent cross-site data access.
 		// Artist site uses slug-based profile matching (CPT, not taxonomy).
 		if ( $blog_id === $artist_blog_id && 'artist' === $taxonomy ) {
-			$artist_profile = ec_get_artist_profile_by_slug( $term->slug );
+			$artist_profile = extrachill_get_artist_profile_by_slug( $term->slug );
 			$term_data      = $artist_profile ? array(
 				'count' => 1,
 				'url'   => $artist_profile['permalink'],
 			) : null;
 		} elseif ( $blog_id === $main_blog_id ) {
-			$term_data = ec_get_blog_taxonomy_count_via_api( $term->slug, $taxonomy );
+			$term_data = extrachill_get_blog_taxonomy_count_via_api( $term->slug, $taxonomy );
 		} elseif ( $blog_id === $events_blog_id ) {
-			$term_data = ec_get_events_upcoming_count_via_api( $term->slug, $taxonomy );
+			$term_data = extrachill_get_events_upcoming_count_via_api( $term->slug, $taxonomy );
 		} elseif ( $blog_id === $shop_blog_id ) {
-			$term_data = ec_get_shop_taxonomy_count_via_api( $term->slug, $taxonomy );
+			$term_data = extrachill_get_shop_taxonomy_count_via_api( $term->slug, $taxonomy );
 		} elseif ( $blog_id === $wire_blog_id ) {
-			$term_data = ec_get_wire_taxonomy_count_via_api( $term->slug, $taxonomy );
+			$term_data = extrachill_get_wire_taxonomy_count_via_api( $term->slug, $taxonomy );
 		} elseif ( $blog_id === $community_blog_id ) {
-			$term_data = ec_get_community_taxonomy_count_via_api( $term->slug, $taxonomy );
+			$term_data = extrachill_get_community_taxonomy_count_via_api( $term->slug, $taxonomy );
 		} else {
-			$term_data = ec_check_term_on_site( $term->slug, $taxonomy, $blog_id );
+			$term_data = extrachill_check_term_on_site( $term->slug, $taxonomy, $blog_id );
 		}
 
 		if ( ! $term_data || $term_data['count'] < 1 ) {
@@ -97,7 +97,7 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 		if ( isset( $term_data['url'] ) ) {
 			$url = $term_data['url'];
 		} else {
-			$url = ec_build_term_archive_url( $term->slug, $taxonomy, $blog_id );
+			$url = extrachill_build_term_archive_url( $term->slug, $taxonomy, $blog_id );
 		}
 
 		if ( ! $url ) {
@@ -126,7 +126,7 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
  * @param string $taxonomy  Taxonomy slug.
  * @return array|null Array with 'count' and 'url', or null if not found.
  */
-function ec_get_events_upcoming_count_via_api( $term_slug, $taxonomy ) {
+function extrachill_get_events_upcoming_count_via_api( $term_slug, $taxonomy ) {
 	$request = new WP_REST_Request( 'GET', '/extrachill/v1/events/upcoming-counts' );
 	$request->set_query_params(
 		array(
@@ -162,7 +162,7 @@ function ec_get_events_upcoming_count_via_api( $term_slug, $taxonomy ) {
  * @param string $taxonomy  Taxonomy slug.
  * @return array|null Array with 'count' and 'url', or null if not found.
  */
-function ec_get_shop_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+function extrachill_get_shop_taxonomy_count_via_api( $term_slug, $taxonomy ) {
 	$request = new WP_REST_Request( 'GET', '/extrachill/v1/shop/taxonomy-counts' );
 	$request->set_query_params(
 		array(
@@ -198,7 +198,7 @@ function ec_get_shop_taxonomy_count_via_api( $term_slug, $taxonomy ) {
  * @param string $taxonomy  Taxonomy slug.
  * @return array|null Array with 'count' and 'url', or null if not found.
  */
-function ec_get_wire_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+function extrachill_get_wire_taxonomy_count_via_api( $term_slug, $taxonomy ) {
 	$request = new WP_REST_Request( 'GET', '/extrachill/v1/wire/taxonomy-counts' );
 	$request->set_query_params(
 		array(
@@ -235,7 +235,7 @@ function ec_get_wire_taxonomy_count_via_api( $term_slug, $taxonomy ) {
  * @param string $taxonomy  Taxonomy slug.
  * @return array|null Array with 'count' and 'url', or null if not found.
  */
-function ec_get_community_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+function extrachill_get_community_taxonomy_count_via_api( $term_slug, $taxonomy ) {
 	$request = new WP_REST_Request( 'GET', '/extrachill/v1/community/taxonomy-counts' );
 	$request->set_query_params(
 		array(
@@ -271,7 +271,7 @@ function ec_get_community_taxonomy_count_via_api( $term_slug, $taxonomy ) {
  * @param string $taxonomy  Taxonomy slug.
  * @return array|null Array with 'count' and 'url', or null if not found.
  */
-function ec_get_blog_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+function extrachill_get_blog_taxonomy_count_via_api( $term_slug, $taxonomy ) {
 	$request = new WP_REST_Request( 'GET', '/extrachill/v1/blog/taxonomy-counts' );
 	$request->set_query_params(
 		array(
@@ -306,7 +306,7 @@ function ec_get_blog_taxonomy_count_via_api( $term_slug, $taxonomy ) {
  * @param int    $blog_id   Target blog ID.
  * @return array|null Array with 'term_id' and 'count', or null if not found.
  */
-function ec_check_term_on_site( $term_slug, $taxonomy, $blog_id ) {
+function extrachill_check_term_on_site( $term_slug, $taxonomy, $blog_id ) {
 	switch_to_blog( $blog_id );
 	try {
 		// Check if taxonomy exists on this site.
@@ -355,7 +355,7 @@ function ec_check_term_on_site( $term_slug, $taxonomy, $blog_id ) {
  * @param int    $blog_id   Target blog ID.
  * @return string|null Archive URL or null on failure.
  */
-function ec_build_term_archive_url( $term_slug, $taxonomy, $blog_id ) {
+function extrachill_build_term_archive_url( $term_slug, $taxonomy, $blog_id ) {
 	switch_to_blog( $blog_id );
 	try {
 		if ( ! taxonomy_exists( $taxonomy ) ) {

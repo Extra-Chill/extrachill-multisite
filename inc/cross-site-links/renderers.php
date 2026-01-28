@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Hooked to: extrachill_archive_below_description
  */
-function ec_render_cross_site_taxonomy_links() {
+function extrachill_render_cross_site_taxonomy_links() {
 	if ( ! is_tax() ) {
 		return;
 	}
@@ -28,14 +28,14 @@ function ec_render_cross_site_taxonomy_links() {
 		return;
 	}
 
-	$links = ec_get_cross_site_term_links( $term, $term->taxonomy );
+	$links = extrachill_get_cross_site_term_links( $term, $term->taxonomy );
 	if ( empty( $links ) ) {
 		return;
 	}
 
 	echo '<div class="ec-cross-site-links ec-cross-site-taxonomy-links">';
 	foreach ( $links as $link ) {
-		ec_cross_site_link_button( $link );
+		extrachill_cross_site_link_button( $link );
 	}
 	echo '</div>';
 }
@@ -47,19 +47,19 @@ function ec_render_cross_site_taxonomy_links() {
  *
  * @param int $user_id Author user ID.
  */
-function ec_render_cross_site_user_links( $user_id ) {
+function extrachill_render_cross_site_user_links( $user_id ) {
 	if ( ! $user_id || ! is_int( $user_id ) ) {
 		return;
 	}
 
-	$links = ec_get_cross_site_user_links( $user_id );
+	$links = extrachill_get_cross_site_user_links( $user_id );
 	if ( empty( $links ) ) {
 		return;
 	}
 
 	echo '<div class="ec-cross-site-links ec-cross-site-user-links">';
 	foreach ( $links as $link ) {
-		ec_cross_site_link_button( $link );
+		extrachill_cross_site_link_button( $link );
 	}
 	echo '</div>';
 }
@@ -72,19 +72,19 @@ function ec_render_cross_site_user_links( $user_id ) {
  *
  * @param string $artist_slug Artist profile slug.
  */
-function ec_render_cross_site_artist_profile_links( $artist_slug ) {
+function extrachill_render_cross_site_artist_profile_links( $artist_slug ) {
 	if ( empty( $artist_slug ) ) {
 		return;
 	}
 
-	$links = ec_get_cross_site_artist_links( $artist_slug );
+	$links = extrachill_get_cross_site_artist_links( $artist_slug );
 	if ( empty( $links ) ) {
 		return;
 	}
 
 	echo '<div class="ec-cross-site-links ec-cross-site-artist-profile-links">';
 	foreach ( $links as $link ) {
-		ec_cross_site_link_button( $link );
+		extrachill_cross_site_link_button( $link );
 	}
 	echo '</div>';
 }
@@ -98,7 +98,7 @@ function ec_render_cross_site_artist_profile_links( $artist_slug ) {
  * @param array  $link  Link data with 'url', 'label', optional 'term_name', and optional 'count'.
  * @param string $class Additional CSS class.
  */
-function ec_cross_site_link_button( $link, $class = '' ) {
+function extrachill_cross_site_link_button( $link, $class = '' ) {
 	if ( empty( $link['url'] ) || empty( $link['label'] ) ) {
 		return;
 	}
