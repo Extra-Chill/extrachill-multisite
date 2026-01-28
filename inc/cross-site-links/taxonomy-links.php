@@ -48,12 +48,13 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 	$target_sites         = $taxonomy_site_map[ $taxonomy ];
 	$current_site_key     = ec_get_current_site_key();
 	$content_type_labels  = ec_get_site_content_type_labels();
-	$main_blog_id         = ec_get_blog_id( 'main' );
-	$events_blog_id   = ec_get_blog_id( 'events' );
-	$shop_blog_id     = ec_get_blog_id( 'shop' );
-	$wire_blog_id     = ec_get_blog_id( 'wire' );
-	$artist_blog_id   = ec_get_blog_id( 'artist' );
-	$links            = array();
+	$main_blog_id      = ec_get_blog_id( 'main' );
+	$events_blog_id    = ec_get_blog_id( 'events' );
+	$shop_blog_id      = ec_get_blog_id( 'shop' );
+	$wire_blog_id      = ec_get_blog_id( 'wire' );
+	$artist_blog_id    = ec_get_blog_id( 'artist' );
+	$community_blog_id = ec_get_blog_id( 'community' );
+	$links             = array();
 
 	foreach ( $target_sites as $site_key ) {
 		// Skip current site.
@@ -82,6 +83,8 @@ function ec_get_cross_site_term_links( $term, $taxonomy ) {
 			$term_data = ec_get_shop_taxonomy_count_via_api( $term->slug, $taxonomy );
 		} elseif ( $blog_id === $wire_blog_id ) {
 			$term_data = ec_get_wire_taxonomy_count_via_api( $term->slug, $taxonomy );
+		} elseif ( $blog_id === $community_blog_id ) {
+			$term_data = ec_get_community_taxonomy_count_via_api( $term->slug, $taxonomy );
 		} else {
 			$term_data = ec_check_term_on_site( $term->slug, $taxonomy, $blog_id );
 		}
@@ -197,6 +200,43 @@ function ec_get_shop_taxonomy_count_via_api( $term_slug, $taxonomy ) {
  */
 function ec_get_wire_taxonomy_count_via_api( $term_slug, $taxonomy ) {
 	$request = new WP_REST_Request( 'GET', '/extrachill/v1/wire/taxonomy-counts' );
+	$request->set_query_params(
+		array(
+			'taxonomy' => $taxonomy,
+			'slug'     => $term_slug,
+		)
+	);
+
+	$response = rest_do_request( $request );
+
+	if ( $response->is_error() ) {
+		return null;
+	}
+
+	$data = $response->get_data();
+	if ( empty( $data ) || ! isset( $data['count'] ) ) {
+		return null;
+	}
+
+	return array(
+		'term_id' => null,
+		'count'   => (int) $data['count'],
+		'url'     => isset( $data['url'] ) ? $data['url'] : null,
+	);
+}
+
+/**
+ * Get community forum data via internal REST API
+ *
+ * Uses rest_do_request() for zero HTTP overhead internal call.
+ * Returns forum URL and topic count (forums are location hubs).
+ *
+ * @param string $term_slug Term slug.
+ * @param string $taxonomy  Taxonomy slug.
+ * @return array|null Array with 'count' and 'url', or null if not found.
+ */
+function ec_get_community_taxonomy_count_via_api( $term_slug, $taxonomy ) {
+	$request = new WP_REST_Request( 'GET', '/extrachill/v1/community/taxonomy-counts' );
 	$request->set_query_params(
 		array(
 			'taxonomy' => $taxonomy,

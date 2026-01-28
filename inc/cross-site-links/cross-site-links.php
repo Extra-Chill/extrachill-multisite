@@ -33,7 +33,7 @@ function ec_get_taxonomy_site_map() {
 		'ec_taxonomy_site_map',
 		array(
 			'venue'    => array( 'main', 'events' ),
-			'location' => array( 'main', 'events', 'wire' ),
+			'location' => array( 'main', 'events', 'wire', 'community' ),
 			'artist'   => array( 'main', 'events', 'shop', 'artist' ),
 			'festival' => array( 'main', 'events', 'wire' ),
 		)
@@ -81,8 +81,9 @@ function ec_get_site_content_type_labels() {
 			'main'   => __( 'Blog Posts', 'extrachill-multisite' ),
 			'events' => __( 'Events', 'extrachill-multisite' ),
 			'shop'   => __( 'Shop', 'extrachill-multisite' ),
-			'wire'   => __( 'Wire Posts', 'extrachill-multisite' ),
-			'artist' => __( 'Artist Profile', 'extrachill-multisite' ),
+			'wire'      => __( 'Wire Posts', 'extrachill-multisite' ),
+			'artist'    => __( 'Artist Profile', 'extrachill-multisite' ),
+			'community' => __( 'Forum Discussions', 'extrachill-multisite' ),
 		)
 	);
 }
