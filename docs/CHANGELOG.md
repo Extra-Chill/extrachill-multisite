@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.10] - 2026-01-28
+
+### Changed
+- Migrate cross-site-links functions from ec_ to extrachill_ prefix
+
 ## [1.4.9] - 2026-01-28
 
 ### Changed
