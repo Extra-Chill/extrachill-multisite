@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [1.4.9] - 2026-01-28
 
 ### Changed
 - Add community site to location taxonomy cross-site linking
