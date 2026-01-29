@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.11] - 2026-01-28
+
+### Changed
+- Update cross-site link label to Festival Wire
+
 ## [1.4.10] - 2026-01-28
 
 ### Changed
