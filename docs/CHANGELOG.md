@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.0] - 2026-02-22
+
+### Changed
+- Move community activity from theme to multisite plugin
+
 ## [1.4.11] - 2026-01-28
 
 ### Changed
