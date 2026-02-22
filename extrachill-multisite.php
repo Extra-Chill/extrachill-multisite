@@ -54,6 +54,8 @@ function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/filter-bar.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/footer-links.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/theme/social-links.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community-activity/community-activity.php';
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community-activity/sidebar-widget.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/assets.php';
 
 	if ( is_admin() && is_network_admin() ) {
