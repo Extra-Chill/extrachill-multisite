@@ -57,8 +57,8 @@ add_action( 'wp_enqueue_scripts', 'extrachill_multisite_enqueue_taxonomy_badge_s
  * Loads when sidebar is active or community activity is displayed.
  */
 function extrachill_multisite_enqueue_community_activity_styles() {
-	// Only load when sidebar is present.
-	if ( ! is_active_sidebar( 'primary' ) ) {
+	// Only load on singular posts where the sidebar renders.
+	if ( ! is_singular() ) {
 		return;
 	}
 
