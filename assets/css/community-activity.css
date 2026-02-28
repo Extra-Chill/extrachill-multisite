@@ -54,6 +54,10 @@
 	margin: var(--spacing-sm) 0;
 }
 
+.sidebar-activity-card a {
+	text-decoration: none;
+}
+
 .sidebar-activity-card:hover {
 	box-shadow: 0 4px 16px rgba(83,148,11,0.10);
 }
