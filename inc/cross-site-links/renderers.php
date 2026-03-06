@@ -119,7 +119,9 @@ function extrachill_cross_site_link_button( $link, $class = '' ) {
 
 	$label = implode( ' ', $label_parts );
 
-	if ( isset( $link['count'] ) && $link['count'] > 0 ) {
+	// Only display count when it meets the minimum threshold (default: 3).
+	$min_count = apply_filters( 'extrachill_cross_site_link_min_count_display', 3 );
+	if ( isset( $link['count'] ) && $link['count'] >= $min_count ) {
 		$label .= ' (' . (int) $link['count'] . ')';
 	}
 
