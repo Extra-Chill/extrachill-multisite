@@ -36,9 +36,6 @@ function extrachill_multisite_footer_main_menu() {
 							<a href="<?php echo esc_url( ec_get_site_url( 'artist' ) ); ?>">Artist Platform</a>
 						</li>
 						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'studio' ) ); ?>">Studio</a>
-						</li>
-						<li class="menu-item">
 							<a href="<?php echo esc_url( ec_get_site_url( 'newsletter' ) ); ?>">Newsletter</a>
 						</li>
 						<li class="menu-item">
