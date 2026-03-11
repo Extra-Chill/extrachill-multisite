@@ -125,7 +125,7 @@ function extrachill_multisite_init() {
 - `EC_BLOG_ID_NEWSLETTER` = 9 (newsletter.extrachill.com)
 - `EC_BLOG_ID_DOCS` = 10 (docs.extrachill.com)
 - `EC_BLOG_ID_WIRE` = 11 (wire.extrachill.com)
-- `EC_BLOG_ID_HOROSCOPE` = 12 (horoscope.extrachill.com)
+- `EC_BLOG_ID_STUDIO` = 12 (studio.extrachill.com)
 
 **Note**: Blog ID 6 is unused (historical artifact)
 
@@ -146,7 +146,7 @@ array(
     'newsletter' => 9,
     'docs'       => 10,
     'wire'       => 11,
-    'horoscope'  => 12
+    'studio'     => 12
 )
 ```
 
@@ -177,7 +177,7 @@ array(
     'newsletter.extrachill.com' => 9,
     'docs.extrachill.com'    => 10,
     'wire.extrachill.com'    => 11,
-    'horoscope.extrachill.com' => 12,
+    'studio.extrachill.com' => 12,
     'extrachill.link'        => 4,  // Domain mapping for artist link pages
     'www.extrachill.link'    => 4
 )

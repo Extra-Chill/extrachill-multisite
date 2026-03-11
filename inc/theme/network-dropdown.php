@@ -41,6 +41,10 @@ function extrachill_get_dropdown_network_sites() {
 			'url'   => ec_get_site_url( 'artist' ),
 		),
 		array(
+			'label' => 'Studio',
+			'url'   => ec_get_site_url( 'studio' ),
+		),
+		array(
 			'label' => 'Newsletter',
 			'url'   => ec_get_site_url( 'newsletter' ),
 		),

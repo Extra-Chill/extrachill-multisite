@@ -23,7 +23,7 @@ define( 'EC_BLOG_ID_STREAM', 8 );         // stream.extrachill.com
 define( 'EC_BLOG_ID_NEWSLETTER', 9 );     // newsletter.extrachill.com
 define( 'EC_BLOG_ID_DOCS', 10 );          // docs.extrachill.com
 define( 'EC_BLOG_ID_WIRE', 11 );          // wire.extrachill.com
-define( 'EC_BLOG_ID_HOROSCOPE', 12 );     // horoscope.extrachill.com
+define( 'EC_BLOG_ID_STUDIO', 12 );        // studio.extrachill.com
 ```
 
 **Note**: Blog ID 6 is unused (historical artifact from site deletion).
@@ -69,7 +69,7 @@ if ( $blog_id ) {
 - `'newsletter'` - Newsletter site (Blog ID 9)
 - `'docs'` - Documentation (Blog ID 10)
 - `'wire'` - Wire (Blog ID 11)
-- `'horoscope'` - Horoscopes (Blog ID 12)
+- `'studio'` - Studio (Blog ID 12)
 
 ### ec_get_blog_ids() - Associative Map
 
@@ -199,7 +199,7 @@ if ( $blog_id ) {
 | Newsletter | newsletter.extrachill.com | 9 | `newsletter` | Active |
 | Docs | docs.extrachill.com | 10 | `docs` | Active |
 | Wire | wire.extrachill.com | 11 | `wire` | Active |
-| Horoscope | horoscope.extrachill.com | 12 | `horoscope` | Active |
+| Studio | studio.extrachill.com | 12 | `studio` | Active |
 
 ## Forbidden Patterns
 
@@ -209,4 +209,3 @@ if ( $blog_id ) {
 - Assume blog ID without verification.
 - Skip the try/finally pattern in blog switching.
 - Use blog IDs from options (blog IDs are infrastructure, not configuration).
-

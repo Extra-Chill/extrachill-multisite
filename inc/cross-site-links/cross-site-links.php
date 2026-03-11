@@ -61,7 +61,7 @@ function extrachill_get_site_labels() {
 			'newsletter' => __( 'Newsletter', 'extrachill-multisite' ),
 			'docs'       => __( 'Docs', 'extrachill-multisite' ),
 			'wire'       => __( 'News Wire', 'extrachill-multisite' ),
-			'horoscope'  => __( 'Horoscope', 'extrachill-multisite' ),
+			'studio'     => __( 'Studio', 'extrachill-multisite' ),
 		)
 	);
 }

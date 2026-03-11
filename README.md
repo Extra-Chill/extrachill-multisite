@@ -6,6 +6,8 @@ Network-activated WordPress plugin providing the network administration foundati
 
 This WordPress network plugin serves as the **network administration foundation** for the ExtraChill multisite network, providing essential network-wide functionality that supports all 11 active sites (Blog IDs 1–5, 7–12).
 
+Current native subsites include Blog, Community, Shop, Artist Platform, Chat, Events, Stream, Newsletter, Docs, Wire, and Studio.
+
 ## Features
 
 - **Network Admin Menu Consolidation** - Centralized top-level network admin menu for all ExtraChill Platform settings and configuration
