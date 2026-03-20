@@ -58,7 +58,7 @@ function extrachill_multisite_footer_main_menu() {
 							<a href="<?php echo esc_url( ec_get_site_url( 'main' ) ); ?>/category/live-music-reviews/">Live Reviews</a>
 						</li>
 						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'main' ) ); ?>/festival-wire">Festival Wire</a>
+							<a href="<?php echo esc_url( ec_get_site_url( 'wire' ) ); ?>">Festival Wire</a>
 						</li>
 						<li class="menu-item">
 							<a href="<?php echo esc_url( ec_get_site_url( 'main' ) ); ?>/category/song-meanings/">Song Meanings</a>
