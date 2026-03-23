@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.0] - 2026-03-23
+
+### Added
+- team-gated Studio in network dropdown and footer, add filter hooks
+
+### Fixed
+- sync taxonomy-badges.css with @extrachill/tokens@0.4.1 (232 badges, fix washington split)
+
 ## [1.7.0] - 2026-03-23
 
 ### Added
