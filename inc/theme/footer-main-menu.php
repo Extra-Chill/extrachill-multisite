@@ -16,6 +16,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'extrachill_footer_main_content', 'extrachill_multisite_footer_main_menu', 10 );
 
 function extrachill_multisite_footer_main_menu() {
+	$network_items = array(
+		array(
+			'label' => 'Blog',
+			'url'   => ec_get_site_url( 'main' ) . '/blog',
+		),
+		array(
+			'label' => 'Community',
+			'url'   => ec_get_site_url( 'community' ),
+		),
+		array(
+			'label' => 'Events Calendar',
+			'url'   => ec_get_site_url( 'events' ),
+		),
+		array(
+			'label' => 'Artist Platform',
+			'url'   => ec_get_site_url( 'artist' ),
+		),
+		array(
+			'label' => 'Newsletter',
+			'url'   => ec_get_site_url( 'newsletter' ),
+		),
+		array(
+			'label' => 'Shop',
+			'url'   => ec_get_site_url( 'shop' ),
+		),
+	);
+
+	/**
+	 * Filter the footer network menu items.
+	 *
+	 * Allows plugins to add or remove items from the Network column in the footer.
+	 * Each item should be an array with 'label' and 'url' keys.
+	 *
+	 * @since 1.8.0
+	 * @param array $network_items Array of menu item arrays with 'label' and 'url' keys.
+	 */
+	$network_items = apply_filters( 'extrachill_footer_network_items', $network_items );
+
+	// Add team-member-only sites.
+	if ( function_exists( 'ec_is_team_member' ) && ec_is_team_member() ) {
+		$network_items[] = array(
+			'label' => 'Studio',
+			'url'   => ec_get_site_url( 'studio' ),
+		);
+	}
 	?>
 	<div class="footer-menus">
 		<div class="footer-menu-column">
@@ -23,24 +68,11 @@ function extrachill_multisite_footer_main_menu() {
 				<li class="menu-item menu-item-has-children">
 					<a href="<?php echo esc_url( ec_get_site_url( 'main' ) ); ?>">Network</a>
 					<ul class="sub-menu">
-						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'main' ) ); ?>/blog">Blog</a>
-						</li>
-						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'community' ) ); ?>">Community</a>
-						</li>
-						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'events' ) ); ?>">Events Calendar</a>
-						</li>
-						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'artist' ) ); ?>">Artist Platform</a>
-						</li>
-						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'newsletter' ) ); ?>">Newsletter</a>
-						</li>
-						<li class="menu-item">
-							<a href="<?php echo esc_url( ec_get_site_url( 'shop' ) ); ?>">Shop</a>
-						</li>
+						<?php foreach ( $network_items as $item ) : ?>
+							<li class="menu-item">
+								<a href="<?php echo esc_url( $item['url'] ); ?>"><?php echo esc_html( $item['label'] ); ?></a>
+							</li>
+						<?php endforeach; ?>
 					</ul>
 				</li>
 			</ul>

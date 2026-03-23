@@ -58,6 +58,25 @@ function extrachill_get_dropdown_network_sites() {
 		),
 	);
 
+	/**
+	 * Filter the list of network sites shown in the dropdown.
+	 *
+	 * Allows plugins to add or remove sites from the network dropdown.
+	 * Each site entry should be an array with 'label' and 'url' keys.
+	 *
+	 * @since 1.8.0
+	 * @param array $sites Array of site arrays with 'label' and 'url' keys.
+	 */
+	$sites = apply_filters( 'extrachill_network_dropdown_sites', $sites );
+
+	// Add team-member-only sites.
+	if ( function_exists( 'ec_is_team_member' ) && ec_is_team_member() ) {
+		$sites[] = array(
+			'label' => 'Studio',
+			'url'   => ec_get_site_url( 'studio' ),
+		);
+	}
+
 	return $sites;
 }
 
