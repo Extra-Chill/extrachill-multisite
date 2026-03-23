@@ -58,6 +58,15 @@ function extrachill_multisite_init() {
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/community-activity/sidebar-widget.php';
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/assets.php';
 
+	// Abilities API.
+	if ( function_exists( 'wp_register_ability' ) ) {
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/TaxonomyCountAbilities.php';
+		new \ExtraChillMultisite\Abilities\TaxonomyCountAbilities();
+	}
+
+	// Badge count cache warmer.
+	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/cache/badge-count-warmer.php';
+
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-security-settings.php';
