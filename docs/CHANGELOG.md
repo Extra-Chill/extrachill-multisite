@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.0] - 2026-03-23
+
+### Added
+- sync taxonomy badge CSS from @extrachill/tokens (99 → 134 badges)
+
 ## [1.6.0] - 2026-03-23
 
 ### Added
