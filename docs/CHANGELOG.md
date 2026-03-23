@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.0] - 2026-03-23
+
+### Added
+- add taxonomy count ability and badge count cron warmer
+- add minimum threshold for cross-site link count display
+
+### Changed
+- remove Studio from public multisite navigation
+- add Studio as native multisite platform site
+- replace hardcoded badge colors with CSS custom properties
+
+### Fixed
+- Fix Festival Wire footer link to point to wire.extrachill.com instead of extrachill.com/festival-wire
+- remove double underline on sidebar activity card links
+- enqueue community activity CSS on singular pages
+- Restore original community activity CSS styling 1:1
+
 ## [1.5.0] - 2026-02-22
 
 ### Changed
