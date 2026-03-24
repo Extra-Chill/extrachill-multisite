@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.1] - 2026-03-24
+
+### Changed
+- show Posts menu in wp-admin on studio site
+
 ## [1.8.0] - 2026-03-23
 
 ### Added
