@@ -15,7 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 function extrachill_remove_menu_admin_pages() {
 	remove_submenu_page( 'themes.php', 'nav-menus.php' );
 
-	if ( ! is_main_site() ) {
+	$keep_posts = is_main_site() || (int) get_current_blog_id() === EC_BLOG_ID_STUDIO;
+	if ( ! $keep_posts ) {
 		remove_menu_page( 'edit.php' );
 	}
 }
