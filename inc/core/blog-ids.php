@@ -21,9 +21,6 @@ if ( ! defined( 'EC_BLOG_ID_SHOP' ) ) {
 if ( ! defined( 'EC_BLOG_ID_ARTIST' ) ) {
 	define( 'EC_BLOG_ID_ARTIST', 4 );
 }
-if ( ! defined( 'EC_BLOG_ID_CHAT' ) ) {
-	define( 'EC_BLOG_ID_CHAT', 5 );
-}
 if ( ! defined( 'EC_BLOG_ID_EVENTS' ) ) {
 	define( 'EC_BLOG_ID_EVENTS', 7 );
 }
@@ -61,7 +58,6 @@ function ec_get_blog_ids() {
 		'community'  => EC_BLOG_ID_COMMUNITY,
 		'shop'       => EC_BLOG_ID_SHOP,
 		'artist'     => EC_BLOG_ID_ARTIST,
-		'chat'       => EC_BLOG_ID_CHAT,
 		'events'     => EC_BLOG_ID_EVENTS,
 		'stream'     => EC_BLOG_ID_STREAM,
 		'newsletter' => EC_BLOG_ID_NEWSLETTER,
@@ -97,7 +93,6 @@ function ec_get_domain_map() {
 		'community.extrachill.com'  => EC_BLOG_ID_COMMUNITY,
 		'shop.extrachill.com'       => EC_BLOG_ID_SHOP,
 		'artist.extrachill.com'     => EC_BLOG_ID_ARTIST,
-		'chat.extrachill.com'       => EC_BLOG_ID_CHAT,
 		'events.extrachill.com'     => EC_BLOG_ID_EVENTS,
 		'stream.extrachill.com'     => EC_BLOG_ID_STREAM,
 		'newsletter.extrachill.com' => EC_BLOG_ID_NEWSLETTER,
