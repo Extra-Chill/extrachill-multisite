@@ -17,7 +17,7 @@
 
 ## Overview
 
-**Extra Chill Multisite** is the network foundation plugin for the Extra Chill Platform, providing centralized infrastructure for all 11 active WordPress multisite sites. It manages network-wide configuration, authentication, security, site discovery, and cross-site linking patterns while remaining lightweight and performant across the entire network.
+**Extra Chill Multisite** is the network foundation plugin for the Extra Chill Platform, providing centralized infrastructure for all 10 active WordPress multisite sites. It manages network-wide configuration, authentication, security, site discovery, and cross-site linking patterns while remaining lightweight and performant across the entire network.
 
 **Core Purpose**: Single source of truth for blog ID management, Cloudflare Turnstile integration, network admin menu structure, and cross-site coordination patterns (including `ec_get_artist_profile_by_slug` and `ec_render_cross_site_artist_profile_links`).
 
@@ -25,7 +25,7 @@
 
 **Production Status**: Active network foundation plugin  
 **Architecture**: Procedural WordPress pattern with network-wide functionality
-**Scope**: Network administration infrastructure for all 11 active sites
+**Scope**: Network administration infrastructure for all 10 active sites
 **Build System**: Use `homeboy build extrachill-multisite` for production builds
 
 ## Architecture
@@ -119,7 +119,6 @@ function extrachill_multisite_init() {
 - `EC_BLOG_ID_COMMUNITY` = 2 (community.extrachill.com)
 - `EC_BLOG_ID_SHOP` = 3 (shop.extrachill.com)
 - `EC_BLOG_ID_ARTIST` = 4 (artist.extrachill.com + extrachill.link)
-- `EC_BLOG_ID_CHAT` = 5 (chat.extrachill.com)
 - `EC_BLOG_ID_EVENTS` = 7 (events.extrachill.com)
 - `EC_BLOG_ID_STREAM` = 8 (stream.extrachill.com)
 - `EC_BLOG_ID_NEWSLETTER` = 9 (newsletter.extrachill.com)
@@ -127,7 +126,7 @@ function extrachill_multisite_init() {
 - `EC_BLOG_ID_WIRE` = 11 (wire.extrachill.com)
 - `EC_BLOG_ID_STUDIO` = 12 (studio.extrachill.com)
 
-**Note**: Blog ID 6 is unused (historical artifact)
+**Note**: Blog IDs 5–6 are unused (historical artifacts; chat.extrachill.com was archived)
 
 ### Blog ID Helper Functions
 
@@ -140,7 +139,6 @@ array(
     'community'  => 2,
     'shop'       => 3,
     'artist'     => 4,
-    'chat'       => 5,
     'events'     => 7,
     'stream'     => 8,
     'newsletter' => 9,
@@ -171,7 +169,6 @@ array(
     'community.extrachill.com' => 2,
     'shop.extrachill.com'    => 3,
     'artist.extrachill.com'  => 4,
-    'chat.extrachill.com'    => 5,
     'events.extrachill.com'  => 7,
     'stream.extrachill.com'  => 8,
     'newsletter.extrachill.com' => 9,
@@ -395,7 +392,7 @@ add_action( 'wp_enqueue_scripts', function() {
 
 ### 7. Cross-Site Linking (`inc/cross-site-links/`)
 
-**Purpose**: Provide unified cross-site navigation patterns (taxonomy archives, user profiles, artist profiles) across the 11-site network.
+**Purpose**: Provide unified cross-site navigation patterns (taxonomy archives, user profiles, artist profiles) across the 10-site network.
 
 **Core Modules**:
 - `inc/cross-site-links/canonical-authority.php`  canonical URL resolution for shared taxonomy archives.
@@ -506,7 +503,7 @@ try {
 **Responsibility**: Canonical blog ID definitions and helper functions
 
 **Exports**:
-- 11 constants (EC_BLOG_ID_*)
+- 10 constants (EC_BLOG_ID_*)
 - 4 functions (ec_get_blog_ids, ec_get_blog_id, ec_get_blog_slug_by_id, ec_get_site_url)
 - 1 filter hook (ec_site_url_override)
 

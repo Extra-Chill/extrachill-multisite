@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Extra Chill Platform uses a canonical blog ID map (constants + helper functions) for performance and consistency. The network includes 11 active sites (Blog ID 6 is unused). This document describes the helper functions in `inc/core/blog-ids.php` and the rules for using them.
+The Extra Chill Platform uses a canonical blog ID map (constants + helper functions) for performance and consistency. The network includes 10 active sites (Blog IDs 5–6 are unused). This document describes the helper functions in `inc/core/blog-ids.php` and the rules for using them.
 
 ## Why Centralize Blog IDs?
 
@@ -17,7 +17,6 @@ define( 'EC_BLOG_ID_MAIN', 1 );           // extrachill.com
 define( 'EC_BLOG_ID_COMMUNITY', 2 );      // community.extrachill.com
 define( 'EC_BLOG_ID_SHOP', 3 );           // shop.extrachill.com
 define( 'EC_BLOG_ID_ARTIST', 4 );         // artist.extrachill.com (+ extrachill.link)
-define( 'EC_BLOG_ID_CHAT', 5 );           // chat.extrachill.com
 define( 'EC_BLOG_ID_EVENTS', 7 );         // events.extrachill.com
 define( 'EC_BLOG_ID_STREAM', 8 );         // stream.extrachill.com
 define( 'EC_BLOG_ID_NEWSLETTER', 9 );     // newsletter.extrachill.com
@@ -26,7 +25,7 @@ define( 'EC_BLOG_ID_WIRE', 11 );          // wire.extrachill.com
 define( 'EC_BLOG_ID_STUDIO', 12 );        // studio.extrachill.com
 ```
 
-**Note**: Blog ID 6 is unused (historical artifact from site deletion).
+**Note**: Blog IDs 5–6 are unused (historical artifacts from site deletions).
 
 ## Using Blog ID Functions
 
@@ -63,7 +62,6 @@ if ( $blog_id ) {
 - `'community'` - Community hub (Blog ID 2)
 - `'shop'` - E-commerce site (Blog ID 3)
 - `'artist'` - Artist platform (Blog ID 4)
-- `'chat'` - AI chatbot (Blog ID 5)
 - `'events'` - Event calendar (Blog ID 7)
 - `'stream'` - Live streaming (Blog ID 8)
 - `'newsletter'` - Newsletter site (Blog ID 9)
@@ -192,7 +190,7 @@ if ( $blog_id ) {
 | Community | community.extrachill.com | 2 | `community` | Active |
 | Shop | shop.extrachill.com | 3 | `shop` | Active |
 | Artist | artist.extrachill.com | 4 | `artist` | Active |
-| Chat | chat.extrachill.com | 5 | `chat` | Active |
+| *Unused* | *N/A* | 5 | *N/A* | Unused |
 | *Unused* | *N/A* | 6 | *N/A* | Unused |
 | Events | events.extrachill.com | 7 | `events` | Active |
 | Stream | stream.extrachill.com | 8 | `stream` | Active |
