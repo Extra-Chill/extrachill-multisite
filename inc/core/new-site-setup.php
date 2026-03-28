@@ -21,8 +21,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * and "A WordPress Commenter" comment (comment ID 1) on every new site.
  * These are never wanted on the Extra Chill network.
  *
- * Runs at priority 900 on wp_initialize_site so the default content has
- * been created by WordPress core (priority 100) before we remove it.
+ * Why delete-after-create instead of preventing creation?
+ * wp_install_defaults() uses raw $wpdb->insert() with no hooks or filters
+ * to selectively skip content. The function IS pluggable (function_exists
+ * guard), but overriding it means owning ALL defaults including the
+ * Uncategorized category, Privacy Policy page, and default widgets.
+ * Delete-after-create at priority 900 is the standard multisite approach.
  *
  * @param WP_Site $new_site The newly created site object.
  */
