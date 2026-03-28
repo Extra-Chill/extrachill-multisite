@@ -30,7 +30,7 @@ if ( ! function_exists( 'extrachill_multisite_community_activity_widget' ) ) :
 			return;
 		}
 
-		echo '<div class="sidebar-card">';
+		echo '<div class="sidebar-card ec-surface-card">';
 		echo '<div class="widget extrachill-recent-activity-widget">';
 		echo '<h3 class="widget-title"><span>' . esc_html__( 'Community Activity', 'extrachill-multisite' ) . '</span></h3>';
 		echo '<div class="extrachill-recent-activity">';
