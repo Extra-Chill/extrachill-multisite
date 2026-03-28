@@ -166,6 +166,28 @@ function ec_get_allowed_redirect_hosts() {
 }
 
 /**
+ * Get all active site IDs on the network dynamically.
+ *
+ * Unlike ec_get_blog_ids() which returns a hardcoded map of known sites,
+ * this queries WordPress for ALL active (non-archived, non-deleted, non-spam)
+ * sites. Use this for operations that should apply to every site on the network,
+ * such as creating required pages or running maintenance tasks.
+ *
+ * @return int[] Array of blog IDs.
+ */
+function ec_get_all_site_ids() {
+	return get_sites(
+		array(
+			'fields'   => 'ids',
+			'number'   => 0,
+			'archived' => 0,
+			'deleted'  => 0,
+			'spam'     => 0,
+		)
+	);
+}
+
+/**
  * Register network domains as allowed redirect targets.
  *
  * Enables wp_safe_redirect() to work across all network subdomains.
