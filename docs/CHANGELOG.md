@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.3] - 2026-03-28
+
+### Changed
+- Add ec-surface-card class to community activity sidebar widget
+- Document why delete-after-create is used for default content
+- Remove default WordPress content from new network sites
+- Add ec_get_all_site_ids() for dynamic site discovery
+
 ## [1.8.2] - 2026-03-25
 
 ### Changed
