@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.4] - 2026-03-29
+
+### Changed
+- Remove duplicate taxonomy-badges.css — theme already provides all badge styles
+
 ## [1.8.3] - 2026-03-28
 
 ### Changed
