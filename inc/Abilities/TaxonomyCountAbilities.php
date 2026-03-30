@@ -72,7 +72,6 @@ class TaxonomyCountAbilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'success'  => array( 'type' => 'boolean' ),
 						'site'     => array( 'type' => 'string' ),
 						'taxonomy' => array( 'type' => 'string' ),
 						'terms'    => array(
@@ -120,12 +119,11 @@ class TaxonomyCountAbilities {
 
 		$blog_id = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( $site_key ) : null;
 		if ( ! $blog_id ) {
-			return array(
-				'success'  => false,
-				'site'     => $site_key,
-				'taxonomy' => $taxonomy,
-				'terms'    => array(),
-				'total'    => 0,
+			return new \WP_Error(
+				'unknown_site',
+				/* translators: %s: site key */
+				sprintf( __( 'Unknown site key "%s".', 'extrachill-multisite' ), $site_key ),
+				array( 'status' => 400 )
 			);
 		}
 
@@ -149,12 +147,11 @@ class TaxonomyCountAbilities {
 	 */
 	private function computeCounts( string $taxonomy, string $site_key, ?string $post_type ): array {
 		if ( ! taxonomy_exists( $taxonomy ) ) {
-			return array(
-				'success'  => false,
-				'site'     => $site_key,
-				'taxonomy' => $taxonomy,
-				'terms'    => array(),
-				'total'    => 0,
+			return new \WP_Error(
+				'taxonomy_not_found',
+				/* translators: %s: taxonomy slug */
+				sprintf( __( 'Taxonomy "%s" does not exist on this site.', 'extrachill-multisite' ), $taxonomy ),
+				array( 'status' => 400 )
 			);
 		}
 
@@ -189,7 +186,6 @@ class TaxonomyCountAbilities {
 
 		if ( empty( $rows ) ) {
 			return array(
-				'success'  => true,
 				'site'     => $site_key,
 				'taxonomy' => $taxonomy,
 				'terms'    => array(),
@@ -218,7 +214,6 @@ class TaxonomyCountAbilities {
 		}
 
 		return array(
-			'success'  => true,
 			'site'     => $site_key,
 			'taxonomy' => $taxonomy,
 			'terms'    => $terms,

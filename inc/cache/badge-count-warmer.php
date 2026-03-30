@@ -82,16 +82,14 @@ function ec_badge_warmer_warm_events_site() {
 	$warmed    = array();
 	$cache_ttl = 6 * HOUR_IN_SECONDS;
 
-	$ability = function_exists( 'wp_get_ability' )
-		? wp_get_ability( 'data-machine-events/get-upcoming-counts' )
-		: null;
+	$ability = wp_get_ability( 'data-machine-events/get-upcoming-counts' );
 
 	if ( $ability ) {
 		$taxonomies = array( 'location', 'venue', 'artist', 'festival' );
 
 		foreach ( $taxonomies as $taxonomy ) {
 			$result = $ability->execute( array( 'taxonomy' => $taxonomy ) );
-			$terms  = ( ! empty( $result['success'] ) && ! empty( $result['terms'] ) )
+			$terms  = ( ! is_wp_error( $result ) && ! empty( $result['terms'] ) )
 				? $result['terms']
 				: array();
 
