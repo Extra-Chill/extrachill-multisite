@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.5] - 2026-04-02
+
+### Changed
+- align TaxonomyCountAbilities with core WP_Ability contract
+
 ## [1.8.4] - 2026-03-29
 
 ### Changed
