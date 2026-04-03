@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.0] - 2026-04-03
+
+### Added
+- add universal cross-site REST request helper
+
 ## [1.8.5] - 2026-04-02
 
 ### Changed
