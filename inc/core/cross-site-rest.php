@@ -289,6 +289,7 @@ function ec_get_route_site_affinity( string $route ): ?string {
 	$affinity_map = apply_filters(
 		'ec_route_site_affinity_map',
 		array(
+			'/extrachill/v1/blog/'      => 'main',
 			'/extrachill/v1/community/' => 'community',
 			'/extrachill/v1/artists/'   => 'artist',
 			'/extrachill/v1/events/'    => 'events',
