@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.10.0] - 2026-04-04
+
+### Added
+- add blog/main route affinity to cross-site map
+
 ## [1.9.0] - 2026-04-03
 
 ### Added
