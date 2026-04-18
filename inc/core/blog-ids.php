@@ -24,9 +24,7 @@ if ( ! defined( 'EC_BLOG_ID_ARTIST' ) ) {
 if ( ! defined( 'EC_BLOG_ID_EVENTS' ) ) {
 	define( 'EC_BLOG_ID_EVENTS', 7 );
 }
-if ( ! defined( 'EC_BLOG_ID_STREAM' ) ) {
-	define( 'EC_BLOG_ID_STREAM', 8 );
-}
+// Blog ID 8 was stream.extrachill.com (decommissioned April 2026).
 if ( ! defined( 'EC_BLOG_ID_NEWSLETTER' ) ) {
 	define( 'EC_BLOG_ID_NEWSLETTER', 9 );
 }
@@ -59,7 +57,6 @@ function ec_get_blog_ids() {
 		'shop'       => EC_BLOG_ID_SHOP,
 		'artist'     => EC_BLOG_ID_ARTIST,
 		'events'     => EC_BLOG_ID_EVENTS,
-		'stream'     => EC_BLOG_ID_STREAM,
 		'newsletter' => EC_BLOG_ID_NEWSLETTER,
 		'docs'       => EC_BLOG_ID_DOCS,
 		'wire'       => EC_BLOG_ID_WIRE,
@@ -94,7 +91,6 @@ function ec_get_domain_map() {
 		'shop.extrachill.com'       => EC_BLOG_ID_SHOP,
 		'artist.extrachill.com'     => EC_BLOG_ID_ARTIST,
 		'events.extrachill.com'     => EC_BLOG_ID_EVENTS,
-		'stream.extrachill.com'     => EC_BLOG_ID_STREAM,
 		'newsletter.extrachill.com' => EC_BLOG_ID_NEWSLETTER,
 		'docs.extrachill.com'       => EC_BLOG_ID_DOCS,
 		'wire.extrachill.com'       => EC_BLOG_ID_WIRE,
