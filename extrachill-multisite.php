@@ -69,6 +69,12 @@ function extrachill_multisite_init() {
 	// Badge count cache warmer.
 	require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/cache/badge-count-warmer.php';
 
+	// OG card generation (Data Machine integration).
+	// Loads only when DM is active so the plugin still functions standalone.
+	if ( defined( 'DATAMACHINE_VERSION' ) ) {
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/og-cards/og-cards.php';
+	}
+
 	if ( is_admin() && is_network_admin() ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-menu.php';
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'admin/network-security-settings.php';
