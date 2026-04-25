@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.11.0] - 2026-04-25
+
+### Added
+- feat(og-cards): generate branded OG cards for posts without featured images
+
+### Changed
+- Remove stream.extrachill.com (Blog ID 8) from network config
+
 ## [1.10.0] - 2026-04-04
 
 ### Added
