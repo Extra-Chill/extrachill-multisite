@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.12.0] - 2026-04-26
+
+### Added
+- add network-media-list and network-media-upload abilities for cross-site main media library access
+
 ## [1.11.0] - 2026-04-25
 
 ### Added
