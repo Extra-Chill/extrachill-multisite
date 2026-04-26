@@ -64,6 +64,9 @@ function extrachill_multisite_init() {
 	if ( function_exists( 'wp_register_ability' ) ) {
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/TaxonomyCountAbilities.php';
 		new \ExtraChillMultisite\Abilities\TaxonomyCountAbilities();
+
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/NetworkMediaAbilities.php';
+		new \ExtraChillMultisite\Abilities\NetworkMediaAbilities();
 	}
 
 	// Badge count cache warmer.
