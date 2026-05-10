@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.12.1] - 2026-05-10
+
+### Changed
+- dispatch cross-site REST in-process via switch_to_blog
+
 ## [1.12.0] - 2026-04-26
 
 ### Added
