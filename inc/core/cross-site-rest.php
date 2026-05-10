@@ -2,14 +2,34 @@
 /**
  * Cross-site REST request helper.
  *
- * Makes internal HTTP requests to other subsites in the network via localhost,
- * bypassing Cloudflare and external DNS. Uses the correct Host header so nginx
- * routes to the right WordPress site with the correct plugins loaded.
+ * Dispatches REST requests to other subsites in the network. Defaults to
+ * in-process dispatch via switch_to_blog() + rest_do_request(), which avoids
+ * spinning up a second PHP-FPM worker per call.
  *
- * Auth is handled two ways:
- * 1. Cookie forwarding — for browser-originated requests (cookies + nonce).
- * 2. Internal trust — for server-to-server requests (bridge, CLI, chat tools).
- *    Uses an HMAC-signed X-EC-Internal-User header verified by the target site.
+ * Two strategies are available:
+ *
+ * 1. **In-process (default).** switch_to_blog( $target ) then rest_do_request().
+ *    Zero HTTP overhead, no auth handshake, no extra FPM worker. Safe for any
+ *    route whose handlers depend only on network-shared plugins/abilities and
+ *    blog-scoped options/queries — i.e. virtually every extrachill/v1 route.
+ *
+ * 2. **HTTP loopback (fallback).** wp_remote_request() to https://127.0.0.1
+ *    with the target site's Host header. Spins up a fresh PHP-FPM worker that
+ *    bootstraps the target site's full plugin stack independently. Use this
+ *    only for routes whose handlers genuinely require the target site's
+ *    bootstrap state (e.g. site-only mu-plugins that don't register on the
+ *    source site after switch_to_blog()).
+ *
+ * Auth in the in-process path uses wp_set_current_user() inside the
+ * switch_to_blog() block — no HMAC handshake needed because the dispatch
+ * never leaves the PHP process.
+ *
+ * Auth in the HTTP loopback path uses an HMAC-signed X-EC-Internal-User
+ * header verified by the target site (see
+ * ec_cross_site_authenticate_internal_request).
+ *
+ * Callers can opt back into HTTP loopback via the
+ * `ec_cross_site_use_http_loopback` filter (default: false).
  *
  * @package ExtraChillMultisite
  * @since 1.9.0
@@ -20,11 +40,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Make a REST API request to another subsite via internal HTTP.
+ * Make a REST API request to another subsite.
  *
- * Routes through 127.0.0.1 with the correct Host header so nginx dispatches
- * to the right virtual host. The target site bootstraps its own plugins,
- * meaning abilities registered by site-specific plugins are available.
+ * Default path is in-process via switch_to_blog() + rest_do_request().
+ * Callers can force HTTP loopback by returning true from the
+ * `ec_cross_site_use_http_loopback` filter.
  *
  * @param string $site_key Logical site key (e.g. 'community', 'artist', 'events').
  * @param string $method   HTTP method (GET, POST, PUT, DELETE).
@@ -32,12 +52,175 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array  $args     Optional. Request arguments:
  *                         - 'body'    => array|string  Request body for POST/PUT.
  *                         - 'query'   => array         Query parameters for GET.
- *                         - 'headers' => array         Additional headers.
- *                         - 'timeout' => int           Request timeout in seconds. Default 15.
+ *                         - 'headers' => array         Additional headers (HTTP path only).
+ *                         - 'timeout' => int           Request timeout (HTTP path only). Default 15.
  *                         - 'user_id' => int           Override user ID for auth. Default: current user.
  * @return array|WP_Error  Decoded JSON response body, or WP_Error on failure.
  */
 function ec_cross_site_rest_request( string $site_key, string $method, string $path, array $args = array() ) {
+	/**
+	 * Filters whether to use HTTP loopback for cross-site REST dispatch.
+	 *
+	 * Default false — in-process dispatch via switch_to_blog() + rest_do_request().
+	 * Set to true for routes that genuinely require the target site's full
+	 * plugin bootstrap (rare in practice on a network-shared install).
+	 *
+	 * @param bool   $use_http  Whether to force HTTP loopback. Default false.
+	 * @param string $site_key  Logical site key.
+	 * @param string $method    HTTP method.
+	 * @param string $path      REST path.
+	 * @param array  $args      Request arguments.
+	 */
+	$use_http = (bool) apply_filters( 'ec_cross_site_use_http_loopback', false, $site_key, $method, $path, $args );
+
+	if ( $use_http ) {
+		return ec_cross_site_rest_request_http( $site_key, $method, $path, $args );
+	}
+
+	return ec_cross_site_rest_request_in_process( $site_key, $method, $path, $args );
+}
+
+/**
+ * Dispatch a cross-site REST request in-process via switch_to_blog().
+ *
+ * Sets up the target blog context, authenticates as the requested user,
+ * dispatches the request via rest_do_request(), then restores the original
+ * blog and user context. No HTTP traffic, no extra FPM worker.
+ *
+ * Sets $GLOBALS['ec_in_cross_site_dispatch'] = true for the duration of the
+ * dispatch. The route-affinity middleware in extrachill-api short-circuits
+ * naturally when get_current_blog_id() matches the target after switch_to_blog,
+ * so the flag exists primarily for diagnostic/instrumentation use and as a
+ * guard hook for any future middleware that needs to detect re-entry.
+ *
+ * @param string $site_key Logical site key.
+ * @param string $method   HTTP method.
+ * @param string $path     REST path without namespace.
+ * @param array  $args     Request arguments.
+ * @return array|WP_Error  Response data or WP_Error.
+ */
+function ec_cross_site_rest_request_in_process( string $site_key, string $method, string $path, array $args = array() ) {
+	$target_blog_id = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( $site_key ) : null;
+
+	if ( ! $target_blog_id ) {
+		return new WP_Error(
+			'ec_unknown_site',
+			sprintf( 'Unknown site key: %s', $site_key ),
+			array( 'status' => 400 )
+		);
+	}
+
+	// Build the REST route — extrachill/v1 namespace + caller path.
+	$route = '/extrachill/v1' . $path;
+
+	// Resolve user context BEFORE switching blogs. wp_set_current_user() state
+	// is global (not blog-scoped), but capability checks on the target site
+	// still need the user record loaded.
+	$desired_user_id  = isset( $args['user_id'] ) ? (int) $args['user_id'] : (int) get_current_user_id();
+	$original_user_id = (int) get_current_user_id();
+
+	$method = strtoupper( $method );
+
+	$switched = false;
+	if ( (int) get_current_blog_id() !== (int) $target_blog_id ) {
+		switch_to_blog( $target_blog_id );
+		$switched = true;
+	}
+
+	// Mark in-cross-site-dispatch so middleware/hooks can detect re-entry.
+	// Using a stack counter so nested dispatches behave correctly.
+	if ( ! isset( $GLOBALS['ec_in_cross_site_dispatch'] ) ) {
+		$GLOBALS['ec_in_cross_site_dispatch'] = 0;
+	}
+	$GLOBALS['ec_in_cross_site_dispatch']++;
+
+	// Authenticate as the desired user inside the target blog context.
+	// wp_set_current_user() is global — we restore the original below.
+	if ( $desired_user_id !== $original_user_id ) {
+		wp_set_current_user( $desired_user_id );
+	}
+
+	$result = null;
+	try {
+		$request = new WP_REST_Request( $method, $route );
+
+		// Mark forwarded so any middleware that does its own re-entry guard
+		// (e.g. extrachill-api route-affinity) treats this as terminal.
+		$request->add_header( 'X-EC-Forwarded', '1' );
+
+		// Query params for GET-style requests.
+		if ( ! empty( $args['query'] ) && is_array( $args['query'] ) ) {
+			$request->set_query_params( $args['query'] );
+		}
+
+		// Body for write methods. Send as JSON-encoded body so REST handlers
+		// that read get_json_params() get the same shape they would over HTTP.
+		if ( in_array( $method, array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) && isset( $args['body'] ) ) {
+			$body = $args['body'];
+			if ( is_array( $body ) ) {
+				$request->set_header( 'Content-Type', 'application/json' );
+				$request->set_body( wp_json_encode( $body ) );
+			} else {
+				$request->set_body( (string) $body );
+			}
+		}
+
+		$response = rest_do_request( $request );
+
+		if ( $response->is_error() ) {
+			$error = $response->as_error();
+			$data  = $error->get_error_data();
+			$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 500;
+
+			$result = new WP_Error(
+				$error->get_error_code() ?: 'ec_cross_site_error',
+				$error->get_error_message() ?: 'Cross-site request failed',
+				array( 'status' => $status )
+			);
+		} else {
+			$data = $response->get_data();
+			// Normalize to array when possible — matches the HTTP path's
+			// json_decode() return shape for caller compatibility.
+			$result = is_array( $data ) ? $data : ( null === $data ? array() : $data );
+		}
+	} finally {
+		// Restore user context — wp_set_current_user is global, must be
+		// explicitly reverted regardless of switch_to_blog() state.
+		if ( $desired_user_id !== $original_user_id ) {
+			wp_set_current_user( $original_user_id );
+		}
+
+		$GLOBALS['ec_in_cross_site_dispatch']--;
+		if ( $GLOBALS['ec_in_cross_site_dispatch'] <= 0 ) {
+			unset( $GLOBALS['ec_in_cross_site_dispatch'] );
+		}
+
+		if ( $switched ) {
+			restore_current_blog();
+		}
+	}
+
+	return $result;
+}
+
+/**
+ * Dispatch a cross-site REST request via HTTP loopback (legacy path).
+ *
+ * Routes through 127.0.0.1 with the correct Host header so nginx dispatches
+ * to the right virtual host. The target site bootstraps its own plugin stack
+ * in a fresh PHP-FPM worker.
+ *
+ * Use this only when the target route genuinely requires the target site's
+ * full bootstrap (e.g. site-only mu-plugins that don't register after
+ * switch_to_blog). Costs an extra FPM worker per call — see issue #11.
+ *
+ * @param string $site_key Logical site key.
+ * @param string $method   HTTP method.
+ * @param string $path     REST path without namespace.
+ * @param array  $args     Request arguments.
+ * @return array|WP_Error  Response data or WP_Error.
+ */
+function ec_cross_site_rest_request_http( string $site_key, string $method, string $path, array $args = array() ) {
 	$site_url = ec_get_site_url( $site_key );
 
 	if ( ! $site_url ) {
@@ -76,7 +259,7 @@ function ec_cross_site_rest_request( string $site_key, string $method, string $p
 	);
 
 	// Auth: determine user ID and build auth headers.
-	$user_id     = $args['user_id'] ?? get_current_user_id();
+	$user_id      = $args['user_id'] ?? get_current_user_id();
 	$auth_headers = ec_cross_site_build_auth_headers( $user_id );
 	$headers      = array_merge( $headers, $auth_headers );
 
