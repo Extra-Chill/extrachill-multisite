@@ -40,15 +40,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Resolve a caller-supplied path to a fully-qualified REST route.
+ *
+ * Accepts both shapes:
+ *   - **Full path with namespace** (preferred): `/wp/v2/posts`,
+ *     `/extrachill/v1/blog/transcribe-draft`, `/datamachine/v1/socials`.
+ *     Passed through verbatim. Use this for any path outside the
+ *     `extrachill/v1` namespace, including core WP routes (`wp/v2/*`).
+ *   - **Namespace-relative path** (legacy): `/community/topics`. Prepended
+ *     with `/extrachill/v1` for backward compatibility with existing
+ *     callers (extrachill-api route-affinity middleware,
+ *     extrachill-roadie PlatformTool).
+ *
+ * Detection: a path is treated as fully-qualified when it matches
+ * `^/<segment>/v<N>/...`, e.g. `/wp/v2/posts` or `/extrachill/v1/foo`.
+ * Anything else is assumed to be namespace-relative.
+ *
+ * @since 1.13.0
+ *
+ * @param string $path Caller-supplied REST path.
+ * @return string Fully-qualified REST route starting with the namespace.
+ */
+function ec_cross_site_rest_resolve_route( string $path ): string {
+	if ( preg_match( '#^/[a-z0-9-]+/v\d+/#i', $path ) ) {
+		return $path;
+	}
+
+	return '/extrachill/v1' . $path;
+}
+
+/**
  * Make a REST API request to another subsite.
  *
  * Default path is in-process via switch_to_blog() + rest_do_request().
  * Callers can force HTTP loopback by returning true from the
  * `ec_cross_site_use_http_loopback` filter.
  *
- * @param string $site_key Logical site key (e.g. 'community', 'artist', 'events').
+ * @param string $site_key Logical site key (e.g. 'community', 'artist', 'events', 'main').
  * @param string $method   HTTP method (GET, POST, PUT, DELETE).
- * @param string $path     REST path without namespace (e.g. '/community/topics').
+ * @param string $path     REST path. Either fully-qualified (`/wp/v2/posts`,
+ *                         `/extrachill/v1/blog/foo`) or namespace-relative
+ *                         (`/community/topics` → `/extrachill/v1/community/topics`).
+ *                         See `ec_cross_site_rest_resolve_route()` for the rules.
  * @param array  $args     Optional. Request arguments:
  *                         - 'body'    => array|string  Request body for POST/PUT.
  *                         - 'query'   => array         Query parameters for GET.
@@ -110,8 +143,10 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
 		);
 	}
 
-	// Build the REST route — extrachill/v1 namespace + caller path.
-	$route = '/extrachill/v1' . $path;
+	// Resolve route — accepts both fully-qualified paths (e.g. `/wp/v2/posts`)
+	// and namespace-relative paths (e.g. `/community/topics`, prepended with
+	// `/extrachill/v1` for backward compat).
+	$route = ec_cross_site_rest_resolve_route( $path );
 
 	// Resolve user context BEFORE switching blogs. wp_set_current_user() state
 	// is global (not blog-scoped), but capability checks on the target site
@@ -242,7 +277,9 @@ function ec_cross_site_rest_request_http( string $site_key, string $method, stri
 	}
 
 	// Build the localhost URL — route through 127.0.0.1 via HTTPS.
-	$rest_path = '/wp-json/extrachill/v1' . $path;
+	// `ec_cross_site_rest_resolve_route()` accepts both fully-qualified paths
+	// (`/wp/v2/posts`) and namespace-relative paths (`/community/topics`).
+	$rest_path = '/wp-json' . ec_cross_site_rest_resolve_route( $path );
 
 	// Append query parameters for GET requests.
 	if ( ! empty( $args['query'] ) && is_array( $args['query'] ) ) {
