@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.12.2] - 2026-05-10
+
+### Fixed
+- fix(og-cards): consume data-machine-events public integration API
+
 ## [1.12.1] - 2026-05-10
 
 ### Changed
