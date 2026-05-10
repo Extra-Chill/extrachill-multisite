@@ -35,3 +35,7 @@ This plugin maintains focused responsibility for network administration infrastr
 - WordPress 5.0+
 - WordPress Multisite installation
 - PHP 7.4+
+
+## VPS deployment notes
+
+Reference nginx config for new VPS deployments lives in [`docs/nginx/`](docs/nginx/README.md) — bot/credential-scanner blocking, `/wp-json/` rate limiting, and `/wp-login.php` brute-force rate limiting. Codified after the 2026-05-10 DOS event so a server rebuild can restore the abuse-mitigation layer without re-mining logs.
