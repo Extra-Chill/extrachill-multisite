@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.12.3] - 2026-05-10
+
+### Fixed
+- make ec_cross_site_rest_request a universal cross-site REST primitive
+
 ## [1.12.2] - 2026-05-10
 
 ### Fixed
