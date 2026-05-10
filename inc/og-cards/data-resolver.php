@@ -98,8 +98,10 @@ function collect_event_card_data( array $data, $post ): array {
 
 	$data['event_name'] = (string) $post->post_title;
 
-	if ( class_exists( '\\DataMachineEvents\\Core\\EventDatesTable' ) ) {
-		$dates = \DataMachineEvents\Core\EventDatesTable::get( $post->ID );
+	// Uses data-machine-events public integration API. See data-machine-events
+	// docs/integration-api.md.
+	if ( function_exists( 'datamachine_get_event_dates' ) ) {
+		$dates = datamachine_get_event_dates( (int) $post->ID );
 		if ( $dates && ! empty( $dates->start_datetime ) ) {
 			$start_obj = date_create( $dates->start_datetime );
 			if ( $start_obj ) {
@@ -132,8 +134,8 @@ function collect_event_card_data( array $data, $post ): array {
 		$venue_term = $venue_terms[0];
 		$data['venue'] = (string) $venue_term->name;
 
-		if ( class_exists( '\\DataMachineEvents\\Core\\Venue_Taxonomy' ) ) {
-			$venue_data    = \DataMachineEvents\Core\Venue_Taxonomy::get_venue_data( $venue_term->term_id );
+		if ( function_exists( 'data_machine_events_get_venue_data' ) ) {
+			$venue_data    = data_machine_events_get_venue_data( (int) $venue_term->term_id );
 			$data['venue'] = (string) ( $venue_data['name'] ?? $venue_term->name );
 
 			$city_parts = array_filter(
