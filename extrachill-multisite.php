@@ -31,6 +31,9 @@ register_activation_hook( __FILE__, 'extrachill_multisite_activate' );
 
 function extrachill_multisite_activate() {
 	if ( ! is_multisite() ) {
+		if ( ! function_exists( 'deactivate_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 		deactivate_plugins( plugin_basename( __FILE__ ) );
 		wp_die( 'Extra Chill Multisite plugin requires a WordPress multisite installation.' );
 	}
