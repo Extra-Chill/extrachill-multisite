@@ -30,11 +30,25 @@ if ( file_exists( EXTRACHILL_MULTISITE_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 register_activation_hook( __FILE__, 'extrachill_multisite_activate' );
 
 function extrachill_multisite_activate() {
-	if ( ! is_multisite() ) {
-		if ( ! function_exists( 'deactivate_plugins' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		deactivate_plugins( plugin_basename( __FILE__ ) );
+	if ( is_multisite() ) {
+		return;
+	}
+
+	if ( ! function_exists( 'deactivate_plugins' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+	deactivate_plugins( plugin_basename( __FILE__ ) );
+
+	// Only wp_die() in interactive admin contexts. Non-interactive callers
+	// (WP-CLI, WordPress Playground bootstrap, automated test runners) need
+	// the plugin file to load without terminating the PHP process — the
+	// runtime guards inside extrachill_multisite_init() prevent any actual
+	// multisite-only behavior from firing on single-site installs.
+	$is_interactive_admin = is_admin()
+		&& ! ( defined( 'WP_CLI' ) && WP_CLI )
+		&& ! wp_doing_ajax();
+
+	if ( $is_interactive_admin ) {
 		wp_die( 'Extra Chill Multisite plugin requires a WordPress multisite installation.' );
 	}
 }
