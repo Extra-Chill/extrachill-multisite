@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.12.4] - 2026-05-12
+
+### Fixed
+- guard admin-only function calls in activation hook for Playground bootstrap
+- unblock the VPS's own IPv6 + CF origin path
+
 ## [1.12.3] - 2026-05-10
 
 ### Fixed
