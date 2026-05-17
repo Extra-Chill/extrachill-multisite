@@ -139,3 +139,94 @@ function ec_enqueue_turnstile_script( $handle = 'cloudflare-turnstile' ) {
 		wp_enqueue_script( $handle, 'https://challenges.cloudflare.com/turnstile/v0/api.js', array(), null, true );
 	}
 }
+
+/**
+ * Verify a Turnstile token from a REST request or raw value.
+ *
+ * Reusable check for any form-handling code that has either a WP_REST_Request
+ * (reads the 'turnstile_response' parameter automatically) or a raw token
+ * string (passed directly).
+ *
+ * Honors the same bypass conditions as ec_verify_turnstile_response()
+ * (local environment + 'extrachill_bypass_turnstile_verification' filter).
+ *
+ * @param WP_REST_Request|string $request_or_token Request object or raw token.
+ * @return true|WP_Error True on success, WP_Error on missing/invalid token.
+ */
+function ec_turnstile_check_request( $request_or_token ) {
+	$is_local_environment = defined( 'WP_ENVIRONMENT_TYPE' ) && WP_ENVIRONMENT_TYPE === 'local';
+	$bypass               = $is_local_environment || (bool) apply_filters( 'extrachill_bypass_turnstile_verification', false );
+	if ( true === $bypass ) {
+		return true;
+	}
+
+	if ( ! function_exists( 'ec_verify_turnstile_response' ) ) {
+		return new WP_Error(
+			'turnstile_missing',
+			__( 'Security verification unavailable.', 'extrachill-multisite' ),
+			array( 'status' => 500 )
+		);
+	}
+
+	if ( $request_or_token instanceof WP_REST_Request ) {
+		$token = (string) $request_or_token->get_param( 'turnstile_response' );
+	} else {
+		$token = (string) $request_or_token;
+	}
+
+	if ( '' === $token ) {
+		return new WP_Error(
+			'turnstile_missing_token',
+			__( 'Security verification required.', 'extrachill-multisite' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	if ( ! ec_verify_turnstile_response( $token ) ) {
+		return new WP_Error(
+			'turnstile_failed',
+			__( 'Security verification failed. Please try again.', 'extrachill-multisite' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	return true;
+}
+
+/**
+ * Factory: build a REST permission_callback that requires a valid Turnstile token.
+ *
+ * Use in register_rest_route():
+ *
+ *     'permission_callback' => ec_turnstile_permission_callback(),
+ *
+ * Or, to compose with an additional capability check:
+ *
+ *     'permission_callback' => ec_turnstile_permission_callback( function( $request ) {
+ *         return current_user_can( 'edit_posts' );
+ *     } ),
+ *
+ * The Turnstile check runs first; if it passes, the optional secondary
+ * callback decides authorization. Both must return truthy for the request
+ * to be authorized; a WP_Error from either short-circuits with that error.
+ *
+ * Note: route registrations must declare 'turnstile_response' in 'args' so
+ * the token is sanitized through the standard REST args pipeline.
+ *
+ * @param callable|null $also Optional secondary permission callback.
+ * @return callable Permission callback suitable for register_rest_route().
+ */
+function ec_turnstile_permission_callback( $also = null ) {
+	return function ( WP_REST_Request $request ) use ( $also ) {
+		$check = ec_turnstile_check_request( $request );
+		if ( is_wp_error( $check ) ) {
+			return $check;
+		}
+
+		if ( is_callable( $also ) ) {
+			return $also( $request );
+		}
+
+		return true;
+	};
+}
