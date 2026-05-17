@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.13.0] - 2026-05-17
+
+### Added
+- add reusable request-check + permission_callback helpers
+
 ## [1.12.4] - 2026-05-12
 
 ### Fixed
