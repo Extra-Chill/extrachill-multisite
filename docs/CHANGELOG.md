@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.14.1] - 2026-05-18
+
+### Fixed
+- single owner for extrachill-multisite ability category (closes #31)
+
 ## [1.14.0] - 2026-05-18
 
 ### Added
