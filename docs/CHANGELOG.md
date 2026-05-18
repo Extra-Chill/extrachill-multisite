@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.14.0] - 2026-05-18
+
+### Added
+- EC email templates + ec_send_email wrapper (closes #26)
+
 ## [1.13.2] - 2026-05-18
 
 ### Fixed
