@@ -32,13 +32,13 @@ $cta_url        = isset( $context['cta_url'] ) ? (string) $context['cta_url'] : 
 $cta_label      = isset( $context['cta_label'] ) ? (string) $context['cta_label'] : '';
 $preheader      = isset( $context['preheader'] ) ? (string) $context['preheader'] : '';
 
-include __DIR__ . '/partials/header.php';
+require __DIR__ . '/partials/header.php';
 ?>
 <?php if ( '' !== trim( $recipient_name ) ) : ?>
 	<p style="margin:0 0 16px 0;font-size:16px;line-height:1.6;">Hey <?php echo esc_html( $recipient_name ); ?>,</p>
 <?php endif; ?>
 
-<?php echo $body_html; // Caller is responsible for sanitizing $body_html before passing it. ?>
+<?php echo $body_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $body_html is pre-escaped HTML supplied by caller (the _html suffix is the contract). ?>
 
 <?php if ( '' !== trim( $cta_url ) && '' !== trim( $cta_label ) ) : ?>
 	<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
@@ -55,5 +55,5 @@ include __DIR__ . '/partials/header.php';
 <p style="margin:24px 0 0 0;font-size:16px;line-height:1.6;">Much love,<br>Extra Chill</p>
 
 <?php
-include __DIR__ . '/partials/link-grid.php';
-include __DIR__ . '/partials/footer.php';
+require __DIR__ . '/partials/link-grid.php';
+require __DIR__ . '/partials/footer.php';

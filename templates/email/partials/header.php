@@ -21,7 +21,7 @@ $header_main_url = function_exists( 'ec_get_site_url' ) ? ec_get_site_url( 'main
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="x-apple-disable-message-reformatting">
-	<title><?php echo isset( $subject_html ) ? $subject_html : 'Extra Chill'; ?></title>
+	<title><?php echo isset( $subject_html ) ? $subject_html : 'Extra Chill'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $subject_html is pre-escaped HTML supplied by caller (the _html suffix is the contract). ?></title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;">
 <?php if ( ! empty( $preheader ) ) : ?>
