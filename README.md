@@ -101,13 +101,28 @@ path for the template ID you want to swap.
 
 - `extrachill_mail_site_id()` / `ec_mail_site_id()` — return the blog ID
   of the closest SMTP-configured site (current site if configured, else
-  `ec_get_blog_id('main')`). Safe to call from any subsite context.
+  `ec_get_blog_id('main')`). Short-circuits on a single per-site probe.
+  Safe to call from any subsite context.
+- `extrachill_site_has_smtp( int $blog_id ): bool` — runtime probe of the
+  per-site `easy_wp_smtp` option. Returns true when the site has a
+  non-default mailer selected (anything other than PHP's built-in
+  `mail`) **and** non-empty credentials for that provider. Result is
+  cached for 15 minutes in a network transient
+  (`ec_site_has_smtp_{$blog_id}`) and busted automatically when the
+  underlying option is added / updated / deleted.
 - Ability `extrachill/mail-site-id` exposes the same resolution through
   the Abilities API for WP-CLI / REST / chat tooling.
-- Filter `extrachill_smtp_configured_sites` returns the allow-list of
-  configured site IDs. Defaults to `[ EC_BLOG_ID_MAIN, EC_BLOG_ID_COMMUNITY ]`.
-  Add a new SMTP-configured site to the network by hooking this filter
-  with the new blog ID — no code change here required.
+- Function `extrachill_smtp_configured_sites()` returns the **live**
+  list of SMTP-configured site IDs on the network — produced by probing
+  every active site via `extrachill_site_has_smtp()`, not a hardcoded
+  allowlist. The per-site probe is transient-cached so the network
+  scan is cheap on warm cache.
+- Filter `extrachill_smtp_configured_sites` is still a valid escape
+  hatch — use it to force-add a site whose probe returns false (e.g.
+  credentials live in `wp-config.php` constants) or to force-remove a
+  site whose credentials are known broken at a higher layer. The
+  default value passed to the filter is now the live probed list, not
+  a static array.
 
 ### Layer dependency
 
