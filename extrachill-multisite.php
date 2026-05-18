@@ -80,6 +80,11 @@ function extrachill_multisite_init() {
 
 	// Abilities API.
 	if ( function_exists( 'wp_register_ability' ) ) {
+		// Single owner for the `extrachill-multisite` ability category — load
+		// before any class that consumes it so the category exists when their
+		// `wp_register_ability()` calls reference it.
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/CategoryRegistration.php';
+
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/TaxonomyCountAbilities.php';
 		new \ExtraChillMultisite\Abilities\TaxonomyCountAbilities();
 
