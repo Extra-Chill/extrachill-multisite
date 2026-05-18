@@ -30,18 +30,8 @@ class TaxonomyCountAbilities {
 	}
 
 	private function registerAbilities(): void {
-		add_action( 'wp_abilities_api_categories_init', array( $this, 'registerCategory' ) );
+		// Category is registered once via inc/Abilities/CategoryRegistration.php.
 		add_action( 'wp_abilities_api_init', array( $this, 'register' ) );
-	}
-
-	public function registerCategory(): void {
-		wp_register_ability_category(
-			'extrachill-multisite',
-			array(
-				'label'       => __( 'Extra Chill Multisite', 'extrachill-multisite' ),
-				'description' => __( 'Network-wide cross-site operations', 'extrachill-multisite' ),
-			)
-		);
 	}
 
 	public function register(): void {

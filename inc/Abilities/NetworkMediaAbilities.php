@@ -43,7 +43,7 @@ class NetworkMediaAbilities {
 	}
 
 	private function registerAbilities(): void {
-		// Category is registered by TaxonomyCountAbilities; reuse it.
+		// Category is registered once via inc/Abilities/CategoryRegistration.php.
 		add_action( 'wp_abilities_api_init', array( $this, 'register' ) );
 	}
 
