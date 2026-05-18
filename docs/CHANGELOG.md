@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.13.2] - 2026-05-18
+
+### Fixed
+- anchor README.md exclusion to repo root only
+
 ## [1.13.1] - 2026-05-18
 
 ### Fixed
