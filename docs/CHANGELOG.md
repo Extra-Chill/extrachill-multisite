@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.13.1] - 2026-05-18
+
+### Fixed
+- graceful activation in non-interactive contexts (Playground, CLI)
+
 ## [1.13.0] - 2026-05-17
 
 ### Added
