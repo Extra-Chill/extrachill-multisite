@@ -39,6 +39,14 @@ Live install paths on the production VPS (do not edit from automation):
 
 If the live config drifts (someone hand-edits the VPS or the CF dashboard), the right reconciliation is to update this directory to match the live state, then commit. Never let the live state run ahead of the docs silently.
 
+### Drift policy
+
+The convention that prevents this directory from going stale is tracked in [Extra-Chill/extrachill-multisite#29](https://github.com/Extra-Chill/extrachill-multisite/issues/29):
+
+> Any edit to a file in `/etc/nginx/conf.d/` or `/etc/nginx/sites-enabled/` on the production VPS MUST be accompanied by a PR to `extrachill-multisite/docs/nginx/` updating the corresponding canonical reference. Same edit, same change window.
+
+The same rule applies to Cloudflare WAF rules vs `cloudflare-waf-rules.md`. Emergency live-first edits are allowed but the docs PR must follow within 24h, linked to the incident.
+
 ## From-scratch deployment ritual
 
 Assuming a Debian/Ubuntu nginx package (the auto-include `/etc/nginx/conf.d/*.conf` is wired up by default) and a fresh Cloudflare zone:
