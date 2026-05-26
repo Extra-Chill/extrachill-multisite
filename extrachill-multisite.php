@@ -93,6 +93,16 @@ function extrachill_multisite_init() {
 
 		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/MailAbilities.php';
 		new \ExtraChillMultisite\Abilities\MailAbilities();
+
+		// Shared editor utilities — load-envelope shape, permissions block,
+		// blog_id resolution. Consumed by every editor ability across the
+		// network (this plugin + extrachill-community + future content types).
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Editor/BlogResolver.php';
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Editor/Permissions.php';
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Editor/LoadEnvelope.php';
+
+		require_once EXTRACHILL_MULTISITE_PLUGIN_DIR . 'inc/Abilities/CommentEditorAbilities.php';
+		new \ExtraChillMultisite\Abilities\CommentEditorAbilities();
 	}
 
 	// Badge count cache warmer.
