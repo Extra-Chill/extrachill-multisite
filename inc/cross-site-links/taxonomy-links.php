@@ -16,11 +16,85 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Get cross-site links for a taxonomy term where content exists
+ * Object-cache group for cross-site term link results.
+ *
+ * Persistent (Redis) on this network, so entries survive across requests and
+ * are shared by every consumer. Cache keys embed the current site key, so each
+ * site in the network keys independently without needing a per-site group.
+ */
+const EXTRACHILL_CROSS_SITE_LINKS_CACHE_GROUP = 'extrachill_cross_site_links';
+
+/**
+ * Get cross-site links for a taxonomy term where content exists.
+ *
+ * Object-cache wrapper around extrachill_get_cross_site_term_links_uncached().
+ *
+ * The uncached computation loops every site mapped to the taxonomy and fires an
+ * in-process REST dispatch (or switch_to_blog + WP_Query) per site — up to
+ * ~5-6 cross-site dispatches for the `artist` taxonomy. This is a shared hot
+ * path: it runs on archive pages (renderers.php) and, since extrachill-blog#7,
+ * on single posts via the network bridge. The single-term path of every
+ * per-site REST endpoint (events/wire/community/blog/shop taxonomy-counts) is
+ * UNCACHED at the endpoint level — only their bulk paths use transients — so
+ * without this layer each call pays the full cross-site cost every time.
+ *
+ * Results are cached in the persistent object cache keyed by
+ * taxonomy + term_id + current_site_key (the output is site-relative because
+ * the current site is skipped). TTL is filterable; default 1 hour. Invalidated
+ * on save/delete of the relevant CPTs across the network (see
+ * extrachill_cross_site_links_flush_cache_group()).
+ *
+ * @param WP_Term|int $term     Term object or term ID.
+ * @param string      $taxonomy Taxonomy slug.
+ * @return array Array of link data (see _uncached() for shape).
+ */
+function extrachill_get_cross_site_term_links( $term, $taxonomy ) {
+	if ( is_int( $term ) ) {
+		$term = get_term( $term, $taxonomy );
+	}
+
+	if ( ! $term || is_wp_error( $term ) ) {
+		return array();
+	}
+
+	$current_site_key = extrachill_get_current_site_key();
+	$cache_key        = 'links_' . $taxonomy . '_' . (int) $term->term_id . '_' . (string) $current_site_key;
+
+	$cached = wp_cache_get( $cache_key, EXTRACHILL_CROSS_SITE_LINKS_CACHE_GROUP );
+	if ( false !== $cached ) {
+		return is_array( $cached ) ? $cached : array();
+	}
+
+	$links = extrachill_get_cross_site_term_links_uncached( $term, $taxonomy );
+
+	/**
+	 * Filters the TTL for cached cross-site term links.
+	 *
+	 * Keep at or above the consumer-side cache TTLs (e.g. the network bridge's
+	 * per-post transient in extrachill-blog) so the inner layer doesn't expire
+	 * faster than the outer one.
+	 *
+	 * @since 1.14.0
+	 *
+	 * @param int    $ttl      Cache lifetime in seconds. Default 1 hour.
+	 * @param string $taxonomy Taxonomy slug.
+	 * @param int    $term_id  Term ID.
+	 */
+	$ttl = (int) apply_filters( 'extrachill_cross_site_links_cache_ttl', HOUR_IN_SECONDS, $taxonomy, (int) $term->term_id );
+
+	wp_cache_set( $cache_key, $links, EXTRACHILL_CROSS_SITE_LINKS_CACHE_GROUP, $ttl );
+
+	return $links;
+}
+
+/**
+ * Compute cross-site links for a taxonomy term where content exists.
  *
  * Checks each mapped site for the term and returns links only where
  * the term exists with at least one published post. Events and Shop
  * sites use REST APIs for accurate counts.
+ *
+ * Uncached — call extrachill_get_cross_site_term_links() for the cached path.
  *
  * @param WP_Term|int $term     Term object or term ID.
  * @param string      $taxonomy Taxonomy slug.
@@ -31,7 +105,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *               - label: string
  *               - count: int
  */
-function extrachill_get_cross_site_term_links( $term, $taxonomy ) {
+function extrachill_get_cross_site_term_links_uncached( $term, $taxonomy ) {
 	if ( is_int( $term ) ) {
 		$term = get_term( $term, $taxonomy );
 	}
@@ -377,3 +451,96 @@ function extrachill_build_term_archive_url( $term_slug, $taxonomy, $blog_id ) {
 		restore_current_blog();
 	}
 }
+
+/**
+ * Flush the cross-site term links object-cache group.
+ *
+ * The cached result of extrachill_get_cross_site_term_links() answers "does
+ * this term have published content on the other network sites?" — an answer
+ * that changes whenever relevant content is published, unpublished, or deleted
+ * on ANY site (a new event, a new wire story, a new blog post). Per-term
+ * invalidation isn't practical because the cache is keyed by term across
+ * sites, so a single content change can affect many cached entries.
+ *
+ * The pragmatic, correct strategy is a group-level flush on content change of
+ * the relevant CPTs, backstopped by the short default TTL. The flush is cheap:
+ * the persistent object cache (Redis drop-in) supports native group flushing
+ * via wp_cache_flush_group(), so this clears only this group — not the whole
+ * cache.
+ *
+ * @return void
+ */
+function extrachill_cross_site_links_flush_cache_group() {
+	if ( function_exists( 'wp_cache_flush_group' ) ) {
+		wp_cache_flush_group( EXTRACHILL_CROSS_SITE_LINKS_CACHE_GROUP );
+	}
+}
+
+/**
+ * Post types whose publish/unpublish/delete can change cross-site link answers.
+ *
+ * Spans every site mapped in extrachill_get_taxonomy_site_map(): blog posts
+ * (main), events (events), festival wire (wire), products (shop), and artist
+ * profiles (artist). Filterable so new content surfaces can opt in.
+ *
+ * @return string[] Post type slugs.
+ */
+function extrachill_cross_site_links_invalidating_post_types() {
+	return apply_filters(
+		'extrachill_cross_site_links_invalidating_post_types',
+		array(
+			'post',
+			'data_machine_events',
+			'festival_wire',
+			'product',
+			'artist_profile',
+			'forum',
+			'topic',
+		)
+	);
+}
+
+/**
+ * Maybe flush the cross-site links cache when relevant content changes.
+ *
+ * Fires on save_post. Skips autosaves/revisions and post types that can't
+ * affect cross-site link answers, so routine edits elsewhere don't thrash the
+ * cache.
+ *
+ * @param int     $post_id Post ID.
+ * @param WP_Post $post    Post object.
+ * @return void
+ */
+function extrachill_cross_site_links_maybe_flush_on_save( $post_id, $post ) {
+	if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	if ( ! in_array( $post->post_type, extrachill_cross_site_links_invalidating_post_types(), true ) ) {
+		return;
+	}
+
+	extrachill_cross_site_links_flush_cache_group();
+}
+add_action( 'save_post', 'extrachill_cross_site_links_maybe_flush_on_save', 10, 2 );
+
+/**
+ * Flush on hard delete of a relevant post.
+ *
+ * @param int     $post_id Post ID.
+ * @param WP_Post $post    Post object (WP 5.5+ passes this).
+ * @return void
+ */
+function extrachill_cross_site_links_maybe_flush_on_delete( $post_id, $post = null ) {
+	if ( $post instanceof WP_Post
+		&& ! in_array( $post->post_type, extrachill_cross_site_links_invalidating_post_types(), true ) ) {
+		return;
+	}
+
+	extrachill_cross_site_links_flush_cache_group();
+}
+add_action( 'deleted_post', 'extrachill_cross_site_links_maybe_flush_on_delete', 10, 2 );
