@@ -120,13 +120,12 @@ function extrachill_multisite_init() {
 - `EC_BLOG_ID_SHOP` = 3 (shop.extrachill.com)
 - `EC_BLOG_ID_ARTIST` = 4 (artist.extrachill.com + extrachill.link)
 - `EC_BLOG_ID_EVENTS` = 7 (events.extrachill.com)
-- `EC_BLOG_ID_STREAM` = 8 (stream.extrachill.com)
 - `EC_BLOG_ID_NEWSLETTER` = 9 (newsletter.extrachill.com)
 - `EC_BLOG_ID_DOCS` = 10 (docs.extrachill.com)
 - `EC_BLOG_ID_WIRE` = 11 (wire.extrachill.com)
 - `EC_BLOG_ID_STUDIO` = 12 (studio.extrachill.com)
 
-**Note**: Blog IDs 5–6 are unused (historical artifacts; chat.extrachill.com was archived)
+**Note**: Blog IDs 5–6 are unused (historical artifacts; chat.extrachill.com was archived). Blog ID 8 (`stream.extrachill.com`, `EC_BLOG_ID_STREAM`) was decommissioned in April 2026 — the constant, slug, and domain entry have all been removed from the code.
 
 ### Blog ID Helper Functions
 
@@ -140,7 +139,6 @@ array(
     'shop'       => 3,
     'artist'     => 4,
     'events'     => 7,
-    'stream'     => 8,
     'newsletter' => 9,
     'docs'       => 10,
     'wire'       => 11,
@@ -170,7 +168,6 @@ array(
     'shop.extrachill.com'    => 3,
     'artist.extrachill.com'  => 4,
     'events.extrachill.com'  => 7,
-    'stream.extrachill.com'  => 8,
     'newsletter.extrachill.com' => 9,
     'docs.extrachill.com'    => 10,
     'wire.extrachill.com'    => 11,
