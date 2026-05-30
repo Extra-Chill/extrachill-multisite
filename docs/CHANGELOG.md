@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.0] - 2026-05-30
+
+### Added
+- add comment editor abilities and editor helpers (#33)
+
+### Changed
+- cache cross-site term links in the object cache
+
 ## [1.14.1] - 2026-05-18
 
 ### Fixed
