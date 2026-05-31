@@ -119,16 +119,16 @@ function extrachill_get_cross_site_term_links_uncached( $term, $taxonomy ) {
 		return array();
 	}
 
-	$target_sites         = $taxonomy_site_map[ $taxonomy ];
-	$current_site_key     = extrachill_get_current_site_key();
-	$content_type_labels  = extrachill_get_site_content_type_labels();
-	$main_blog_id      = ec_get_blog_id( 'main' );
-	$events_blog_id    = ec_get_blog_id( 'events' );
-	$shop_blog_id      = ec_get_blog_id( 'shop' );
-	$wire_blog_id      = ec_get_blog_id( 'wire' );
-	$artist_blog_id    = ec_get_blog_id( 'artist' );
-	$community_blog_id = ec_get_blog_id( 'community' );
-	$links             = array();
+	$target_sites        = $taxonomy_site_map[ $taxonomy ];
+	$current_site_key    = extrachill_get_current_site_key();
+	$content_type_labels = extrachill_get_site_content_type_labels();
+	$main_blog_id        = ec_get_blog_id( 'main' );
+	$events_blog_id      = ec_get_blog_id( 'events' );
+	$shop_blog_id        = ec_get_blog_id( 'shop' );
+	$wire_blog_id        = ec_get_blog_id( 'wire' );
+	$artist_blog_id      = ec_get_blog_id( 'artist' );
+	$community_blog_id   = ec_get_blog_id( 'community' );
+	$links               = array();
 
 	foreach ( $target_sites as $site_key ) {
 		// Skip current site.

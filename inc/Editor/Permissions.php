@@ -35,11 +35,11 @@ class Permissions {
 	 * @return array{canSave: bool, canUploadMedia: bool, canDelete: bool}
 	 */
 	public static function build( array $args ): array {
-		$object_id   = isset( $args['object_id'] ) ? (int) $args['object_id'] : 0;
-		$edit_cap    = isset( $args['edit_cap'] ) ? (string) $args['edit_cap'] : '';
-		$delete_cap  = isset( $args['delete_cap'] ) ? (string) $args['delete_cap'] : '';
-		$upload_cap  = isset( $args['upload_cap'] ) ? (string) $args['upload_cap'] : 'upload_files';
-		$save_guard  = isset( $args['save_guard'] ) && is_callable( $args['save_guard'] )
+		$object_id  = isset( $args['object_id'] ) ? (int) $args['object_id'] : 0;
+		$edit_cap   = isset( $args['edit_cap'] ) ? (string) $args['edit_cap'] : '';
+		$delete_cap = isset( $args['delete_cap'] ) ? (string) $args['delete_cap'] : '';
+		$upload_cap = isset( $args['upload_cap'] ) ? (string) $args['upload_cap'] : 'upload_files';
+		$save_guard = isset( $args['save_guard'] ) && is_callable( $args['save_guard'] )
 			? $args['save_guard']
 			: null;
 

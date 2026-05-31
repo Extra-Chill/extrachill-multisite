@@ -84,7 +84,7 @@ class NetworkMediaAbilities {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'items'        => array(
+						'items'       => array(
 							'type'  => 'array',
 							'items' => array(
 								'type'       => 'object',
@@ -105,10 +105,10 @@ class NetworkMediaAbilities {
 								),
 							),
 						),
-						'total'        => array( 'type' => 'integer' ),
-						'total_pages'  => array( 'type' => 'integer' ),
-						'page'         => array( 'type' => 'integer' ),
-						'per_page'     => array( 'type' => 'integer' ),
+						'total'       => array( 'type' => 'integer' ),
+						'total_pages' => array( 'type' => 'integer' ),
+						'page'        => array( 'type' => 'integer' ),
+						'per_page'    => array( 'type' => 'integer' ),
 					),
 				),
 				'execute_callback'    => array( $this, 'executeList' ),

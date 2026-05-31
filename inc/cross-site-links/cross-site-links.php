@@ -76,9 +76,9 @@ function extrachill_get_site_content_type_labels() {
 	return apply_filters(
 		'extrachill_site_content_type_labels',
 		array(
-			'main'   => __( 'Blog Posts', 'extrachill-multisite' ),
-			'events' => __( 'Events', 'extrachill-multisite' ),
-			'shop'   => __( 'Shop', 'extrachill-multisite' ),
+			'main'      => __( 'Blog Posts', 'extrachill-multisite' ),
+			'events'    => __( 'Events', 'extrachill-multisite' ),
+			'shop'      => __( 'Shop', 'extrachill-multisite' ),
 			'wire'      => __( 'Festival Wire', 'extrachill-multisite' ),
 			'artist'    => __( 'Artist Profile', 'extrachill-multisite' ),
 			'community' => __( 'Forum Discussions', 'extrachill-multisite' ),

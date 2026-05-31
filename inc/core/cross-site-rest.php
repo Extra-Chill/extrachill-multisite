@@ -167,7 +167,7 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
 	if ( ! isset( $GLOBALS['ec_in_cross_site_dispatch'] ) ) {
 		$GLOBALS['ec_in_cross_site_dispatch'] = 0;
 	}
-	$GLOBALS['ec_in_cross_site_dispatch']++;
+	++$GLOBALS['ec_in_cross_site_dispatch'];
 
 	// Authenticate as the desired user inside the target blog context.
 	// wp_set_current_user() is global — we restore the original below.
@@ -203,8 +203,8 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
 		$response = rest_do_request( $request );
 
 		if ( $response->is_error() ) {
-			$error = $response->as_error();
-			$data  = $error->get_error_data();
+			$error  = $response->as_error();
+			$data   = $error->get_error_data();
 			$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 500;
 
 			$result = new WP_Error(
@@ -225,7 +225,7 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
 			wp_set_current_user( $original_user_id );
 		}
 
-		$GLOBALS['ec_in_cross_site_dispatch']--;
+		--$GLOBALS['ec_in_cross_site_dispatch'];
 		if ( $GLOBALS['ec_in_cross_site_dispatch'] <= 0 ) {
 			unset( $GLOBALS['ec_in_cross_site_dispatch'] );
 		}

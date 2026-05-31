@@ -133,10 +133,10 @@ class OgCardGenerationTask extends SystemTask {
 			return array( 'error' => "No data collector returned data for post #{$post->ID}" );
 		}
 
-		$signature        = self::signature_for( $data );
-		$existing_url     = (string) get_post_meta( $post->ID, self::META_URL, true );
-		$existing_sig     = (string) get_post_meta( $post->ID, self::META_SIGNATURE, true );
-		$cached_path_for  = self::cached_path_for( $post );
+		$signature       = self::signature_for( $data );
+		$existing_url    = (string) get_post_meta( $post->ID, self::META_URL, true );
+		$existing_sig    = (string) get_post_meta( $post->ID, self::META_SIGNATURE, true );
+		$cached_path_for = self::cached_path_for( $post );
 
 		if ( ! $force && $existing_url && $existing_sig === $signature && file_exists( $cached_path_for ) ) {
 			return array(

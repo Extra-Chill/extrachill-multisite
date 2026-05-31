@@ -38,10 +38,10 @@ if ( ! function_exists( 'extrachill_multisite_community_activity_widget' ) ) :
 		extrachill_render_community_activity(
 			array(
 				'render_wrapper' => false,
-				'item_class' => 'sidebar-activity-card',
-				'empty_class' => 'sidebar-activity-card sidebar-activity-empty',
-				'limit' => 5,
-				'items' => $activities,
+				'item_class'     => 'sidebar-activity-card',
+				'empty_class'    => 'sidebar-activity-card sidebar-activity-empty',
+				'limit'          => 5,
+				'items'          => $activities,
 			)
 		);
 

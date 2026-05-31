@@ -106,8 +106,8 @@ add_filter(
 		$pieces = array_filter(
 			array(
 				$data['event_name'] ?? get_the_title( $post ),
-				$data['venue']      ?? '',
-				$data['city']       ?? '',
+				$data['venue'] ?? '',
+				$data['city'] ?? '',
 				$data['date_label'] ?? '',
 			)
 		);
