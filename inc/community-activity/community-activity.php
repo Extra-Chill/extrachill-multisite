@@ -20,15 +20,15 @@ if ( ! function_exists( 'extrachill_get_community_activity_items' ) ) {
 	 * @return array[] Array of activity items.
 	 */
 	function extrachill_get_community_activity_items( $limit = 5 ) {
-		$limit = max( 1, absint( $limit ) );
-		$cache_key = 'extrachill_community_activity_all';
+		$limit      = max( 1, absint( $limit ) );
+		$cache_key  = 'extrachill_community_activity_all';
 		$activities = wp_cache_get( $cache_key );
 
 		if ( false === $activities ) {
-			$current_blog_id = get_current_blog_id();
+			$current_blog_id   = get_current_blog_id();
 			$community_blog_id = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( 'community' ) : null;
-			$query_limit = 10;
-			$activities = array();
+			$query_limit       = 10;
+			$activities        = array();
 
 			if ( ! $community_blog_id ) {
 				return array_slice( $activities, 0, $limit );
@@ -41,11 +41,11 @@ if ( ! function_exists( 'extrachill_get_community_activity_items' ) ) {
 			}
 
 			$args = array(
-				'post_type' => array( 'topic', 'reply' ),
-				'post_status' => 'publish',
+				'post_type'      => array( 'topic', 'reply' ),
+				'post_status'    => 'publish',
 				'posts_per_page' => $query_limit,
-				'orderby' => 'date',
-				'order' => 'DESC',
+				'orderby'        => 'date',
+				'order'          => 'DESC',
 			);
 
 			$query = new WP_Query( $args );
@@ -53,7 +53,7 @@ if ( ! function_exists( 'extrachill_get_community_activity_items' ) ) {
 			if ( $query->have_posts() ) {
 				while ( $query->have_posts() ) {
 					$query->the_post();
-					$post_id = get_the_ID();
+					$post_id   = get_the_ID();
 					$post_type = get_post_type( $post_id );
 					$author_id = get_the_author_meta( 'ID' );
 					$date_time = get_the_date( 'c' );
@@ -71,11 +71,11 @@ if ( ! function_exists( 'extrachill_get_community_activity_items' ) ) {
 						$forum_id = absint( get_post_meta( $topic_id, '_bbp_forum_id', true ) );
 					}
 
-					$forum_title = $forum_id ? get_the_title( $forum_id ) : '';
-					$topic_title = $topic_id ? get_the_title( $topic_id ) : '';
-					$forum_url = $forum_id ? get_permalink( $forum_id ) : '';
-					$topic_url = $topic_id ? get_permalink( $topic_id ) : '';
-					$username = get_the_author();
+					$forum_title      = $forum_id ? get_the_title( $forum_id ) : '';
+					$topic_title      = $topic_id ? get_the_title( $topic_id ) : '';
+					$forum_url        = $forum_id ? get_permalink( $forum_id ) : '';
+					$topic_url        = $topic_id ? get_permalink( $topic_id ) : '';
+					$username         = get_the_author();
 					$user_profile_url = ( $author_id && function_exists( 'extrachill_get_user_profile_url' ) )
 						? extrachill_get_user_profile_url( $author_id )
 						: '';
@@ -85,15 +85,15 @@ if ( ! function_exists( 'extrachill_get_community_activity_items' ) ) {
 					}
 
 					$activities[] = array(
-						'id' => $post_id,
-						'type' => ( 'reply' === $post_type ) ? 'Reply' : 'Topic',
-						'username' => $username,
+						'id'               => $post_id,
+						'type'             => ( 'reply' === $post_type ) ? 'Reply' : 'Topic',
+						'username'         => $username,
 						'user_profile_url' => $user_profile_url,
-						'topic_title' => $topic_title,
-						'forum_title' => $forum_title,
-						'date_time' => $date_time,
-						'forum_url' => $forum_url,
-						'topic_url' => $topic_url,
+						'topic_title'      => $topic_title,
+						'forum_title'      => $forum_title,
+						'date_time'        => $date_time,
+						'forum_url'        => $forum_url,
+						'topic_url'        => $topic_url,
 					);
 				}
 				wp_reset_postdata();
@@ -119,17 +119,17 @@ if ( ! function_exists( 'extrachill_render_community_activity' ) ) {
 	 */
 	function extrachill_render_community_activity( $args = array() ) {
 		$defaults = array(
-			'limit' => 5,
-			'wrapper_tag' => 'div',
-			'wrapper_class' => 'community-activity-list',
-			'item_class' => '',
-			'empty_class' => '',
+			'limit'          => 5,
+			'wrapper_tag'    => 'div',
+			'wrapper_class'  => 'community-activity-list',
+			'item_class'     => '',
+			'empty_class'    => '',
 			'render_wrapper' => true,
 			'counter_offset' => 0,
-			'items' => null,
+			'items'          => null,
 		);
 
-		$args = wp_parse_args( $args, $defaults );
+		$args  = wp_parse_args( $args, $defaults );
 		$items = is_array( $args['items'] )
 			? array_slice( $args['items'], 0, $args['limit'] )
 			: extrachill_get_community_activity_items( $args['limit'] );
@@ -150,13 +150,13 @@ if ( ! function_exists( 'extrachill_render_community_activity' ) ) {
 					continue;
 				}
 
-				$counter = $index + 1 + (int) $args['counter_offset'];
+				$counter   = $index + 1 + (int) $args['counter_offset'];
 				$time_text = sprintf(
 					esc_html__( '%s ago', 'extrachill-multisite' ),
 					human_time_diff( strtotime( $activity['date_time'] ) )
 				);
 
-				$username = esc_html( $activity['username'] );
+				$username      = esc_html( $activity['username'] );
 				$username_html = $activity['user_profile_url']
 					? sprintf( '<a href="%1$s">%2$s</a>', esc_url( $activity['user_profile_url'] ), $username )
 					: $username;

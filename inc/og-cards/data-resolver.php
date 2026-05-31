@@ -131,16 +131,16 @@ function collect_event_card_data( array $data, $post ): array {
 
 	$venue_terms = get_the_terms( $post->ID, 'venue' );
 	if ( $venue_terms && ! is_wp_error( $venue_terms ) ) {
-		$venue_term = $venue_terms[0];
+		$venue_term    = $venue_terms[0];
 		$data['venue'] = (string) $venue_term->name;
 
 		if ( function_exists( 'data_machine_events_get_venue_data' ) ) {
 			$venue_data    = data_machine_events_get_venue_data( (int) $venue_term->term_id );
 			$data['venue'] = (string) ( $venue_data['name'] ?? $venue_term->name );
 
-			$city_parts = array_filter(
+			$city_parts   = array_filter(
 				array(
-					$venue_data['city']  ?? '',
+					$venue_data['city'] ?? '',
 					$venue_data['state'] ?? '',
 				)
 			);
@@ -183,7 +183,7 @@ function inject_location_overrides( array $data, $post ): array {
 
 	$existing = (array) ( $data['_brand_override'] ?? array() );
 
-	$existing['colors'] = array_merge(
+	$existing['colors']         = array_merge(
 		(array) ( $existing['colors'] ?? array() ),
 		array(
 			'accent'      => $colors['bg'],

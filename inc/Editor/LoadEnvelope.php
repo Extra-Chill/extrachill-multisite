@@ -47,14 +47,14 @@ class LoadEnvelope {
 	 */
 	public static function build( array $args ): array {
 		$envelope = array(
-			'id'         => isset( $args['id'] ) ? (int) $args['id'] : 0,
-			'type'       => isset( $args['type'] ) ? (string) $args['type'] : '',
-			'content'    => isset( $args['content'] ) ? (string) $args['content'] : '',
-			'raw'        => isset( $args['content'] ) ? (string) $args['content'] : '',
-			'status'     => isset( $args['status'] ) ? (string) $args['status'] : '',
-			'permalink'  => isset( $args['permalink'] ) ? (string) $args['permalink'] : '',
-			'updated_at' => isset( $args['updated_at'] ) ? (string) $args['updated_at'] : '',
-			'context'    => isset( $args['context'] ) && is_array( $args['context'] ) ? $args['context'] : array(),
+			'id'          => isset( $args['id'] ) ? (int) $args['id'] : 0,
+			'type'        => isset( $args['type'] ) ? (string) $args['type'] : '',
+			'content'     => isset( $args['content'] ) ? (string) $args['content'] : '',
+			'raw'         => isset( $args['content'] ) ? (string) $args['content'] : '',
+			'status'      => isset( $args['status'] ) ? (string) $args['status'] : '',
+			'permalink'   => isset( $args['permalink'] ) ? (string) $args['permalink'] : '',
+			'updated_at'  => isset( $args['updated_at'] ) ? (string) $args['updated_at'] : '',
+			'context'     => isset( $args['context'] ) && is_array( $args['context'] ) ? $args['context'] : array(),
 			'permissions' => isset( $args['permissions'] ) && is_array( $args['permissions'] )
 				? $args['permissions']
 				: array(
@@ -62,7 +62,7 @@ class LoadEnvelope {
 					'canUploadMedia' => false,
 					'canDelete'      => false,
 				),
-			'draft'      => array_key_exists( 'draft', $args ) ? $args['draft'] : null,
+			'draft'       => array_key_exists( 'draft', $args ) ? $args['draft'] : null,
 		);
 
 		if ( isset( $args['title'] ) ) {

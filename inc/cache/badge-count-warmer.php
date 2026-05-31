@@ -126,7 +126,7 @@ function ec_badge_warmer_warm_blog_site() {
 	$response = rest_do_request( $request );
 
 	if ( ! $response->is_error() ) {
-		$data = $response->get_data();
+		$data     = $response->get_data();
 		$warmed[] = 'blog/location-events: ' . ( is_array( $data ) ? count( $data ) : 0 ) . ' terms';
 	}
 
@@ -136,7 +136,7 @@ function ec_badge_warmer_warm_blog_site() {
 	$response2 = rest_do_request( $request2 );
 
 	if ( ! $response2->is_error() ) {
-		$data2 = $response2->get_data();
+		$data2    = $response2->get_data();
 		$warmed[] = 'blog/wire-festivals: ' . ( is_array( $data2 ) ? count( $data2 ) : 0 ) . ' terms';
 	}
 

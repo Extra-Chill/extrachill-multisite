@@ -46,22 +46,31 @@ class CommentEditorAbilities {
 					'type'       => 'object',
 					'properties' => array(
 						'comment_id' => array( 'type' => 'integer' ),
-						'blog_id'    => array( 'type' => 'integer', 'description' => 'Defaults to current blog.' ),
+						'blog_id'    => array(
+							'type'        => 'integer',
+							'description' => 'Defaults to current blog.',
+						),
 					),
 					'required'   => array( 'comment_id' ),
 				),
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'id'         => array( 'type' => 'integer' ),
-						'type'       => array( 'type' => 'string', 'enum' => array( 'comment' ) ),
-						'content'    => array( 'type' => 'string' ),
-						'raw'        => array( 'type' => 'string' ),
-						'status'     => array( 'type' => 'string' ),
-						'post_id'    => array( 'type' => 'integer' ),
-						'permalink'  => array( 'type' => 'string' ),
-						'updated_at' => array( 'type' => 'string', 'format' => 'date-time' ),
-						'context'    => array(
+						'id'          => array( 'type' => 'integer' ),
+						'type'        => array(
+							'type' => 'string',
+							'enum' => array( 'comment' ),
+						),
+						'content'     => array( 'type' => 'string' ),
+						'raw'         => array( 'type' => 'string' ),
+						'status'      => array( 'type' => 'string' ),
+						'post_id'     => array( 'type' => 'integer' ),
+						'permalink'   => array( 'type' => 'string' ),
+						'updated_at'  => array(
+							'type'   => 'string',
+							'format' => 'date-time',
+						),
+						'context'     => array(
 							'type'       => 'object',
 							'properties' => array(
 								'blog_id' => array( 'type' => 'integer' ),
@@ -76,7 +85,7 @@ class CommentEditorAbilities {
 								'canDelete'      => array( 'type' => 'boolean' ),
 							),
 						),
-						'draft' => array(
+						'draft'       => array(
 							'anyOf' => array(
 								array( 'type' => 'object' ),
 								array( 'type' => 'null' ),
@@ -107,7 +116,10 @@ class CommentEditorAbilities {
 					'type'       => 'object',
 					'properties' => array(
 						'comment_id' => array( 'type' => 'integer' ),
-						'content'    => array( 'type' => 'string', 'description' => 'Serialized block markup.' ),
+						'content'    => array(
+							'type'        => 'string',
+							'description' => 'Serialized block markup.',
+						),
 						'blog_id'    => array( 'type' => 'integer' ),
 					),
 					'required'   => array( 'comment_id', 'content' ),
@@ -119,7 +131,10 @@ class CommentEditorAbilities {
 						'status'     => array( 'type' => 'string' ),
 						'content'    => array( 'type' => 'string' ),
 						'permalink'  => array( 'type' => 'string' ),
-						'updated_at' => array( 'type' => 'string', 'format' => 'date-time' ),
+						'updated_at' => array(
+							'type'   => 'string',
+							'format' => 'date-time',
+						),
 					),
 				),
 				'execute_callback'    => array( $this, 'executeUpdate' ),
@@ -302,7 +317,7 @@ class CommentEditorAbilities {
 					return new \WP_Error( 'update_failed', 'Failed to update comment.' );
 				}
 
-				$fresh = get_comment( $comment_id );
+				$fresh  = get_comment( $comment_id );
 				$status = $fresh && '1' === (string) $fresh->comment_approved
 					? 'publish'
 					: (string) ( $fresh ? $fresh->comment_approved : $comment->comment_approved );
