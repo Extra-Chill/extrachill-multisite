@@ -321,4 +321,43 @@ class TurnstileTest extends WP_UnitTestCase {
 
 		$this->assertStringNotContainsString( 'data-callback', $html );
 	}
+
+	/**
+	 * Explicit per-widget render (multisite #48) reads each widget's declared
+	 * data-* attributes (including a consumer-supplied data-callback) off the
+	 * `.cf-turnstile` element and maps them into the turnstile.render() options.
+	 * The renderer must therefore still pass through a callback a consumer
+	 * explicitly asks for — the boot script is what decides (per-widget, in
+	 * isolation) whether the named global actually exists. This is the inverse
+	 * guard to test_render_does_not_inject_unsolicited_data_callback(): never
+	 * inject one, but never drop one the consumer set either.
+	 */
+	public function test_render_passes_through_consumer_supplied_data_callback() {
+		update_site_option( 'ec_turnstile_site_key', 'site-key-abc' );
+		update_site_option( 'ec_turnstile_secret_key', 'secret-123' );
+
+		$html = ec_render_turnstile_widget(
+			array( 'data-callback' => 'myConsumerCallback' )
+		);
+
+		$this->assertStringContainsString( 'data-callback="myConsumerCallback"', $html );
+	}
+
+	/**
+	 * The default render still emits a `.cf-turnstile` element carrying the
+	 * data-* attributes the explicit-render boot script reads (sitekey, size,
+	 * theme, appearance). The boot keys entirely off these attributes, so the
+	 * renderer's output contract is what makes per-widget render possible.
+	 */
+	public function test_render_emits_data_attributes_boot_reads() {
+		update_site_option( 'ec_turnstile_site_key', 'site-key-abc' );
+		update_site_option( 'ec_turnstile_secret_key', 'secret-123' );
+
+		$html = ec_render_turnstile_widget();
+
+		$this->assertStringContainsString( 'class="cf-turnstile"', $html );
+		$this->assertStringContainsString( 'data-sitekey="site-key-abc"', $html );
+		$this->assertStringContainsString( 'data-theme=', $html );
+		$this->assertStringContainsString( 'data-appearance=', $html );
+	}
 }
