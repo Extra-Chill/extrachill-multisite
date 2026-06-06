@@ -134,10 +134,51 @@ function ec_render_turnstile_widget( $args = array() ) {
 	return sprintf( '<div%s></div>', $attributes );
 }
 
+/**
+ * Enqueue the Turnstile client runtime in EXPLICIT render mode.
+ *
+ * Loads two scripts, in footer, dependency-free:
+ *
+ * 1. `ec-turnstile-boot` — a tiny site-wide bootstrap shipped from this plugin
+ *    (assets/js/turnstile-boot.js). It defines `window.ecTurnstileBoot`, which
+ *    renders EACH `.cf-turnstile` widget in its own `turnstile.render()` call
+ *    wrapped in try/catch. One bad widget can only break itself; siblings still
+ *    render. This must be registered before api.js so the `onload` target
+ *    exists when Cloudflare fires it.
+ * 2. `cloudflare-turnstile` (the api.js handle, default $handle) — loaded with
+ *    `?render=explicit&onload=ecTurnstileBoot` so Cloudflare does NOT auto-scan
+ *    the DOM in a single batch (the implicit-render failure class that let one
+ *    dangling `data-callback` abort every widget on the page). It instead calls
+ *    our boot once ready.
+ *
+ * The boot script is a third-party-widget bootstrap, not Gutenberg block logic,
+ * so it is enqueued the canonical WP way and is exempt from the headless-React
+ * block rule. It contains no fetch/AJAX.
+ *
+ * @param string $handle Script handle for the Cloudflare api.js registration.
+ */
 function ec_enqueue_turnstile_script( $handle = 'cloudflare-turnstile' ) {
-	if ( ec_is_turnstile_configured() ) {
-		wp_enqueue_script( $handle, 'https://challenges.cloudflare.com/turnstile/v0/api.js', array(), null, true );
+	if ( ! ec_is_turnstile_configured() ) {
+		return;
 	}
+
+	$boot_handle = 'ec-turnstile-boot';
+	$boot_src    = EXTRACHILL_MULTISITE_PLUGIN_URL . 'assets/js/turnstile-boot.js';
+	$boot_path   = EXTRACHILL_MULTISITE_PLUGIN_DIR . 'assets/js/turnstile-boot.js';
+	$boot_ver    = file_exists( $boot_path ) ? (string) filemtime( $boot_path ) : EXTRACHILL_MULTISITE_VERSION;
+
+	wp_enqueue_script( $boot_handle, $boot_src, array(), $boot_ver, true );
+
+	// api.js in explicit mode; calls window.ecTurnstileBoot once loaded. Listed
+	// after the boot handle as a dependency so the boot definition is present
+	// before Cloudflare fires onload.
+	wp_enqueue_script(
+		$handle,
+		'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=ecTurnstileBoot',
+		array( $boot_handle ),
+		null,
+		true
+	);
 }
 
 /**
