@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.16.0] - 2026-06-06
+
+### Added
+- render Turnstile widgets explicitly per-widget so one bad widget cannot break siblings
+
+### Changed
+- add cross-widget Turnstile browser smoke
+- add PHPUnit coverage for Cloudflare Turnstile integration
+- clear phpcs lint debt (release preflight)
+
+### Fixed
+- remove dead 'stream' and 'chat' entries from site labels
+
 ## [1.15.0] - 2026-05-30
 
 ### Added
