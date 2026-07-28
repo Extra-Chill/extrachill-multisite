@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.8.0] - 2026-07-28
+
+### Added
+- add approved network term classification
+
+### Fixed
+- clean stale artist term inverses
+- clean deleted artist term bindings
+
 ## [2.7.0] - 2026-07-18
 
 ### Added
