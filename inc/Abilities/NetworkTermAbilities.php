@@ -206,7 +206,7 @@ class NetworkTermAbilities {
 		}
 		switch_to_blog( $blog_id );
 		try {
-			$post = get_post( absint( $input['post_id'] ) );
+			$post       = get_post( absint( $input['post_id'] ) );
 			$permission = $this->canEditTarget( $post );
 			if ( is_wp_error( $permission ) ) {
 				return $permission;
@@ -239,7 +239,7 @@ class NetworkTermAbilities {
 		}
 		switch_to_blog( $blog_id );
 		try {
-			$post = get_post( absint( $input['post_id'] ) );
+			$post       = get_post( absint( $input['post_id'] ) );
 			$permission = $this->canEditTarget( $post );
 			if ( is_wp_error( $permission ) ) {
 				return $permission;
@@ -303,6 +303,7 @@ class NetworkTermAbilities {
 			if ( function_exists( 'extrachill_community_ability_update_topic_permission' ) ) {
 				return extrachill_community_ability_update_topic_permission( array( 'topic_id' => $post->ID ) );
 			}
+			// phpcs:ignore WordPress.WP.Capabilities.Unknown -- Registered by bbPress.
 			return current_user_can( 'edit_topic', $post->ID );
 		}
 

@@ -73,7 +73,7 @@ function extrachill_network_schedule_term_classification( $args ) {
 			return new WP_Error( 'classification_provider_unavailable', __( 'No system AI provider and model are configured.', 'extrachill-network' ) );
 		}
 
-		$params  = array(
+		$params     = array(
 			'site'        => $site_key,
 			'post_id'     => $post_id,
 			'taxonomies'  => $taxonomies,
@@ -118,9 +118,9 @@ function extrachill_network_schedule_term_classification( $args ) {
 		}
 
 		$job_states[ $lane ] = array(
-			'job_id'     => (int) $job_id,
-			'attempt'    => $attempt,
-			'mode'       => $mode,
+			'job_id'      => (int) $job_id,
+			'attempt'     => $attempt,
+			'mode'        => $mode,
 			'fingerprint' => $fingerprint,
 		);
 		update_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_CLASSIFICATION_JOBS_META, $job_states );

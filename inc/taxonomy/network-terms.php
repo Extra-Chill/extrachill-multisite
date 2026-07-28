@@ -496,6 +496,7 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 			}
 
 			$ai_ids = array();
+
 			$assignment_identities[ $taxonomy ] = array_keys( $human );
 			$projection_plan[ $taxonomy ]       = array();
 			foreach ( $selected[ $taxonomy ] as $slug => $candidate ) {
@@ -507,6 +508,7 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 					return $projection;
 				}
 				$ai_ids[ $slug ] = (int) $projection['term_id'];
+
 				$projection_plan[ $taxonomy ][] = array(
 					'slug'         => $slug,
 					'term_id'      => (int) $projection['term_id'],
@@ -516,7 +518,7 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 			}
 
 			$assignment_plan[ $taxonomy ]            = array_values( array_filter( array_merge( array_values( $human ), array_values( $ai_ids ) ) ) );
-			$assignment_identities[ $taxonomy ]       = array_values( array_unique( array_merge( $assignment_identities[ $taxonomy ], array_keys( $ai_ids ) ) ) );
+			$assignment_identities[ $taxonomy ]      = array_values( array_unique( array_merge( $assignment_identities[ $taxonomy ], array_keys( $ai_ids ) ) ) );
 			$provenance['fingerprints'][ $taxonomy ] = $fingerprint;
 			$provenance['terms'][ $taxonomy ]        = array_keys( $ai_ids );
 		}
@@ -596,7 +598,7 @@ function extrachill_network_restore_term_classification_effect( $effect ) {
 		$GLOBALS['extrachill_network_term_classifier_writing'] = true;
 		try {
 			foreach ( $effect['previous_terms'] as $taxonomy => $previous_ids ) {
-				$taxonomy           = sanitize_key( $taxonomy );
+				$taxonomy            = sanitize_key( $taxonomy );
 				$applied_fingerprint = (string) ( $effect['applied_provenance']['fingerprints'][ $taxonomy ] ?? '' );
 				$current_fingerprint = (string) ( $current_provenance['fingerprints'][ $taxonomy ] ?? '' );
 				$applied_ai          = array_values( (array) ( $effect['applied_provenance']['terms'][ $taxonomy ] ?? array() ) );
@@ -617,7 +619,7 @@ function extrachill_network_restore_term_classification_effect( $effect ) {
 						'reason' => $current_terms->get_error_message(),
 					);
 				}
-				$current_ids = array_map( static fn( $term ) => (int) $term->term_id, $current_terms );
+				$current_ids  = array_map( static fn( $term ) => (int) $term->term_id, $current_terms );
 				$previous_ids = array_map( 'absint', (array) $previous_ids );
 				$applied_ids  = array_map( 'absint', (array) ( $effect['applied_terms'][ $taxonomy ] ?? array() ) );
 				$added_ids    = array_diff( $applied_ids, $previous_ids );
@@ -662,12 +664,12 @@ function extrachill_network_restore_term_classification_effect( $effect ) {
 			$GLOBALS['extrachill_network_term_classifier_writing'] = false;
 		}
 		return array(
-			'status'  => $reverted ? 'reverted' : 'skipped',
-			'type'    => 'network_post_terms_set',
-			'post_id' => $post_id,
-			'site'    => $site_key,
+			'status'              => $reverted ? 'reverted' : 'skipped',
+			'type'                => 'network_post_terms_set',
+			'post_id'             => $post_id,
+			'site'                => $site_key,
 			'reverted_taxonomies' => $reverted,
-			'conflicts'            => $conflicts,
+			'conflicts'           => $conflicts,
 		);
 	} finally {
 		restore_current_blog();
