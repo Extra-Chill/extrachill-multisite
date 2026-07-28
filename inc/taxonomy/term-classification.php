@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Data Machine task type. */
 const EXTRACHILL_NETWORK_TERM_CLASSIFICATION_TASK = 'extrachill_network_classify_post_terms';
 
+/** Post meta tracking active/terminal Data Machine attempts per operation lane. */
+const EXTRACHILL_NETWORK_TERM_CLASSIFICATION_JOBS_META = '_extrachill_network_term_classification_jobs';
+
 add_filter(
 	'datamachine_tasks',
 	static function ( array $tasks ): array {
@@ -70,7 +73,7 @@ function extrachill_network_schedule_term_classification( $args ) {
 			return new WP_Error( 'classification_provider_unavailable', __( 'No system AI provider and model are configured.', 'extrachill-network' ) );
 		}
 
-		$params = array(
+		$params  = array(
 			'site'        => $site_key,
 			'post_id'     => $post_id,
 			'taxonomies'  => $taxonomies,
@@ -78,10 +81,29 @@ function extrachill_network_schedule_term_classification( $args ) {
 			'force'       => ! empty( $args['force'] ),
 			'dry_run'     => ! empty( $args['dry_run'] ),
 		);
-		$key    = sprintf( 'extrachill-network-terms:%s:%d:%s:%s', $site_key, $post_id, implode( ',', $taxonomies ), $fingerprint );
-		if ( ! empty( $args['force'] ) ) {
-			$key .= ':' . wp_generate_uuid4();
+		$mode       = ! empty( $args['dry_run'] ) ? 'preview' : 'live';
+		$lane       = hash( 'sha256', implode( '|', array( $site_key, $post_id, implode( ',', $taxonomies ), $fingerprint, $mode ) ) );
+		$job_states = get_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_CLASSIFICATION_JOBS_META, true );
+		$job_states = is_array( $job_states ) ? $job_states : array();
+		$state      = is_array( $job_states[ $lane ] ?? null ) ? $job_states[ $lane ] : array();
+		$attempt    = max( 1, absint( $state['attempt'] ?? 1 ) );
+
+		if ( ! empty( $state['job_id'] ) && class_exists( '\DataMachine\Core\Database\Jobs\Jobs' ) && class_exists( '\DataMachine\Core\JobStatus' ) ) {
+			/* @phpstan-ignore-next-line class.notFound */
+			$existing_job = ( new \DataMachine\Core\Database\Jobs\Jobs() )->get_job( (int) $state['job_id'] );
+			if ( is_array( $existing_job ) && ! \DataMachine\Core\JobStatus::isStatusFinal( (string) ( $existing_job['status'] ?? '' ) ) ) {
+				return array(
+					'scheduled'   => false,
+					'reason'      => 'duplicate_active_job',
+					'job_id'      => (int) $state['job_id'],
+					'fingerprint' => $fingerprint,
+					'taxonomies'  => $taxonomies,
+				);
+			}
+			++$attempt;
 		}
+
+		$key = sprintf( 'extrachill-network-terms:%s:%d:%s:%s:%s:%d', $site_key, $post_id, implode( ',', $taxonomies ), $fingerprint, $mode, $attempt );
 
 		$job_id = \DataMachine\Engine\Tasks\TaskScheduler::schedule(
 			EXTRACHILL_NETWORK_TERM_CLASSIFICATION_TASK,
@@ -94,6 +116,14 @@ function extrachill_network_schedule_term_classification( $args ) {
 			$error = \DataMachine\Engine\Tasks\TaskScheduler::getLastScheduleError();
 			return new WP_Error( 'classification_schedule_failed', $error['message'] ?? __( 'The classification job could not be scheduled.', 'extrachill-network' ) );
 		}
+
+		$job_states[ $lane ] = array(
+			'job_id'     => (int) $job_id,
+			'attempt'    => $attempt,
+			'mode'       => $mode,
+			'fingerprint' => $fingerprint,
+		);
+		update_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_CLASSIFICATION_JOBS_META, $job_states );
 
 		return array(
 			'scheduled'   => true,
@@ -123,7 +153,7 @@ function extrachill_network_maybe_schedule_term_classification( $new_status, $ol
 	}
 
 	$is_pending_transition = 'pending' === $new_status && 'pending' !== $old_status;
-	$is_publish_transition = 'publish' === $new_status;
+	$is_publish_transition = in_array( $new_status, array( 'publish', 'closed' ), true );
 	if ( ! $is_pending_transition && ! $is_publish_transition ) {
 		return;
 	}

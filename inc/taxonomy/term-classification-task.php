@@ -150,19 +150,22 @@ class TermClassificationTask extends SystemTask {
 		}
 
 		$reverted = array();
+		$skipped  = array();
 		$failed   = array();
 		foreach ( array_reverse( $effects ) as $effect ) {
 			$result = \extrachill_network_restore_term_classification_effect( $effect );
 			if ( 'reverted' === ( $result['status'] ?? '' ) ) {
 				$reverted[] = $result;
+			} elseif ( 'skipped' === ( $result['status'] ?? '' ) ) {
+				$skipped[] = $result;
 			} else {
 				$failed[] = $result;
 			}
 		}
 		return array(
-			'success'  => empty( $failed ) && ! empty( $reverted ),
+			'success'  => empty( $failed ),
 			'reverted' => $reverted,
-			'skipped'  => array(),
+			'skipped'  => $skipped,
 			'failed'   => $failed,
 		);
 	}

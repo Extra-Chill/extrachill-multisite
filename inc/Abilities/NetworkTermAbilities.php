@@ -97,7 +97,7 @@ class NetworkTermAbilities {
 					),
 				),
 				'execute_callback'    => array( $this, 'project' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'canProject' ),
 				'meta'                => array(
 					'show_in_rest' => true,
 					'annotations'  => array( 'idempotent' => true ),
@@ -146,7 +146,7 @@ class NetworkTermAbilities {
 					),
 				),
 				'execute_callback'    => array( $this, 'classify' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'canClassify' ),
 				'meta'                => array( 'show_in_rest' => true ),
 			)
 		);
@@ -165,6 +165,10 @@ class NetworkTermAbilities {
 		$blog_id   = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( $site_key ) : 0;
 		if ( ! $blog_id ) {
 			return new \WP_Error( 'unknown_site', __( 'Unknown target site.', 'extrachill-network' ) );
+		}
+		$routed = $this->routeToTargetRuntime( 'extrachill/search-network-terms', 'GET', $input, $blog_id );
+		if ( null !== $routed ) {
+			return $routed;
 		}
 
 		switch_to_blog( $blog_id );
@@ -196,17 +200,21 @@ class NetworkTermAbilities {
 		if ( ! $blog_id ) {
 			return new \WP_Error( 'unknown_site', __( 'Unknown target site.', 'extrachill-network' ) );
 		}
+		$routed = $this->routeToTargetRuntime( 'extrachill/project-network-term', 'POST', $input, $blog_id );
+		if ( null !== $routed ) {
+			return $routed;
+		}
 		switch_to_blog( $blog_id );
 		try {
 			$post = get_post( absint( $input['post_id'] ) );
-			if ( ! $post instanceof \WP_Post || ! current_user_can( 'edit_post', $post->ID ) ) {
+			$permission = $this->canEditTarget( $post );
+			if ( is_wp_error( $permission ) ) {
+				return $permission;
+			}
+			if ( ! $permission ) {
 				return new \WP_Error( 'term_projection_forbidden', __( 'You cannot edit that post.', 'extrachill-network' ), array( 'status' => 403 ) );
 			}
 			$taxonomy = sanitize_key( $input['taxonomy'] );
-			$tax_obj  = get_taxonomy( $taxonomy );
-			if ( ! $tax_obj || ! current_user_can( $tax_obj->cap->assign_terms ) ) {
-				return new \WP_Error( 'term_projection_forbidden', __( 'You cannot assign terms from that taxonomy.', 'extrachill-network' ), array( 'status' => 403 ) );
-			}
 			return \extrachill_network_project_term( $site_key, $post->post_type, $taxonomy, $input['slug'], ! empty( $input['dry_run'] ) );
 		} finally {
 			restore_current_blog();
@@ -225,15 +233,108 @@ class NetworkTermAbilities {
 		if ( ! $blog_id ) {
 			return new \WP_Error( 'unknown_site', __( 'Unknown target site.', 'extrachill-network' ) );
 		}
+		$routed = $this->routeToTargetRuntime( 'extrachill/classify-post-terms', 'POST', $input, $blog_id );
+		if ( null !== $routed ) {
+			return $routed;
+		}
 		switch_to_blog( $blog_id );
 		try {
 			$post = get_post( absint( $input['post_id'] ) );
-			if ( ! $post instanceof \WP_Post || ! current_user_can( 'edit_post', $post->ID ) ) {
+			$permission = $this->canEditTarget( $post );
+			if ( is_wp_error( $permission ) ) {
+				return $permission;
+			}
+			if ( ! $permission ) {
 				return new \WP_Error( 'classification_forbidden', __( 'You cannot classify that post.', 'extrachill-network' ), array( 'status' => 403 ) );
 			}
 		} finally {
 			restore_current_blog();
 		}
 		return \extrachill_network_schedule_term_classification( $input );
+	}
+
+	/**
+	 * Permission callback for trusted term projection.
+	 *
+	 * Cross-site calls authenticate again in the target runtime; the source
+	 * runtime can only establish that a user is present.
+	 *
+	 * @param array $input Ability input.
+	 * @return bool|\WP_Error
+	 */
+	public function canProject( array $input ) {
+		return $this->canMutateInput( $input );
+	}
+
+	/**
+	 * Permission callback for manual classification.
+	 *
+	 * @param array $input Ability input.
+	 * @return bool|\WP_Error
+	 */
+	public function canClassify( array $input ) {
+		return $this->canMutateInput( $input );
+	}
+
+	/** Resolve mutation permission in the runtime that owns the target type. */
+	private function canMutateInput( array $input ) {
+		$blog_id = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( sanitize_key( $input['site'] ?? '' ) ) : 0;
+		if ( ! $blog_id || ! is_user_logged_in() ) {
+			return false;
+		}
+		if ( (int) get_current_blog_id() !== (int) $blog_id ) {
+			return true;
+		}
+
+		return $this->canEditTarget( get_post( absint( $input['post_id'] ?? 0 ) ) );
+	}
+
+	/**
+	 * Use the target post type's edit contract, not taxonomy creation caps.
+	 *
+	 * @param mixed $post Target post.
+	 * @return bool|\WP_Error
+	 */
+	private function canEditTarget( $post ) {
+		if ( ! $post instanceof \WP_Post ) {
+			return false;
+		}
+		if ( 'topic' === $post->post_type ) {
+			if ( function_exists( 'extrachill_community_ability_update_topic_permission' ) ) {
+				return extrachill_community_ability_update_topic_permission( array( 'topic_id' => $post->ID ) );
+			}
+			return current_user_can( 'edit_topic', $post->ID );
+		}
+
+		return current_user_can( 'edit_post', $post->ID );
+	}
+
+	/**
+	 * Route explicit cross-site targets through a fully bootstrapped runtime.
+	 *
+	 * @param string $ability_name Ability name.
+	 * @param string $method       REST method.
+	 * @param array  $input        Ability input.
+	 * @param int    $blog_id      Target blog ID.
+	 * @return array|\WP_Error|null Null when already in the target runtime.
+	 */
+	private function routeToTargetRuntime( $ability_name, $method, array $input, $blog_id ) {
+		if ( (int) get_current_blog_id() === (int) $blog_id ) {
+			return null;
+		}
+		if ( ! function_exists( 'ec_cross_site_rest_request_http' ) ) {
+			return new \WP_Error( 'target_runtime_unavailable', __( 'The target site runtime is unavailable.', 'extrachill-network' ) );
+		}
+
+		$site_key = sanitize_key( $input['site'] ?? '' );
+		$route    = '/wp-abilities/v1/abilities/' . $ability_name . '/run';
+		$args     = array( 'user_id' => get_current_user_id() );
+		if ( 'GET' === $method ) {
+			$args['query'] = array( 'input' => $input );
+		} else {
+			$args['body'] = array( 'input' => $input );
+		}
+
+		return ec_cross_site_rest_request_http( $site_key, $method, $route, $args );
 	}
 }

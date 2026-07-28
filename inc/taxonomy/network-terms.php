@@ -72,6 +72,25 @@ function extrachill_network_get_eligible_term_taxonomies( $site_key, $post_type,
 }
 
 /**
+ * Return statuses eligible for classification on one configured target.
+ *
+ * bbPress keeps closed topics public, so they retain the same classification
+ * lifecycle as published topics.
+ *
+ * @param string $site_key  Logical site key.
+ * @param string $post_type Post type.
+ * @return string[]
+ */
+function extrachill_network_get_eligible_term_statuses( $site_key, $post_type ) {
+	$statuses = array( 'pending', 'publish' );
+	if ( 'community' === $site_key && 'topic' === $post_type ) {
+		$statuses[] = 'closed';
+	}
+
+	return array_values( array_unique( apply_filters( 'extrachill_network_term_classification_statuses', $statuses, $site_key, $post_type ) ) );
+}
+
+/**
  * Read one approved source term into the network identity shape.
  *
  * @param WP_Term $term       Source term.
@@ -230,6 +249,11 @@ function extrachill_network_project_term( $site_key, $post_type, $taxonomy, $slu
 		return new WP_Error( 'unsupported_term_projection', __( 'The taxonomy is not registered for that target in this runtime.', 'extrachill-network' ) );
 	}
 
+	$candidate = extrachill_network_resolve_term_identity( $taxonomy, $slug );
+	if ( is_wp_error( $candidate ) ) {
+		return $candidate;
+	}
+
 	$existing = get_term_by( 'slug', $slug, $taxonomy );
 	if ( $existing ) {
 		return array(
@@ -237,12 +261,8 @@ function extrachill_network_project_term( $site_key, $post_type, $taxonomy, $slu
 			'slug'     => $existing->slug,
 			'term_id'  => (int) $existing->term_id,
 			'created'  => false,
+			'source'   => $candidate['source'],
 		);
-	}
-
-	$candidate = extrachill_network_resolve_term_identity( $taxonomy, $slug );
-	if ( is_wp_error( $candidate ) ) {
-		return $candidate;
 	}
 
 	$parent_id = 0;
@@ -404,7 +424,8 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 		}
 
 		$taxonomies = extrachill_network_get_eligible_term_taxonomies( $site_key, $post->post_type, $args['taxonomies'] ?? array() );
-		if ( empty( $taxonomies ) || ! in_array( $post->post_status, array( 'pending', 'publish' ), true ) ) {
+		$statuses   = extrachill_network_get_eligible_term_statuses( $site_key, $post->post_type );
+		if ( empty( $taxonomies ) || ! in_array( $post->post_status, $statuses, true ) ) {
 			return new WP_Error( 'unsupported_classification_target', __( 'The post status or target policy is not eligible for classification.', 'extrachill-network' ) );
 		}
 
@@ -457,6 +478,8 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 		$provenance['terms']          = is_array( $provenance['terms'] ?? null ) ? $provenance['terms'] : array();
 		$previous_terms               = array();
 		$assignment_plan              = array();
+		$assignment_identities        = array();
+		$projection_plan              = array();
 
 		foreach ( $taxonomies as $taxonomy ) {
 			$current = wp_get_object_terms( $post_id, $taxonomy );
@@ -473,6 +496,8 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 			}
 
 			$ai_ids = array();
+			$assignment_identities[ $taxonomy ] = array_keys( $human );
+			$projection_plan[ $taxonomy ]       = array();
 			foreach ( $selected[ $taxonomy ] as $slug => $candidate ) {
 				if ( isset( $human[ $slug ] ) ) {
 					continue;
@@ -482,9 +507,16 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 					return $projection;
 				}
 				$ai_ids[ $slug ] = (int) $projection['term_id'];
+				$projection_plan[ $taxonomy ][] = array(
+					'slug'         => $slug,
+					'term_id'      => (int) $projection['term_id'],
+					'would_create' => ! empty( $projection['created'] ),
+					'source'       => $candidate['source'],
+				);
 			}
 
 			$assignment_plan[ $taxonomy ]            = array_values( array_filter( array_merge( array_values( $human ), array_values( $ai_ids ) ) ) );
+			$assignment_identities[ $taxonomy ]       = array_values( array_unique( array_merge( $assignment_identities[ $taxonomy ], array_keys( $ai_ids ) ) ) );
 			$provenance['fingerprints'][ $taxonomy ] = $fingerprint;
 			$provenance['terms'][ $taxonomy ]        = array_keys( $ai_ids );
 		}
@@ -498,6 +530,8 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 			),
 			'previous_terms'      => $previous_terms,
 			'previous_provenance' => ! empty( $previous_provenance ) ? $previous_provenance : null,
+			'applied_terms'       => $assignment_plan,
+			'applied_provenance'  => $provenance,
 		);
 
 		if ( empty( $args['dry_run'] ) ) {
@@ -521,7 +555,9 @@ function extrachill_network_classify_post_terms( $args, $selector ) {
 			'fingerprint'     => $fingerprint,
 			'taxonomies'      => $taxonomies,
 			'selected'        => array_map( 'array_keys', $selected ),
-			'assignments'     => $assignment_plan,
+			'assignments'     => $assignment_identities,
+			'term_ids'        => $assignment_plan,
+			'projections'     => $projection_plan,
 			'candidate_count' => count( $candidates ),
 			'dry_run'         => ! empty( $args['dry_run'] ),
 			'effects'         => empty( $args['dry_run'] ) ? array( $effect ) : array(),
@@ -541,7 +577,7 @@ function extrachill_network_restore_term_classification_effect( $effect ) {
 	$site_key = sanitize_key( $effect['target']['site'] ?? '' );
 	$post_id  = absint( $effect['target']['post_id'] ?? 0 );
 	$blog_id  = function_exists( 'ec_get_blog_id' ) ? ec_get_blog_id( $site_key ) : 0;
-	if ( ! $blog_id || ! $post_id || empty( $effect['previous_terms'] ) ) {
+	if ( ! $blog_id || ! $post_id || empty( $effect['previous_terms'] ) || empty( $effect['applied_terms'] ) || empty( $effect['applied_provenance'] ) ) {
 		return array(
 			'status' => 'failed',
 			'type'   => 'network_post_terms_set',
@@ -551,10 +587,44 @@ function extrachill_network_restore_term_classification_effect( $effect ) {
 
 	switch_to_blog( $blog_id );
 	try {
+		$current_provenance = get_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_PROVENANCE_META, true );
+		$current_provenance = is_array( $current_provenance ) ? $current_provenance : array();
+		$prior_provenance   = is_array( $effect['previous_provenance'] ?? null ) ? $effect['previous_provenance'] : array();
+		$reverted           = array();
+		$conflicts          = array();
+
 		$GLOBALS['extrachill_network_term_classifier_writing'] = true;
 		try {
-			foreach ( $effect['previous_terms'] as $taxonomy => $term_ids ) {
-				$result = wp_set_object_terms( $post_id, array_map( 'absint', (array) $term_ids ), sanitize_key( $taxonomy ) );
+			foreach ( $effect['previous_terms'] as $taxonomy => $previous_ids ) {
+				$taxonomy           = sanitize_key( $taxonomy );
+				$applied_fingerprint = (string) ( $effect['applied_provenance']['fingerprints'][ $taxonomy ] ?? '' );
+				$current_fingerprint = (string) ( $current_provenance['fingerprints'][ $taxonomy ] ?? '' );
+				$applied_ai          = array_values( (array) ( $effect['applied_provenance']['terms'][ $taxonomy ] ?? array() ) );
+				$current_ai          = array_values( (array) ( $current_provenance['terms'][ $taxonomy ] ?? array() ) );
+				sort( $applied_ai );
+				sort( $current_ai );
+
+				if ( '' === $applied_fingerprint || ! hash_equals( $applied_fingerprint, $current_fingerprint ) || $applied_ai !== $current_ai ) {
+					$conflicts[] = $taxonomy;
+					continue;
+				}
+
+				$current_terms = wp_get_object_terms( $post_id, $taxonomy );
+				if ( is_wp_error( $current_terms ) ) {
+					return array(
+						'status' => 'failed',
+						'type'   => 'network_post_terms_set',
+						'reason' => $current_terms->get_error_message(),
+					);
+				}
+				$current_ids = array_map( static fn( $term ) => (int) $term->term_id, $current_terms );
+				$previous_ids = array_map( 'absint', (array) $previous_ids );
+				$applied_ids  = array_map( 'absint', (array) ( $effect['applied_terms'][ $taxonomy ] ?? array() ) );
+				$added_ids    = array_diff( $applied_ids, $previous_ids );
+				$removed_ids  = array_diff( $previous_ids, $applied_ids );
+				$restored_ids = array_values( array_unique( array_merge( array_diff( $current_ids, $added_ids ), $removed_ids ) ) );
+
+				$result = wp_set_object_terms( $post_id, $restored_ids, $taxonomy );
 				if ( is_wp_error( $result ) ) {
 					return array(
 						'status' => 'failed',
@@ -562,20 +632,42 @@ function extrachill_network_restore_term_classification_effect( $effect ) {
 						'reason' => $result->get_error_message(),
 					);
 				}
+				$reverted[] = $taxonomy;
+
+				if ( isset( $prior_provenance['fingerprints'][ $taxonomy ] ) ) {
+					$current_provenance['fingerprints'][ $taxonomy ] = $prior_provenance['fingerprints'][ $taxonomy ];
+				} else {
+					unset( $current_provenance['fingerprints'][ $taxonomy ] );
+				}
+				if ( isset( $prior_provenance['terms'][ $taxonomy ] ) ) {
+					$current_provenance['terms'][ $taxonomy ] = $prior_provenance['terms'][ $taxonomy ];
+				} else {
+					unset( $current_provenance['terms'][ $taxonomy ] );
+				}
 			}
-			if ( array_key_exists( 'previous_provenance', $effect ) && null !== $effect['previous_provenance'] ) {
-				update_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_PROVENANCE_META, $effect['previous_provenance'] );
-			} else {
+
+			if ( empty( $conflicts ) ) {
+				if ( isset( $prior_provenance['classified_at'] ) ) {
+					$current_provenance['classified_at'] = $prior_provenance['classified_at'];
+				} else {
+					unset( $current_provenance['classified_at'] );
+				}
+			}
+			if ( empty( $current_provenance['fingerprints'] ) && empty( $current_provenance['terms'] ) ) {
 				delete_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_PROVENANCE_META );
+			} else {
+				update_post_meta( $post_id, EXTRACHILL_NETWORK_TERM_PROVENANCE_META, $current_provenance );
 			}
 		} finally {
 			$GLOBALS['extrachill_network_term_classifier_writing'] = false;
 		}
 		return array(
-			'status'  => 'reverted',
+			'status'  => $reverted ? 'reverted' : 'skipped',
 			'type'    => 'network_post_terms_set',
 			'post_id' => $post_id,
 			'site'    => $site_key,
+			'reverted_taxonomies' => $reverted,
+			'conflicts'            => $conflicts,
 		);
 	} finally {
 		restore_current_blog();
