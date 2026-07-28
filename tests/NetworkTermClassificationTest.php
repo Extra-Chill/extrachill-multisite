@@ -7,7 +7,7 @@ namespace DataMachine\Core {
 	class PluginSettings {
 		public static bool $enabled = true;
 		public static function get( string $key, $default = null ) { return self::$enabled; }
-		public static function resolveModelForAgentMode(): array { return array( 'provider' => 'test', 'model' => 'test' ); }
+		public static function resolveModelForAgentMode( int $agent_id = 0, string $mode = 'system' ): array { return array( 'provider' => 'test', 'model' => 'test' ); }
 	}
 }
 

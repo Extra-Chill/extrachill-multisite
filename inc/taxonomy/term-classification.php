@@ -115,7 +115,7 @@ function extrachill_network_schedule_term_classification( $args ) {
  * @return void
  */
 function extrachill_network_maybe_schedule_term_classification( $new_status, $old_status, $post ) {
-	if ( ! $post instanceof WP_Post || ! empty( $GLOBALS['extrachill_network_term_classifier_writing'] ) ) {
+	if ( ! empty( $GLOBALS['extrachill_network_term_classifier_writing'] ) ) {
 		return;
 	}
 	if ( wp_is_post_autosave( $post->ID ) || wp_is_post_revision( $post->ID ) || in_array( $new_status, array( 'auto-draft', 'draft', 'trash', 'inherit' ), true ) ) {

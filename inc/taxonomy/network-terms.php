@@ -132,7 +132,7 @@ function extrachill_network_resolve_term_identity( $taxonomy, $slug ) {
 				continue;
 			}
 			$term = get_term_by( 'slug', $slug, $taxonomy );
-			if ( $term && ! is_wp_error( $term ) ) {
+			if ( $term ) {
 				return extrachill_network_prepare_term_candidate( $term, $taxonomy, $source_key );
 			}
 		} finally {
@@ -189,7 +189,7 @@ function extrachill_network_search_terms( $taxonomy, $query, $limit = 20 ) {
 			}
 
 			$exact = get_term_by( 'slug', $slug, $taxonomy );
-			if ( $exact && ! is_wp_error( $exact ) ) {
+			if ( $exact ) {
 				array_unshift( $terms, $exact );
 			}
 
@@ -231,7 +231,7 @@ function extrachill_network_project_term( $site_key, $post_type, $taxonomy, $slu
 	}
 
 	$existing = get_term_by( 'slug', $slug, $taxonomy );
-	if ( $existing && ! is_wp_error( $existing ) ) {
+	if ( $existing ) {
 		return array(
 			'taxonomy' => $taxonomy,
 			'slug'     => $existing->slug,
@@ -384,8 +384,8 @@ function extrachill_network_find_post_term_candidates( $post, $taxonomies ) {
 /**
  * Apply classifier selections while preserving every human-owned assignment.
  *
- * @param array    $args     {site, post_id, taxonomies?, fingerprint?, force?, dry_run?}.
- * @param callable $selector Receives post and approved candidates.
+ * @param array $args {site, post_id, taxonomies?, fingerprint?, force?, dry_run?}.
+ * @param mixed $selector Receives post and approved candidates when callable.
  * @return array<string,mixed>|WP_Error
  */
 function extrachill_network_classify_post_terms( $args, $selector ) {

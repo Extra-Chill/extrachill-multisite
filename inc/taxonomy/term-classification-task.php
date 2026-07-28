@@ -14,7 +14,13 @@ use DataMachine\Engine\AI\System\Tasks\SystemTask;
 
 defined( 'ABSPATH' ) || exit;
 
-/** Execute classification through Data Machine while the network owns policy. */
+/**
+ * Execute classification through Data Machine while the network owns policy.
+ *
+ * @method void  failJob(int $job_id, string $message)
+ * @method void  completeJob(int $job_id, array $data)
+ * @method array resolveSystemModel(array $params)
+ */
 class TermClassificationTask extends SystemTask {
 	/** Return the registered task type. */
 	public function getTaskType(): string {
@@ -95,8 +101,12 @@ class TermClassificationTask extends SystemTask {
 		$prompt .= 'Allowed taxonomies: ' . implode( ', ', $taxonomies ) . "\n";
 		$prompt .= 'Title: ' . wp_strip_all_tags( (string) $post->post_title ) . "\nContent: " . $content . "\nCandidates: " . wp_json_encode( $choices );
 
+		// Data Machine is runtime-provided rather than a Composer dependency.
+		/* @phpstan-ignore-next-line class.notFound */
+		$message = ConversationManager::buildConversationMessage( 'user', $prompt );
+		/* @phpstan-ignore-next-line class.notFound */
 		$response = RequestBuilder::build(
-			array( ConversationManager::buildConversationMessage( 'user', $prompt ) ),
+			array( $message ),
 			$model['provider'],
 			$model['model'],
 			array(),
@@ -111,6 +121,7 @@ class TermClassificationTask extends SystemTask {
 			return $response;
 		}
 
+		/* @phpstan-ignore-next-line class.notFound */
 		$json    = trim( RequestBuilder::resultText( $response ) );
 		$json    = preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $json );
 		$decoded = json_decode( $json, true );
@@ -130,7 +141,10 @@ class TermClassificationTask extends SystemTask {
 	public function undo( int $job_id, array $engine_data ): array {
 		$effects = is_array( $engine_data['effects'] ?? null ) ? $engine_data['effects'] : array();
 		if ( empty( $effects ) ) {
-			foreach ( ( new Jobs() )->get_children( $job_id ) as $child ) {
+			/* @phpstan-ignore-next-line class.notFound */
+			$jobs = new Jobs();
+			/* @phpstan-ignore-next-line class.notFound */
+			foreach ( $jobs->get_children( $job_id ) as $child ) {
 				$effects = array_merge( $effects, (array) ( $child['engine_data']['effects'] ?? array() ) );
 			}
 		}
