@@ -92,6 +92,8 @@ function extrachill_network_init() {
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/integrations/artist-term-binding-deletion.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cross-site-links/cross-site-links.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cross-site-links/network-bridge.php';
+	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/network-terms.php';
+	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/term-classification.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/footer-main-menu.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/network-dropdown.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/site-title.php';
@@ -123,6 +125,9 @@ function extrachill_network_init() {
 
 		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/TaxonomyCountAbilities.php';
 		new \ExtraChillNetwork\Abilities\TaxonomyCountAbilities();
+
+		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/NetworkTermAbilities.php';
+		new \ExtraChillNetwork\Abilities\NetworkTermAbilities();
 
 		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/NetworkMediaAbilities.php';
 		new \ExtraChillNetwork\Abilities\NetworkMediaAbilities();

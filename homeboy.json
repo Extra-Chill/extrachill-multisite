@@ -14,6 +14,7 @@
       "php tests/FrontendPathResolverTest.php",
       "php tests/FrontendPathResolverRuntimeTest.php",
       "php tests/AdPolicyTest.php",
+      "php tests/NetworkTermClassificationTest.php",
       "php tests/ExperimentAssignmentTest.php",
       "node tests/ExperimentAssignmentJsTest.js"
     ]
