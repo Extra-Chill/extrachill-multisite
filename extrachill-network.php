@@ -9,7 +9,7 @@
  * Network: true
  * Requires at least: 5.0
  * Tested up to: 6.4
- * Requires PHP: 8.4
+ * Requires PHP: 8.3
  * Text Domain: extrachill-network
  * Domain Path: /languages
  *
