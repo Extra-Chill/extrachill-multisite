@@ -34,6 +34,8 @@ if ( file_exists( EXTRACHILL_NETWORK_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 // `plugins_loaded` @ 1 self-heal that must be hooked before the
 // `do_action( 'plugins_loaded' )` this plugin's own init callback runs on.
 require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cache/breeze-role-cookie.php';
+require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Foundation/bootstrap.php';
+require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/FeatureProviders.php';
 
 register_activation_hook( __FILE__, 'extrachill_network_activate' );
 
@@ -74,114 +76,7 @@ add_action( 'plugins_loaded', 'extrachill_network_init' );
  * @return void
  */
 function extrachill_network_init() {
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/blog-ids.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/mail.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/service-assertions.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/cross-site-rest.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/frontend-path-resolver.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/cross-site-content-migration.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/extrachill-turnstile.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/oauth-helpers.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/object-cache-config.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/legacy-path-redirects.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/new-site-setup.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/ad-policy.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/core/experiments.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/integrations/ad-delivery.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/integrations/member-ad-benefit.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/integrations/artist-profile-discussions.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/integrations/artist-term-binding-deletion.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cross-site-links/cross-site-links.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cross-site-links/network-bridge.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/network-terms.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/term-classification.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/footer-main-menu.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/network-dropdown.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/site-title.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/admin-menu.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/404-content.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/dns-prefetch.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/emoji-deprecation.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/filter-bar.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/footer-links.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/theme/social-links.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/community-activity/community-activity.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/community-activity/sidebar-widget.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/assets.php';
-
-	// NetworkStats — composable cross-site metric-provider registry. The
-	// engine, interface, core providers, and the `extrachill_network_stat_providers`
-	// filter load here; the get-network-stats ability registers itself on
-	// `wp_abilities_api_init` (guarded inside bootstrap). The thin
-	// ec_get_network_stats() helper loads unconditionally for template callers.
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/NetworkStats/bootstrap.php';
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/NetworkStats/helpers.php';
-
-	// Abilities API.
-	if ( function_exists( 'wp_register_ability' ) ) {
-		// Single owner for the `extrachill-network` ability category — load
-		// before any class that consumes it so the category exists when their
-		// `wp_register_ability()` calls reference it.
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/CategoryRegistration.php';
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/TaxonomyCountAbilities.php';
-		new \ExtraChillNetwork\Abilities\TaxonomyCountAbilities();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/NetworkTermAbilities.php';
-		new \ExtraChillNetwork\Abilities\NetworkTermAbilities();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/NetworkMediaAbilities.php';
-		new \ExtraChillNetwork\Abilities\NetworkMediaAbilities();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/QRCodeAbility.php';
-		new \ExtraChillNetwork\Abilities\QRCodeAbility();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/MailAbilities.php';
-		new \ExtraChillNetwork\Abilities\MailAbilities();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/AdPolicyAbility.php';
-		new \ExtraChillNetwork\Abilities\AdPolicyAbility();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/ExperimentAssignmentAbility.php';
-		new \ExtraChillNetwork\Abilities\ExperimentAssignmentAbility();
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/CrossSiteContentMigrationAbilities.php';
-		new \ExtraChillNetwork\Abilities\CrossSiteContentMigrationAbilities();
-
-		// Shared editor utilities — load-envelope shape, permissions block,
-		// blog_id resolution. Consumed by every editor ability across the
-		// network (this plugin + extrachill-community + future content types).
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Editor/BlogResolver.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Editor/Permissions.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Editor/LoadEnvelope.php';
-
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Abilities/CommentEditorAbilities.php';
-		new \ExtraChillNetwork\Abilities\CommentEditorAbilities();
-	}
-
-	// Badge count cache warmer.
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cache/badge-count-warmer.php';
-
-	// OG card generation (Data Machine integration).
-	// Loads only when DM is active so the plugin still functions standalone.
-	if ( defined( 'DATAMACHINE_VERSION' ) ) {
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/og-cards/og-cards.php';
-	}
-
-	// Commerce auth providers (Stripe + Shippo). These MUST live at the network
-	// layer so their classes load in network-admin (where the Network Admin >
-	// Payments save handler runs) as well as on blog 3 (where the shop reads
-	// them). The bootstrap self-guards on Data Machine's BaseAuthProvider. See #92.
-	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/commerce/auth/bootstrap.php';
-
-	if ( is_admin() && is_network_admin() ) {
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-menu.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/legacy-admin-tools-redirect.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-security-settings.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-payments-settings.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-oauth-settings.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-shipping-settings.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-integrations-settings.php';
-		require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'admin/network-ad-settings.php';
-	}
+	extrachill_network_boot_foundation();
+	extrachill_network_register_default_feature_providers();
+	extrachill_network_boot_feature_providers();
 }
