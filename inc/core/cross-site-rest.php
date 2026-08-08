@@ -88,6 +88,7 @@ function ec_cross_site_rest_resolve_route( string $path ): string {
  *                         - 'headers' => array         Additional headers (HTTP path only).
  *                         - 'timeout' => int           Request timeout (HTTP path only). Default 15.
  *                         - 'user_id' => int           Override user ID for auth. Default: current user.
+ *                         - 'service_assertion' => array Explicit service_id and scope for HTTP authority.
  * @return array|WP_Error  Decoded JSON response body, or WP_Error on failure.
  */
 function ec_cross_site_rest_request( string $site_key, string $method, string $path, array $args = array() ) {
@@ -104,7 +105,8 @@ function ec_cross_site_rest_request( string $site_key, string $method, string $p
 	 * @param string $path      REST path.
 	 * @param array  $args      Request arguments.
 	 */
-	$use_http = (bool) apply_filters( 'ec_cross_site_use_http_loopback', false, $site_key, $method, $path, $args );
+	$use_http = isset( $args['service_assertion'] )
+		|| (bool) apply_filters( 'ec_cross_site_use_http_loopback', false, $site_key, $method, $path, $args );
 
 	if ( $use_http ) {
 		return ec_cross_site_rest_request_http( $site_key, $method, $path, $args );
@@ -256,6 +258,7 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
  * @return array|WP_Error  Response data or WP_Error.
  */
 function ec_cross_site_rest_request_http( string $site_key, string $method, string $path, array $args = array() ) {
+	$method   = strtoupper( $method );
 	$site_url = ec_get_site_url( $site_key );
 
 	if ( ! $site_url ) {
@@ -305,8 +308,26 @@ function ec_cross_site_rest_request_http( string $site_key, string $method, stri
 		$headers = array_merge( $headers, $args['headers'] );
 	}
 
+	if ( isset( $args['service_assertion'] ) ) {
+		$service = $args['service_assertion'];
+		if ( ! is_array( $service ) || ! isset( $service['service_id'], $service['scope'] ) ) {
+			return new WP_Error( 'ec_service_assertion_denied', 'Service assertion could not be created.', array( 'status' => 403 ) );
+		}
+		$service_headers = ec_cross_site_build_service_assertion_headers(
+			$site_key,
+			$method,
+			$path,
+			$args,
+			(string) $service['service_id'],
+			(string) $service['scope']
+		);
+		if ( is_wp_error( $service_headers ) ) {
+			return $service_headers;
+		}
+		$headers = array_merge( $headers, $service_headers );
+	}
+
 	$timeout = $args['timeout'] ?? 15;
-	$method  = strtoupper( $method );
 
 	$request_args = array(
 		'method'    => $method,
