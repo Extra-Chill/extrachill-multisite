@@ -2,9 +2,9 @@
 /**
  * Cross-site REST request helper.
  *
- * Dispatches REST requests to other subsites in the network. Defaults to
- * in-process dispatch via switch_to_blog() + rest_do_request(), which avoids
- * spinning up a second PHP-FPM worker per call.
+ * Dispatches REST requests to other subsites in the network. Attempts
+ * in-process dispatch via switch_to_blog() + rest_do_request() first, which
+ * avoids spinning up a second PHP-FPM worker for network-shared routes.
  *
  * Two strategies are available:
  *
@@ -15,10 +15,9 @@
  *
  * 2. **HTTP loopback (fallback).** wp_remote_request() to https://127.0.0.1
  *    with the target site's Host header. Spins up a fresh PHP-FPM worker that
- *    bootstraps the target site's full plugin stack independently. Use this
- *    only for routes whose handlers genuinely require the target site's
- *    bootstrap state (e.g. site-only mu-plugins that don't register on the
- *    source site after switch_to_blog()).
+ *    bootstraps the target site's full plugin stack independently. This is
+ *    selected automatically when in-process dispatch returns rest_no_route,
+ *    or explicitly through the ec_cross_site_use_http_loopback filter.
  *
  * Auth in the in-process path uses wp_set_current_user() inside the
  * switch_to_blog() block — no HMAC handshake needed because the dispatch
@@ -28,8 +27,8 @@
  * header verified by the target site (see
  * ec_cross_site_authenticate_internal_request).
  *
- * Callers can opt back into HTTP loopback via the
- * `ec_cross_site_use_http_loopback` filter (default: false).
+ * Callers can force HTTP loopback via the `ec_cross_site_use_http_loopback`
+ * filter (default: false).
  *
  * @package ExtraChillNetwork
  * @since 1.9.0
@@ -72,9 +71,10 @@ function ec_cross_site_rest_resolve_route( string $path ): string {
 /**
  * Make a REST API request to another subsite.
  *
- * Default path is in-process via switch_to_blog() + rest_do_request().
- * Callers can force HTTP loopback by returning true from the
- * `ec_cross_site_use_http_loopback` filter.
+ * The default path attempts in-process dispatch via switch_to_blog() +
+ * rest_do_request(). A rest_no_route result retries over HTTP so the target
+ * site's active plugins can register their canonical routes. Callers can
+ * force HTTP loopback through the `ec_cross_site_use_http_loopback` filter.
  *
  * @param string $site_key Logical site key (e.g. 'community', 'artist', 'events', 'main').
  * @param string $method   HTTP method (GET, POST, PUT, DELETE).
@@ -112,7 +112,16 @@ function ec_cross_site_rest_request( string $site_key, string $method, string $p
 		return ec_cross_site_rest_request_http( $site_key, $method, $path, $args );
 	}
 
-	return ec_cross_site_rest_request_in_process( $site_key, $method, $path, $args );
+	$result = ec_cross_site_rest_request_in_process( $site_key, $method, $path, $args );
+
+	// switch_to_blog() does not load plugins activated only on the target site.
+	// Retry a missing route through the target host so its canonical plugin
+	// bootstrap and rest_api_init lifecycle own route registration.
+	if ( is_wp_error( $result ) && 'rest_no_route' === $result->get_error_code() ) {
+		return ec_cross_site_rest_request_http( $site_key, $method, $path, $args );
+	}
+
+	return $result;
 }
 
 /**
