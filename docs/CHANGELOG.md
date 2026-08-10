@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.9.0] - 2026-08-10
+
+### Added
+- add bounded cross-site service assertions
+
+### Changed
+- separate network foundation providers
+
+### Fixed
+- clear release lint blockers
+- retry target-owned REST routes via loopback
+- restore Composer validation compatibility
+
 ## [2.8.0] - 2026-07-28
 
 ### Added
