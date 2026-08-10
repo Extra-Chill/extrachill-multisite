@@ -89,7 +89,7 @@ function ec_cross_site_rest_resolve_route( string $path ): string {
  *                         - 'timeout' => int           Request timeout (HTTP path only). Default 15.
  *                         - 'user_id' => int           Override user ID for auth. Default: current user.
  *                         - 'service_assertion' => array Explicit service_id and scope for HTTP authority.
- * @return array|WP_Error  Decoded JSON response body, or WP_Error on failure.
+ * @return array|string|WP_Error Decoded JSON response body, raw response body, or WP_Error on failure.
  */
 function ec_cross_site_rest_request( string $site_key, string $method, string $path, array $args = array() ) {
 	/**
@@ -205,7 +205,7 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
 			$body = $args['body'];
 			if ( is_array( $body ) ) {
 				$request->set_header( 'Content-Type', 'application/json' );
-				$request->set_body( wp_json_encode( $body ) );
+				$request->set_body( (string) wp_json_encode( $body ) );
 			} else {
 				$request->set_body( (string) $body );
 			}
@@ -214,13 +214,15 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
 		$response = rest_do_request( $request );
 
 		if ( $response->is_error() ) {
-			$error  = $response->as_error();
-			$data   = $error->get_error_data();
-			$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 500;
+			$error         = $response->as_error();
+			$data          = $error->get_error_data();
+			$status        = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 500;
+			$error_code    = $error->get_error_code();
+			$error_message = $error->get_error_message();
 
 			$result = new WP_Error(
-				$error->get_error_code() ?: 'ec_cross_site_error',
-				$error->get_error_message() ?: 'Cross-site request failed',
+				$error_code ? $error_code : 'ec_cross_site_error',
+				$error_message ? $error_message : 'Cross-site request failed',
 				array( 'status' => $status )
 			);
 		} else {
@@ -264,7 +266,7 @@ function ec_cross_site_rest_request_in_process( string $site_key, string $method
  * @param string $method   HTTP method.
  * @param string $path     REST path without namespace.
  * @param array  $args     Request arguments.
- * @return array|WP_Error  Response data or WP_Error.
+ * @return array|string|WP_Error Response data, raw response body, or WP_Error.
  */
 function ec_cross_site_rest_request_http( string $site_key, string $method, string $path, array $args = array() ) {
 	$method   = strtoupper( $method );
@@ -336,7 +338,7 @@ function ec_cross_site_rest_request_http( string $site_key, string $method, stri
 		$headers = array_merge( $headers, $service_headers );
 	}
 
-	$timeout = $args['timeout'] ?? 15;
+	$timeout = (float) ( $args['timeout'] ?? 15 );
 
 	$request_args = array(
 		'method'    => $method,
@@ -347,7 +349,7 @@ function ec_cross_site_rest_request_http( string $site_key, string $method, stri
 
 	// Attach body for POST/PUT/PATCH/DELETE.
 	if ( in_array( $method, array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) && isset( $args['body'] ) ) {
-		$request_args['body'] = wp_json_encode( $args['body'] );
+		$request_args['body'] = (string) wp_json_encode( $args['body'] );
 	}
 
 	$response = wp_remote_request( $url, $request_args );

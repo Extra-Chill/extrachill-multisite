@@ -60,7 +60,7 @@ function extrachill_network_activate() {
 	// runtime guards inside extrachill_network_init() prevent any actual
 	// multisite-only behavior from firing on single-site installs.
 	$is_interactive_admin = is_admin()
-		&& ! ( defined( 'WP_CLI' ) && WP_CLI )
+		&& ! defined( 'WP_CLI' )
 		&& ! wp_doing_ajax();
 
 	if ( $is_interactive_admin ) {

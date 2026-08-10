@@ -372,7 +372,7 @@ function ec_cross_site_consume_service_assertion_nonce( array $claims ): string 
 		return 'unavailable';
 	}
 
-	$replay_digest = hash(
+	$replay_digest   = hash(
 		'sha256',
 		implode(
 			'|',
@@ -386,9 +386,10 @@ function ec_cross_site_consume_service_assertion_nonce( array $claims ): string 
 			)
 		)
 	);
-	$option_name   = '_ec_service_replay_' . $replay_digest;
-	$previous      = method_exists( $wpdb, 'suppress_errors' ) ? $wpdb->suppress_errors() : null;
-	$inserted      = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The unique database key is the atomic replay boundary.
+	$option_name     = '_ec_service_replay_' . $replay_digest;
+	$suppress_errors = method_exists( $wpdb, 'suppress_errors' ) ? Closure::fromCallable( array( $wpdb, 'suppress_errors' ) ) : null;
+	$previous        = null !== $suppress_errors ? $suppress_errors() : null;
+	$inserted        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The unique database key is the atomic replay boundary.
 		$wpdb->prepare(
 			"INSERT IGNORE INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s)",
 			$option_name,
@@ -396,9 +397,9 @@ function ec_cross_site_consume_service_assertion_nonce( array $claims ): string 
 			'off'
 		)
 	);
-	$storage_error = ! empty( $wpdb->last_error );
-	if ( null !== $previous ) {
-		$wpdb->suppress_errors( $previous );
+	$storage_error   = ! empty( $wpdb->last_error );
+	if ( null !== $previous && null !== $suppress_errors ) {
+		$suppress_errors( $previous );
 	}
 
 	if ( 1 !== $inserted ) {

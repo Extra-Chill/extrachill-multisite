@@ -53,8 +53,8 @@ function extrachill_network_boot_foundation() {
  * A duplicate name is rejected so the first registration remains authoritative.
  *
  * @param string   $name         Stable provider name.
- * @param callable $boot         Provider bootstrap callback.
- * @param callable $is_available Predicate for optional prerequisites.
+ * @param mixed $boot         Provider bootstrap callback.
+ * @param mixed $is_available Predicate for optional prerequisites.
  * @return bool True when registered, false for an invalid or duplicate name.
  */
 function extrachill_network_register_feature_provider( $name, $boot, $is_available ) {
