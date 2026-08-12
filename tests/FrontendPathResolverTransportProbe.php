@@ -5,7 +5,9 @@
  * @package ExtraChillNetwork
  */
 
+require_once dirname( __DIR__ ) . '/inc/core/blog-ids.php';
 require_once dirname( __DIR__ ) . '/inc/core/frontend-path-resolver.php';
+require_once dirname( __DIR__ ) . '/inc/core/cross-site-rest.php';
 
 $paths = array_fill( 0, EC_FRONTEND_PATH_RESOLVER_MAX_PATHS, '/' . str_repeat( 'a', 100 ) );
 $result = ec_cross_site_rest_request_http(
