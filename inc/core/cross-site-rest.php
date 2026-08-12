@@ -16,8 +16,9 @@
  * 2. **HTTP loopback (fallback).** wp_remote_request() to https://127.0.0.1
  *    with the target site's Host header. Spins up a fresh PHP-FPM worker that
  *    bootstraps the target site's full plugin stack independently. This is
- *    selected automatically when in-process dispatch returns rest_no_route,
- *    or explicitly through the ec_cross_site_use_http_loopback filter.
+ *    selected automatically when the source bootstrap lacks a requested
+ *    ability, when in-process dispatch returns rest_no_route, or explicitly
+ *    through the ec_cross_site_use_http_loopback filter.
  *
  * Auth in the in-process path uses wp_set_current_user() inside the
  * switch_to_blog() block — no HMAC handshake needed because the dispatch
@@ -72,9 +73,11 @@ function ec_cross_site_rest_resolve_route( string $path ): string {
  * Make a REST API request to another subsite.
  *
  * The default path attempts in-process dispatch via switch_to_blog() +
- * rest_do_request(). A rest_no_route result retries over HTTP so the target
- * site's active plugins can register their canonical routes. Callers can
- * force HTTP loopback through the `ec_cross_site_use_http_loopback` filter.
+ * rest_do_request(). Ability routes missing their named ability in the source
+ * bootstrap dispatch directly over HTTP, while a rest_no_route result retries
+ * over HTTP. Both paths let the target site's active plugins register their
+ * canonical runtime. Callers can force HTTP loopback through the
+ * `ec_cross_site_use_http_loopback` filter.
  *
  * @param string $site_key Logical site key (e.g. 'community', 'artist', 'events', 'main').
  * @param string $method   HTTP method (GET, POST, PUT, DELETE).
@@ -109,6 +112,18 @@ function ec_cross_site_rest_request( string $site_key, string $method, string $p
 		|| (bool) apply_filters( 'ec_cross_site_use_http_loopback', false, $site_key, $method, $path, $args );
 
 	if ( $use_http ) {
+		return ec_cross_site_rest_request_http( $site_key, $method, $path, $args );
+	}
+
+	$route = ec_cross_site_rest_resolve_route( $path );
+	if (
+		function_exists( 'wp_has_ability' )
+		&& preg_match( '#^/wp-abilities/v1/abilities/([a-zA-Z0-9\-/]+)/run/?$#', $route, $matches )
+		&& ! wp_has_ability( $matches[1] )
+	) {
+		// Core registers one generic execution route before plugin abilities are
+		// initialized. Avoid invoking that route with the source site's registry:
+		// wp_get_ability() emits a notice for a miss before returning its 404.
 		return ec_cross_site_rest_request_http( $site_key, $method, $path, $args );
 	}
 
