@@ -11,6 +11,8 @@ $GLOBALS['csr_blog_stack']      = array();
 $GLOBALS['csr_current_user_id'] = 17;
 $GLOBALS['csr_http_requests']   = array();
 $GLOBALS['csr_in_process']      = array();
+$GLOBALS['csr_ability_notices'] = array();
+$GLOBALS['csr_abilities']       = array( 'example/shared-ability' );
 $GLOBALS['csr_routes']          = array(
 	'/example/v1/shared' => array( 'shared' => true ),
 );
@@ -105,6 +107,10 @@ function is_wp_error( $value ) {
 	return $value instanceof WP_Error;
 }
 
+function wp_has_ability( $name ) {
+	return in_array( $name, $GLOBALS['csr_abilities'], true );
+}
+
 function get_current_blog_id() {
 	return $GLOBALS['csr_blog_id'];
 }
@@ -152,6 +158,18 @@ function rest_do_request( WP_REST_Request $request ) {
 	);
 
 	$route = $request->get_route();
+	if ( preg_match( '#^/wp-abilities/v1/abilities/([a-zA-Z0-9\-/]+)/run/?$#', $route, $matches ) ) {
+		if ( ! wp_has_ability( $matches[1] ) ) {
+			$GLOBALS['csr_ability_notices'][] = $matches[1];
+			return new CrossSiteRestResponse(
+				null,
+				new WP_Error( 'rest_ability_not_found', 'Ability not found.', array( 'status' => 404 ) )
+			);
+		}
+
+		return new CrossSiteRestResponse( array( 'ability' => $matches[1], 'runtime' => 'shared' ) );
+	}
+
 	if ( isset( $GLOBALS['csr_routes'][ $route ] ) ) {
 		return new CrossSiteRestResponse( $GLOBALS['csr_routes'][ $route ] );
 	}
@@ -176,6 +194,12 @@ function wp_remote_request( $url, $args ) {
 		return array(
 			'response' => array( 'code' => 200 ),
 			'body'     => wp_json_encode( array( 'target_blog_id' => 5, 'owner' => 'site-activated-plugin' ) ),
+		);
+	}
+	if ( 'target.example.test' === $host && '/wp-json/wp-abilities/v1/abilities/example/target-only-ability/run' === $route ) {
+		return array(
+			'response' => array( 'code' => 200 ),
+			'body'     => wp_json_encode( array( 'ability' => 'example/target-only-ability', 'runtime' => 'target' ) ),
 		);
 	}
 
@@ -222,6 +246,16 @@ csr_assert( 5 === $GLOBALS['csr_in_process'][0]['blog_id'], 'in-process route ru
 csr_assert( array() === $GLOBALS['csr_http_requests'], 'successful in-process dispatch does not consume an HTTP worker' );
 csr_assert( 2 === get_current_blog_id() && 17 === get_current_user_id(), 'shared-route dispatch restores caller context' );
 
+$shared_ability = ec_cross_site_rest_request( 'target', 'GET', '/wp-abilities/v1/abilities/example/shared-ability/run' );
+csr_assert( 'shared' === $shared_ability['runtime'], 'registered shared ability dispatches in process' );
+csr_assert( 2 === count( $GLOBALS['csr_in_process'] ), 'registered shared ability does not consume an HTTP worker' );
+
+$target_only_ability = ec_cross_site_rest_request( 'target', 'GET', '/wp-abilities/v1/abilities/example/target-only-ability/run' );
+csr_assert( 'target' === $target_only_ability['runtime'], 'source-missing ability dispatches through the target bootstrap' );
+csr_assert( array() === $GLOBALS['csr_ability_notices'], 'source-missing ability does not invoke the noticing registry lookup' );
+csr_assert( 2 === count( $GLOBALS['csr_in_process'] ), 'source-missing ability skips in-process dispatch' );
+csr_assert( 1 === count( $GLOBALS['csr_http_requests'] ), 'source-missing ability performs one HTTP request' );
+
 $target_only = ec_cross_site_rest_request(
 	'target',
 	'GET',
@@ -229,9 +263,9 @@ $target_only = ec_cross_site_rest_request(
 	array( 'user_id' => 29 )
 );
 csr_assert( 'site-activated-plugin' === $target_only['owner'], 'target-only route retries through its canonical host bootstrap' );
-csr_assert( 5 === $GLOBALS['csr_in_process'][1]['blog_id'] && 29 === $GLOBALS['csr_in_process'][1]['user_id'], 'initial attempt uses target blog and requested user contexts' );
-csr_assert( 1 === count( $GLOBALS['csr_http_requests'] ), 'missing in-process route performs one HTTP fallback' );
-$fallback = $GLOBALS['csr_http_requests'][0];
+csr_assert( 5 === $GLOBALS['csr_in_process'][2]['blog_id'] && 29 === $GLOBALS['csr_in_process'][2]['user_id'], 'initial attempt uses target blog and requested user contexts' );
+csr_assert( 2 === count( $GLOBALS['csr_http_requests'] ), 'missing in-process route performs one HTTP fallback' );
+$fallback = $GLOBALS['csr_http_requests'][1];
 csr_assert( 2 === $fallback['caller_blog_id'] && 17 === $fallback['caller_user_id'], 'blog and user contexts are restored before HTTP fallback' );
 csr_assert( isset( $fallback['args']['headers']['X-EC-Internal-Signature'] ), 'HTTP fallback preserves signed user authentication' );
 csr_assert( 2 === get_current_blog_id() && 17 === get_current_user_id(), 'target-only dispatch leaves caller context unchanged' );
