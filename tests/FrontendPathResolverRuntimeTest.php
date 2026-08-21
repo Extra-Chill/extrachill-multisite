@@ -30,7 +30,7 @@ foreach ( $sites as $site => $post_type ) {
 	$output  = array();
 	$status  = 0;
 	$command = sprintf(
-		'EC_FRONTEND_PATH_RESOLVER_EXPECTED_TYPE=%s wp --path=%s --url=%s --allow-root eval-file %s 2>&1',
+		'EC_FRONTEND_PATH_RESOLVER_EXPECTED_TYPE=%s wp --path=%s --url=%s --allow-root --skip-plugins=extrachill-network eval-file %s 2>&1',
 		escapeshellarg( $post_type ),
 		escapeshellarg( $wp_path ),
 		escapeshellarg( $site ),
@@ -44,7 +44,7 @@ foreach ( $sites as $site => $post_type ) {
 
 $transport_probe = __DIR__ . '/FrontendPathResolverTransportProbe.php';
 $transport_command = sprintf(
-	'wp --path=%s --url=%s --allow-root eval-file %s 2>&1',
+	'wp --path=%s --url=%s --allow-root --skip-plugins=extrachill-network eval-file %s 2>&1',
 	escapeshellarg( $wp_path ),
 	escapeshellarg( 'extrachill.com' ),
 	escapeshellarg( $transport_probe )
