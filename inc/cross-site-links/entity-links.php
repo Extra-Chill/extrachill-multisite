@@ -50,6 +50,51 @@ function extrachill_get_user_community_profile_url( $user_id, $user_email = '' )
 }
 
 /**
+ * Get the Community public-profile editor URL for a user.
+ *
+ * @param int    $user_id    User ID.
+ * @param string $user_email Optional. Email address for lookup.
+ * @return string Community profile edit URL or empty string.
+ */
+function extrachill_get_user_community_profile_edit_url( $user_id, $user_email = '' ) {
+	$profile_url = extrachill_get_user_community_profile_url( $user_id, $user_email );
+	if ( empty( $profile_url ) ) {
+		return '';
+	}
+
+	$community_blog_id = ec_get_blog_id( 'community' );
+	$user_id           = absint( $user_id );
+	$community_user    = null;
+	$edit_url          = '';
+	$fallback_url      = '';
+
+	switch_to_blog( $community_blog_id );
+	try {
+		$fallback_url = user_trailingslashit( trailingslashit( $profile_url ) . 'edit' );
+
+		if ( ! empty( $user_email ) ) {
+			$community_user = get_user_by( 'email', $user_email );
+		}
+
+		if ( ! $community_user && $user_id > 0 ) {
+			$community_user = get_userdata( $user_id );
+		}
+
+		if ( $community_user && function_exists( 'bbp_get_user_profile_edit_url' ) ) {
+			$edit_url = bbp_get_user_profile_edit_url( $community_user->ID, $community_user->user_nicename );
+		}
+	} finally {
+		restore_current_blog();
+	}
+
+	if ( ! empty( $edit_url ) ) {
+		return (string) $edit_url;
+	}
+
+	return $fallback_url;
+}
+
+/**
  * Get the main-site author archive URL for a user.
  *
  * @param int $user_id User ID.
@@ -140,7 +185,7 @@ function extrachill_customize_comment_form_logged_in( $defaults ) {
 	}
 
 	$user             = wp_get_current_user();
-	$profile_edit_url = ec_get_site_url( 'community' ) . '/u/' . $user->user_nicename . '/edit';
+	$profile_edit_url = extrachill_get_user_community_profile_edit_url( $user->ID, $user->user_email );
 	$logout_url       = wp_logout_url( home_url() );
 
 	$defaults['logged_in_as'] = sprintf(
@@ -363,7 +408,7 @@ function extrachill_get_cross_site_artist_links( $artist_slug ) {
 
 	$links = array();
 
-	// Blog coverage
+	// Blog coverage.
 	$archive = extrachill_get_artist_blog_archive_url( $artist_slug );
 	if ( $archive ) {
 		$links[] = array(
@@ -374,7 +419,7 @@ function extrachill_get_cross_site_artist_links( $artist_slug ) {
 		);
 	}
 
-	// Upcoming events via REST API
+	// Upcoming events via REST API.
 	$events = extrachill_get_events_upcoming_count_via_api( $artist_slug, 'artist' );
 	if ( $events && $events['count'] > 0 ) {
 		$links[] = array(
@@ -385,7 +430,7 @@ function extrachill_get_cross_site_artist_links( $artist_slug ) {
 		);
 	}
 
-	// Shop products via REST API
+	// Shop products via REST API.
 	$shop = extrachill_get_shop_taxonomy_count_via_api( $artist_slug, 'artist' );
 	if ( $shop && $shop['count'] > 0 ) {
 		$links[] = array(
