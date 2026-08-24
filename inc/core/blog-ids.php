@@ -37,6 +37,9 @@ if ( ! defined( 'EC_BLOG_ID_WIRE' ) ) {
 if ( ! defined( 'EC_BLOG_ID_STUDIO' ) ) {
 	define( 'EC_BLOG_ID_STUDIO', 12 );
 }
+if ( ! defined( 'EC_BLOG_ID_LINK_PAGES' ) ) {
+	define( 'EC_BLOG_ID_LINK_PAGES', 13 );
+}
 
 // Platform Artist ID (Extra Chill artist profile on artist.extrachill.com).
 // Dynamic lookup from network option with production fallback.
@@ -61,6 +64,7 @@ function ec_get_blog_ids() {
 		'docs'       => EC_BLOG_ID_DOCS,
 		'wire'       => EC_BLOG_ID_WIRE,
 		'studio'     => EC_BLOG_ID_STUDIO,
+		'link_pages' => EC_BLOG_ID_LINK_PAGES,
 	);
 }
 
@@ -80,7 +84,7 @@ if ( ! function_exists( 'ec_get_blog_id' ) ) {
 
 /**
  * Map of domains to blog IDs for routing.
- * Includes extrachill.link mapping to artist site (blog ID 4).
+ * Includes the dedicated Link Pages site at extrachill.link.
  *
  * @return array
  */
@@ -95,11 +99,21 @@ function ec_get_domain_map() {
 		'docs.extrachill.com'       => EC_BLOG_ID_DOCS,
 		'wire.extrachill.com'       => EC_BLOG_ID_WIRE,
 		'studio.extrachill.com'     => EC_BLOG_ID_STUDIO,
-		// Domain mapping for link pages.
-		'extrachill.link'           => EC_BLOG_ID_ARTIST,
-		'www.extrachill.link'       => EC_BLOG_ID_ARTIST,
+		'extrachill.link'           => EC_BLOG_ID_LINK_PAGES,
+		'www.extrachill.link'       => EC_BLOG_ID_LINK_PAGES,
 	);
 }
+
+/**
+ * Configure the canonical Link Pages storage site for the standalone runtime.
+ *
+ * @param int $blog_id Existing configured blog ID.
+ * @return int
+ */
+function ec_filter_link_page_storage_blog_id( $blog_id ) {
+	return EC_BLOG_ID_LINK_PAGES > 0 ? EC_BLOG_ID_LINK_PAGES : absint( $blog_id );
+}
+add_filter( 'ec_link_page_storage_blog_id', 'ec_filter_link_page_storage_blog_id' );
 
 /**
  * Reverse lookup: get logical slug by blog ID.
