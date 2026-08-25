@@ -385,17 +385,32 @@ function ec_cross_site_rest_request_http( string $site_key, string $method, stri
 	if ( $status_code >= 400 ) {
 		$error_message = 'Cross-site request failed';
 		$error_code    = 'ec_cross_site_error';
+		$error_data    = array( 'status' => $status_code );
 
 		if ( is_array( $decoded ) ) {
-			if ( ! empty( $decoded['message'] ) ) {
-				$error_message = $decoded['message'];
-			}
-			if ( ! empty( $decoded['code'] ) ) {
+			if ( isset( $decoded['code'] ) && is_string( $decoded['code'] ) && strlen( $decoded['code'] ) <= 64 && preg_match( '/^[a-z0-9_-]+$/D', $decoded['code'] ) ) {
 				$error_code = $decoded['code'];
+			}
+
+			$target_data = $decoded['data'] ?? null;
+			if ( is_array( $target_data ) ) {
+				foreach ( array( 'retryable', 'transient' ) as $field ) {
+					if ( isset( $target_data[ $field ] ) && is_bool( $target_data[ $field ] ) ) {
+						$error_data[ $field ] = $target_data[ $field ];
+					}
+				}
+
+				// Retry delays are whole seconds, bounded to one day.
+				if ( isset( $target_data['retry_after'] ) && ( is_int( $target_data['retry_after'] ) || is_float( $target_data['retry_after'] ) ) ) {
+					$retry_after = (float) $target_data['retry_after'];
+					if ( is_finite( $retry_after ) && $retry_after > 0 ) {
+						$error_data['retry_after'] = (int) ceil( min( 86400.0, $retry_after ) );
+					}
+				}
 			}
 		}
 
-		return new WP_Error( $error_code, $error_message, array( 'status' => $status_code ) );
+		return new WP_Error( $error_code, $error_message, $error_data );
 	}
 
 	// Return decoded JSON, or the raw body if JSON parsing failed.

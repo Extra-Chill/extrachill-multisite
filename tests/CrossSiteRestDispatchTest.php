@@ -10,6 +10,7 @@ $GLOBALS['csr_blog_id']         = 2;
 $GLOBALS['csr_blog_stack']      = array();
 $GLOBALS['csr_current_user_id'] = 17;
 $GLOBALS['csr_http_requests']   = array();
+$GLOBALS['csr_http_responses']  = array();
 $GLOBALS['csr_in_process']      = array();
 $GLOBALS['csr_ability_notices'] = array();
 $GLOBALS['csr_abilities']       = array( 'example/shared-ability' );
@@ -202,6 +203,9 @@ function wp_remote_request( $url, $args ) {
 			'body'     => wp_json_encode( array( 'ability' => 'example/target-only-ability', 'runtime' => 'target' ) ),
 		);
 	}
+	if ( isset( $GLOBALS['csr_http_responses'][ $route ] ) ) {
+		return $GLOBALS['csr_http_responses'][ $route ];
+	}
 
 	return array(
 		'response' => array( 'code' => 404 ),
@@ -270,5 +274,135 @@ csr_assert( 2 === $fallback['caller_blog_id'] && 17 === $fallback['caller_user_i
 csr_assert( isset( $fallback['args']['headers']['X-EC-Internal-Signature'] ), 'HTTP fallback preserves signed user authentication' );
 csr_assert( 2 === get_current_blog_id() && 17 === get_current_user_id(), 'target-only dispatch leaves caller context unchanged' );
 csr_assert( ! isset( $GLOBALS['ec_in_cross_site_dispatch'] ), 'cross-site dispatch marker is restored' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry'] = array(
+	'response' => array( 'code' => 429 ),
+	'body'     => wp_json_encode(
+		array(
+			'code'    => 'target_busy',
+			'message' => 'Try again later.',
+			'data'    => array(
+				'status'      => 418,
+				'retryable'   => true,
+				'transient'   => false,
+				'retry_after' => 12.25,
+				'secret'      => 'do-not-reflect',
+				'context'     => array( 'token' => 'also-secret' ),
+			),
+		)
+	),
+);
+$retry_error = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry' );
+csr_assert( 'target_busy' === $retry_error->get_error_code(), 'valid target machine code is preserved' );
+csr_assert( 'Cross-site request failed' === $retry_error->get_error_message(), 'target-provided error messages are not reflected' );
+csr_assert(
+	array(
+		'status'      => 429,
+		'retryable'   => true,
+		'transient'   => false,
+		'retry_after' => 13,
+	) === $retry_error->get_error_data(),
+	'typed retry metadata is allowlisted and target status cannot override HTTP'
+);
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/invalid-retry'] = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => wp_json_encode(
+		array(
+			'data' => array(
+				'retryable'   => 1,
+				'transient'   => 'true',
+				'retry_after' => '30',
+			),
+		)
+	),
+);
+$invalid_retry = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/invalid-retry' );
+csr_assert( array( 'status' => 503 ) === $invalid_retry->get_error_data(), 'invalid retry metadata types are omitted' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry-tiny']     = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => wp_json_encode( array( 'data' => array( 'retry_after' => 0.000001 ) ) ),
+);
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry-huge']     = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => '{"data":{"retry_after":1e308}}',
+);
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry-infinite'] = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => '{"data":{"retry_after":1e309}}',
+);
+$retry_tiny     = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry-tiny' );
+$retry_huge     = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry-huge' );
+$retry_infinite = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry-infinite' );
+csr_assert( 1 === $retry_tiny->get_error_data()['retry_after'], 'tiny positive retry delay rounds up to one second' );
+csr_assert( 86400 === $retry_huge->get_error_data()['retry_after'], 'huge finite retry delay clamps before integer conversion' );
+csr_assert( array( 'status' => 503 ) === $retry_infinite->get_error_data(), 'infinite retry delay is omitted' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry-negative'] = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => wp_json_encode( array( 'data' => array( 'retry_after' => -2 ) ) ),
+);
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry-zero']     = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => wp_json_encode( array( 'data' => array( 'retry_after' => 0 ) ) ),
+);
+$retry_negative = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry-negative' );
+$retry_zero     = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry-zero' );
+csr_assert( array( 'status' => 503 ) === $retry_negative->get_error_data(), 'negative retry delay is omitted' );
+csr_assert( array( 'status' => 503 ) === $retry_zero->get_error_data(), 'zero retry delay is omitted' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/credential-message'] = array(
+	'response' => array( 'code' => 500 ),
+	'body'     => wp_json_encode(
+		array(
+			'code'    => 'target_failure',
+			'message' => 'Authorization: Bearer private-token',
+		)
+	),
+);
+$credential_message = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/credential-message' );
+csr_assert( 'target_failure' === $credential_message->get_error_code(), 'credential message does not affect valid target code' );
+csr_assert( 'Cross-site request failed' === $credential_message->get_error_message(), 'credential-shaped target messages are not reflected' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/invalid-envelope'] = array(
+	'response' => array( 'code' => 500 ),
+	'body'     => wp_json_encode(
+		array(
+			'code'    => 'Target Busy',
+			'message' => array( 'nested' => 'message' ),
+		)
+	),
+);
+$invalid_envelope = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/invalid-envelope' );
+csr_assert( 'ec_cross_site_error' === $invalid_envelope->get_error_code(), 'invalid target machine code is omitted' );
+csr_assert( 'Cross-site request failed' === $invalid_envelope->get_error_message(), 'object-shaped target message is ignored' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/array-message'] = array(
+	'response' => array( 'code' => 500 ),
+	'body'     => wp_json_encode(
+		array(
+			'code'    => 'target_failure',
+			'message' => array( 'one', 'two' ),
+		)
+	),
+);
+$array_message = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/array-message' );
+csr_assert( 'Cross-site request failed' === $array_message->get_error_message(), 'array-shaped target message is ignored' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/retry-nan'] = array(
+	'response' => array( 'code' => 503 ),
+	'body'     => '{"data":{"retry_after":NaN}}',
+);
+$retry_nan = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/retry-nan' );
+csr_assert( array( 'status' => 503 ) === $retry_nan->get_error_data(), 'NaN JSON body remains malformed and contributes no retry metadata' );
+
+$GLOBALS['csr_http_responses']['/wp-json/example/v1/malformed'] = array(
+	'response' => array( 'code' => 502 ),
+	'body'     => '<html>bad gateway</html>',
+);
+$malformed = ec_cross_site_rest_request_http( 'target', 'GET', '/example/v1/malformed' );
+csr_assert( 'ec_cross_site_error' === $malformed->get_error_code() && 'Cross-site request failed' === $malformed->get_error_message(), 'malformed error body keeps generic compatibility behavior' );
+csr_assert( array( 'status' => 502 ) === $malformed->get_error_data(), 'malformed error body preserves only HTTP status' );
 
 echo "All cross-site REST dispatch tests passed.\n";
