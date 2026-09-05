@@ -21,12 +21,12 @@ The Extra Chill Platform implements WordPress native multisite authentication ac
 - Maps to artist.extrachill.com (Blog ID 4)
 - URL preservation: URLs display as extrachill.link
 - Backend operates on artist.extrachill.com
-- Cookies set for both domains
+- `extrachill.link` is a different registrable domain than `extrachill.com`, so it does **not** receive the `.extrachill.com` auth cookie — see [Cross-Domain Cookie Handling](#cross-domain-cookie-handling) below
 
-**Cookie Configuration**: WordPress sets cookies for:
-- `.extrachill.com` (wildcard, covers all subdomains)
-- `extrachill.link` (domain mapping support)
-- `www.extrachill.link` (www variant support)
+**Cookie Configuration**: WordPress sets the multisite auth cookie for:
+- `.extrachill.com` (wildcard, covers all subdomains — derived automatically by WordPress core, no custom config)
+
+`extrachill.link` never receives this cookie. It authenticates separately via a bearer token handoff (see below).
 
 ## WordPress Multisite Authentication
 
@@ -58,23 +58,42 @@ wordpress_logged_in_<SITECOOKIEHASH>
 
 ### Cookie Domain Configuration
 
-**wp-config.php**:
-```php
-// Multisite domain cookie
-define( 'COOKIE_DOMAIN', '.extrachill.com' );
+**`COOKIE_DOMAIN` is not defined anywhere in `wp-config.php`, and it should not be.** This is plain WordPress core behavior for subdomain multisite installs — zero custom code required.
 
-// Ensure cookies work for subdomains
-define( 'COOKIEPATH', '/' );
-define( 'ADMIN_COOKIE_PATH', '/' );
+`wp-config.php` (verified live, `wp-config.php:85-92`) only defines the multisite bootstrap constants:
+
+```php
+define( 'MULTISITE', true );
+define( 'SUBDOMAIN_INSTALL', true );
+define( 'DOMAIN_CURRENT_SITE', 'extrachill.com' );
+define( 'SUNRISE', true );
 ```
 
-**Result**: Single login session across all .extrachill.com subdomains
+WordPress core derives `COOKIE_DOMAIN` itself from those constants, in `ms_cookie_constants()` (`wp-includes/ms-default-constants.php:84-88`):
+
+```php
+if ( ! defined( 'COOKIE_DOMAIN' ) && is_subdomain_install() ) {
+    if ( ! empty( $current_network->cookie_domain ) ) {
+        define( 'COOKIE_DOMAIN', '.' . $current_network->cookie_domain );
+    } else {
+        define( 'COOKIE_DOMAIN', '.' . $current_network->domain );
+    }
+}
+```
+
+Because `SUBDOMAIN_INSTALL` is `true` and the network domain is `extrachill.com`, core defines `COOKIE_DOMAIN` as `.extrachill.com` on every request, with no plugin or config-file involvement. This is the cleanest seam in this network's auth model: cross-subdomain SSO across `*.extrachill.com` is stock WordPress multisite, not custom infrastructure. Do not add an explicit `COOKIE_DOMAIN` define — it would be redundant at best, and risks fighting the network's `cookie_domain` value if the network row ever changes.
+
+**Result**: Single login session across all `.extrachill.com` subdomains, entirely via core's default derivation.
+
+**The one exception is `extrachill.link`** — a different registrable domain, so it can never receive the `.extrachill.com` cookie no matter how `COOKIE_DOMAIN` is set. That domain requires bespoke handling: `wp-content/sunrise.php` domain mapping plus a separate bearer-token handoff. See [Domain Mapping for extrachill.link](#domain-mapping-for-extrachilllink) and the [Notes](#notes) section below.
 
 ## Domain Mapping for extrachill.link
 
 ### Sunrise PHP Implementation
 
-**File**: `.github/sunrise.php`
+**File**: `wp-content/sunrise.php`
+
+This is the only valid path — the `SUNRISE` constant (defined in `wp-config.php`) causes WordPress core to `include_once WP_CONTENT_DIR . '/sunrise.php'` specifically (`wp-includes/ms-settings.php:51-53`). The canonical source lives in the `Extra-Chill/.github` repo and is deployed to `wp-content/sunrise.php` on the live install; it is not part of this repo's tree.
 
 **Execution**: Runs before WordPress loads, during domain routing
 
@@ -86,6 +105,27 @@ define( 'ADMIN_COOKIE_PATH', '/' );
 // extrachill.link/artist-slug/ displays at extrachill.link
 // Backend operates on artist.extrachill.com
 ```
+
+### ⚠️ Route Exclusion List (undocumented foot-gun)
+
+`wp-content/sunrise.php:36-52` also adds a `rewrite_rules_array` filter at priority `0`, scoped to the `extrachill.link` host, that installs a catch-all rewrite:
+
+```php
+// wp-content/sunrise.php:41
+$excluded = 'wp-admin|wp-login|wp-json|artists?|link-page|manage-artist|manage-link-page|join';
+
+// wp-content/sunrise.php:44-47
+$new_rules = [
+    '^(' . $excluded . ')/?$' => 'index.php?$1',
+    '^([^/]+)/?$'             => 'index.php?artist_link_page=$matches[1]',
+];
+```
+
+Any single-segment top-level path on `extrachill.link` that is **not** in that pipe-delimited `$excluded` list is captured by `^([^/]+)/?$` and routed as `artist_link_page=$matches[1]` — i.e. treated as a link-page slug, not as a real route. This means:
+
+- Adding a brand-new top-level route to the artist site (e.g. a new page slug, a new REST-adjacent endpoint, a new top-level admin-post action) will silently be swallowed by the link-page catch-all on `extrachill.link` unless its slug is also added to the `$excluded` list in `wp-content/sunrise.php`.
+- This list is defined inline in a drop-in file (`wp-content/sunrise.php`), not in this repo, not in `extrachill-artist-platform`, and not discoverable from a normal plugin-code grep — it is a live trap for anyone adding routes without knowing to check sunrise.
+- Current exclusions: `wp-admin`, `wp-login`, `wp-json`, `artist`/`artists`, `link-page`, `manage-artist`, `manage-link-page`, `join`.
 
 ### URL Preservation
 
@@ -106,13 +146,13 @@ define( 'ADMIN_COOKIE_PATH', '/' );
 
 ### Cookie Visibility
 
-**extrachill.com Cookies**: Accessible on all .extrachill.com subdomains
+**extrachill.com Cookies**: The `.extrachill.com` auth cookie is accessible on all `.extrachill.com` subdomains (`community.extrachill.com`, `shop.extrachill.com`, `artist.extrachill.com`, etc.) because they share a registrable domain.
 
-**extrachill.link Cookies**: Separate but mapped to same Blog ID 4
+**extrachill.link Cookies**: `extrachill.link` is a **different registrable domain** than `extrachill.com`, so the `.extrachill.com` auth cookie is never sent there — not by the browser, not by any Domain-attribute trick, because cookie scoping is bound to the registrable domain regardless of `sunrise.php`'s blog-ID mapping. `extrachill.link` authenticates via a separate bearer-token handoff instead of a shared cookie. See [Notes](#notes) below for the mechanism.
 
 **Cookie Scope**:
 ```
-.extrachill.com cookie (set once, accessible everywhere):
+.extrachill.com cookie (set once, accessible everywhere on that domain):
 - extrachill.com
 - community.extrachill.com
 - shop.extrachill.com
@@ -120,17 +160,18 @@ define( 'ADMIN_COOKIE_PATH', '/' );
 - etc.
 
 extrachill.link mapping:
-- Routes to artist.extrachill.com (Blog ID 4)
-- Uses .extrachill.com cookies (same session)
+- sunrise.php routes the request to artist.extrachill.com (Blog ID 4) content
+- Does NOT receive the .extrachill.com cookie (different registrable domain)
+- Authenticated actions use a bearer token instead — see Notes
 ```
 
 ### Session Consistency
 
-**Single Session**: User's WordPress session is one per user, not per domain
+**Single Session**: User's WordPress session is one per user, not per domain — but only across sites that share the `.extrachill.com` cookie. `extrachill.link` authenticates out-of-band via the bearer-token handoff, not via shared session cookies.
 
-**Logout Behavior**: Logout from any domain clears session across all domains
+**Logout Behavior**: Logout from any `.extrachill.com` site clears the shared session cookie across all `.extrachill.com` domains. It does not directly affect an `extrachill.link` bearer token already issued to a client, since that token is a separate credential (see Notes).
 
-**Blog Switching**: User remains logged in when visiting different sites
+**Blog Switching**: User remains logged in when visiting different `.extrachill.com` sites
 
 **Blog Context**: Current blog ID changes, but user ID remains constant
 
@@ -360,19 +401,17 @@ if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wp_rest' ) ) {
 
 Cross-domain auth relies on:
 
-- WordPress multisite cookies for `.extrachill.com` subdomains
-- Domain mapping via `.github/sunrise.php` for `extrachill.link`
+- WordPress core's automatic `COOKIE_DOMAIN` derivation (`.extrachill.com`) for subdomain multisite — no explicit `COOKIE_DOMAIN` define, see [Cookie Domain Configuration](#cookie-domain-configuration) above
+- Domain mapping via `wp-content/sunrise.php` for `extrachill.link` (canonical source in the `Extra-Chill/.github` repo, deployed to `wp-content/sunrise.php`)
 - For `extrachill.link` (a different registrable domain than `.extrachill.com`, so the auth cookie can never reach it), authenticated REST calls use a **wp-native bearer token** minted by `extrachill-api/inc/auth/extrachill-link-token-handoff.php` on the artist site and handed to the link page in a URL fragment. This replaced the former `SameSite=None; Secure` cookie patch, which modern browser privacy (Safari ITP, Chrome third-party-cookie phase-out) increasingly blocked.
 
-Cookie domain configuration still lives in WordPress configuration (and the hosting/proxy layer).
+Cookie domain configuration lives in WordPress core's multisite bootstrap (not an explicit config define) and the hosting/proxy layer.
 
 ### Cookie domain expectations
 
-**Check 1: Cookie Domain Configuration**
-```php
-// Verify in wp-config.php
-define( 'COOKIE_DOMAIN', '.extrachill.com' );
-```
+**Check 1: Cookie Domain Derivation**
+- `COOKIE_DOMAIN` should **not** appear as an explicit `define()` in `wp-config.php` — if it does, someone added a redundant (or worse, conflicting) override of core's automatic derivation.
+- To verify the effective value at runtime: `wp eval 'var_dump( COOKIE_DOMAIN );'` should print `string(15) ".extrachill.com"`.
 
 **Check 2: HTTPS Configuration**
 - Ensure all sites use HTTPS
@@ -410,6 +449,7 @@ define( 'COOKIE_DOMAIN', '.extrachill.com' );
 
 - [extrachill-network CLAUDE.md - Blog ID Management](../CLAUDE.md#blog-id-management)
 - [extrachill-users CLAUDE.md](../extrachill-users/CLAUDE.md) - Authentication system
-- [.github/sunrise.php](../../../.github/sunrise.php) - Domain mapping implementation
+- `Extra-Chill/.github` repo, `sunrise.php` - Domain mapping implementation (canonical source; deployed to `wp-content/sunrise.php`, not part of this repo's tree)
+- `extrachill-api/inc/auth/extrachill-link-token-handoff.php` - `extrachill.link` bearer-token handoff implementation
 - [WordPress Multisite Handbook](https://developer.wordpress.org/plugins/multisite/)
 - [WordPress Security Handbook](https://developer.wordpress.org/plugins/security/)
