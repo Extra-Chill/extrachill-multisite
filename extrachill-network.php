@@ -29,11 +29,6 @@ if ( file_exists( EXTRACHILL_NETWORK_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'vendor/autoload.php';
 }
 
-// Breeze role-cookie hardening (extrachill-users#161). Loaded at top level —
-// NOT inside extrachill_network_init() — because it registers a
-// `plugins_loaded` @ 1 self-heal that must be hooked before the
-// `do_action( 'plugins_loaded' )` this plugin's own init callback runs on.
-require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/cache/breeze-role-cookie.php';
 require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/Foundation/bootstrap.php';
 require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/FeatureProviders.php';
 
