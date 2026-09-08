@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.10.0] - 2026-09-08
+
+### Added
+- register closed-vocabulary genre taxonomy with alias map and enforcement
+- register dedicated Link Pages site
+
+### Changed
+- own network taxonomy registration instead of the theme
+- isolate runtime probes from deployed plugin
+
+### Fixed
+- document the configurable blog-id guard for phpstan
+- clear release preflight findings
+- remove dead Breeze role-cookie wiring
+- preserve cross-site retry metadata
+- expose canonical profile edit URL
+- purge site cache after ad delivery changes
+- route site-only abilities through target bootstrap
+
 ## [2.9.0] - 2026-08-10
 
 ### Added
