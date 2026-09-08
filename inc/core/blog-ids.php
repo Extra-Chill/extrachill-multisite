@@ -111,7 +111,9 @@ function ec_get_domain_map() {
  * @return int
  */
 function ec_filter_link_page_storage_blog_id( $blog_id ) {
-	return EC_BLOG_ID_LINK_PAGES > 0 ? EC_BLOG_ID_LINK_PAGES : absint( $blog_id );
+	$configured = (int) EC_BLOG_ID_LINK_PAGES;
+
+	return $configured > 0 ? $configured : absint( $blog_id );
 }
 add_filter( 'ec_link_page_storage_blog_id', 'ec_filter_link_page_storage_blog_id' );
 

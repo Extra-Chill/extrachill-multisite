@@ -9,7 +9,7 @@ require_once dirname( __DIR__ ) . '/inc/core/blog-ids.php';
 require_once dirname( __DIR__ ) . '/inc/core/frontend-path-resolver.php';
 require_once dirname( __DIR__ ) . '/inc/core/cross-site-rest.php';
 
-$paths = array_fill( 0, EC_FRONTEND_PATH_RESOLVER_MAX_PATHS, '/' . str_repeat( 'a', 100 ) );
+$paths  = array_fill( 0, EC_FRONTEND_PATH_RESOLVER_MAX_PATHS, '/' . str_repeat( 'a', 100 ) );
 $result = ec_cross_site_rest_request_http(
 	'events',
 	'POST',
@@ -29,4 +29,4 @@ if ( 'rest_cannot_create' !== $result->get_error_code() || ! is_array( $error_da
 	throw new RuntimeException( 'Large JSON POST transport probe did not reach the expected WordPress route.' );
 }
 
-fwrite( STDOUT, "FrontendPathResolverTransportProbe passed.\n" );
+fwrite( STDOUT, "FrontendPathResolverTransportProbe passed.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- CLI test probe writing to STDOUT.
