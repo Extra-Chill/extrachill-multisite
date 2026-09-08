@@ -18,8 +18,10 @@ $GLOBALS['extrachill_network_term_classifier_writing'] = false;
 /**
  * Return the explicit target and approved-source policy.
  *
- * Events is intentionally absent from sources: scraper-created terms are not
- * approved merely because an event relationship exists.
+ * Events is intentionally absent as a source for artist, festival, and
+ * location: scraper-created terms are not approved merely because an event
+ * relationship exists. Venue is the exception — events owns the canonical
+ * venue identity (see extrachill_get_taxonomy_canonical_config()).
  *
  * @return array<string,mixed>
  */
@@ -28,7 +30,7 @@ function extrachill_network_get_term_policy() {
 		'extrachill_network_term_policy',
 		array(
 			'targets' => array(
-				'main'      => array( 'post' => array( 'artist', 'festival', 'location' ) ),
+				'main'      => array( 'post' => array( 'artist', 'festival', 'location', 'venue' ) ),
 				'community' => array( 'topic' => array( 'artist', 'festival', 'location' ) ),
 				'wire'      => array( 'festival_wire' => array( 'festival', 'location' ) ),
 			),
@@ -36,6 +38,7 @@ function extrachill_network_get_term_policy() {
 				'artist'   => array( 'main' ),
 				'festival' => array( 'wire', 'main' ),
 				'location' => array( 'main', 'wire' ),
+				'venue'    => array( 'events' ),
 			),
 		)
 	);

@@ -247,7 +247,10 @@ namespace {
 	// Approved source policy excludes Events' broad scraper union.
 	$policy = extrachill_network_get_term_policy();
 	ntc_assert_same( array( 'main' ), $policy['sources']['artist'], 'Artist identity comes only from the curated Main taxonomy.' );
-	ntc_assert( ! in_array( 'events', array_merge( ...array_values( $policy['sources'] ) ), true ), 'Events is not an approved source.' );
+	foreach ( array( 'artist', 'festival', 'location' ) as $scraper_union_taxonomy ) {
+		ntc_assert( ! in_array( 'events', $policy['sources'][ $scraper_union_taxonomy ], true ), "Events is not an approved source for {$scraper_union_taxonomy}." );
+	}
+	ntc_assert_same( array( 'events' ), $policy['sources']['venue'], 'Venue identity is owned by the Events site.' );
 
 	$GLOBALS['ntc_terms'][1]['artist']['phish']       = new WP_Term( 10, 'phish', 'Phish', 'Jam band' );
 	$GLOBALS['ntc_terms'][1]['artist']['radiohead']   = new WP_Term( 13, 'radiohead', 'Radiohead', 'Rock band' );

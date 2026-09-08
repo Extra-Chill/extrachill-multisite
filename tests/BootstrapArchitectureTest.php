@@ -116,6 +116,7 @@ $compatibility_paths = array(
 	'inc/integrations/artist-term-binding-deletion.php',
 	'inc/cross-site-links/cross-site-links.php',
 	'inc/cross-site-links/network-bridge.php',
+	'inc/taxonomy/register.php',
 	'inc/taxonomy/network-terms.php',
 	'inc/taxonomy/term-classification.php',
 	'inc/NetworkStats/bootstrap.php',
