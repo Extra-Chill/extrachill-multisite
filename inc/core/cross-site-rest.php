@@ -392,6 +392,13 @@ function ec_cross_site_rest_request_http( string $site_key, string $method, stri
 				$error_code = $decoded['code'];
 			}
 
+			// Preserve the target's error message, bounded to keep the wire
+			// clean — same fidelity the loopback path already provides via
+			// rest_do_request()->as_error()->get_error_message().
+			if ( isset( $decoded['message'] ) && is_string( $decoded['message'] ) && '' !== $decoded['message'] ) {
+				$error_message = substr( $decoded['message'], 0, 240 );
+			}
+
 			$target_data = $decoded['data'] ?? null;
 			if ( is_array( $target_data ) ) {
 				foreach ( array( 'retryable', 'transient' ) as $field ) {
