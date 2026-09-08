@@ -3,8 +3,8 @@
 /**
  * Network Taxonomy Registration
  *
- * Registers the network-wide music taxonomies: location, festival, artist, venue.
- * All include REST API support for block editor integration.
+ * Registers the network-wide music taxonomies: location, festival, artist, venue,
+ * genre. All include REST API support for block editor integration.
  *
  * Moved verbatim from the theme (extrachill/inc/core/custom-taxonomies.php);
  * theme removal tracked in Extra-Chill/extrachill#82.
@@ -121,6 +121,33 @@ function extrachill_network_register_taxonomies() {
 				'show_admin_column' => true,
 				'query_var'         => true,
 				'rewrite'           => array( 'slug' => 'venue' ),
+				'show_in_rest'      => true,
+			)
+		);
+	}
+
+	if ( ! taxonomy_exists( 'genre' ) ) {
+		register_taxonomy(
+			'genre',
+			array( 'post' ),
+			array(
+				'hierarchical'      => false,
+				'labels'            => array(
+					'name'          => _x( 'Genres', 'taxonomy general name', 'extrachill-network' ),
+					'singular_name' => _x( 'Genre', 'taxonomy singular name', 'extrachill-network' ),
+					'search_items'  => __( 'Search Genres', 'extrachill-network' ),
+					'all_items'     => __( 'All Genres', 'extrachill-network' ),
+					'edit_item'     => __( 'Edit Genre', 'extrachill-network' ),
+					'update_item'   => __( 'Update Genre', 'extrachill-network' ),
+					'add_new_item'  => __( 'Add New Genre', 'extrachill-network' ),
+					'new_item_name' => __( 'New Genre Name', 'extrachill-network' ),
+					'menu_name'     => __( 'Genres', 'extrachill-network' ),
+				),
+				'public'            => true,
+				'show_ui'           => true,
+				'show_admin_column' => true,
+				'query_var'         => true,
+				'rewrite'           => array( 'slug' => 'genre' ),
 				'show_in_rest'      => true,
 			)
 		);

@@ -68,6 +68,7 @@ function extrachill_network_boot_experiments_provider() {
 /** Boot network taxonomy and classification features. */
 function extrachill_network_boot_taxonomy_provider() {
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/register.php';
+	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/genre.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/network-terms.php';
 	require_once EXTRACHILL_NETWORK_PLUGIN_DIR . 'inc/taxonomy/term-classification.php';
 

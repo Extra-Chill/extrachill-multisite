@@ -23,6 +23,12 @@ $GLOBALS['extrachill_network_term_classifier_writing'] = false;
  * relationship exists. Venue is the exception — events owns the canonical
  * venue identity (see extrachill_get_taxonomy_canonical_config()).
  *
+ * Genre is sourced from main and targets main/post, community/topic,
+ * events/data_machine_events, and artist/artist_profile: genre is a
+ * network-wide artist fact, but Data Machine's import path can never write
+ * it onto events (see inc/taxonomy/genre.php) — the events site only
+ * receives it through approved projection.
+ *
  * @return array<string,mixed>
  */
 function extrachill_network_get_term_policy() {
@@ -30,13 +36,16 @@ function extrachill_network_get_term_policy() {
 		'extrachill_network_term_policy',
 		array(
 			'targets' => array(
-				'main'      => array( 'post' => array( 'artist', 'festival', 'location', 'venue' ) ),
-				'community' => array( 'topic' => array( 'artist', 'festival', 'location' ) ),
+				'main'      => array( 'post' => array( 'artist', 'festival', 'genre', 'location', 'venue' ) ),
+				'community' => array( 'topic' => array( 'artist', 'festival', 'genre', 'location' ) ),
 				'wire'      => array( 'festival_wire' => array( 'festival', 'location' ) ),
+				'events'    => array( 'data_machine_events' => array( 'genre' ) ),
+				'artist'    => array( 'artist_profile' => array( 'genre' ) ),
 			),
 			'sources' => array(
 				'artist'   => array( 'main' ),
 				'festival' => array( 'wire', 'main' ),
+				'genre'    => array( 'main' ),
 				'location' => array( 'main', 'wire' ),
 				'venue'    => array( 'events' ),
 			),

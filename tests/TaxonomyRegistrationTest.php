@@ -84,8 +84,8 @@ extrachill_network_register_taxonomies();
 $registered = $GLOBALS['taxonomy_registration_test']['registered'];
 
 taxonomy_registration_assert(
-	array( 'location', 'festival', 'artist', 'venue' ) === array_keys( $registered ),
-	'all four network taxonomies are declared'
+	array( 'location', 'festival', 'artist', 'venue', 'genre' ) === array_keys( $registered ),
+	'all five network taxonomies are declared'
 );
 
 $expected = array(
@@ -186,6 +186,29 @@ $expected = array(
 			'show_in_rest'      => true,
 		),
 	),
+	'genre'    => array(
+		'object_type' => array( 'post' ),
+		'args'        => array(
+			'hierarchical'      => false,
+			'labels'            => array(
+				'name'          => 'Genres',
+				'singular_name' => 'Genre',
+				'search_items'  => 'Search Genres',
+				'all_items'     => 'All Genres',
+				'edit_item'     => 'Edit Genre',
+				'update_item'   => 'Update Genre',
+				'add_new_item'  => 'Add New Genre',
+				'new_item_name' => 'New Genre Name',
+				'menu_name'     => 'Genres',
+			),
+			'public'            => true,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'query_var'         => true,
+			'rewrite'           => array( 'slug' => 'genre' ),
+			'show_in_rest'      => true,
+		),
+	),
 );
 
 foreach ( $expected as $taxonomy => $expectation ) {
@@ -212,8 +235,8 @@ taxonomy_registration_assert(
 require_once dirname( __DIR__ ) . '/inc/taxonomy/network-terms.php';
 $policy = extrachill_network_get_term_policy();
 taxonomy_registration_assert(
-	array( 'artist', 'festival', 'location', 'venue' ) === $policy['targets']['main']['post'],
-	'main post target policy includes venue'
+	array( 'artist', 'festival', 'genre', 'location', 'venue' ) === $policy['targets']['main']['post'],
+	'main post target policy includes venue and genre'
 );
 taxonomy_registration_assert(
 	array( 'events' ) === $policy['sources']['venue'],
@@ -222,4 +245,22 @@ taxonomy_registration_assert(
 taxonomy_registration_assert(
 	! in_array( 'venue', $policy['targets']['community']['topic'] ?? array(), true ),
 	'community topic target policy does not include venue'
+);
+
+// Policy: genre is sourced from main and projects onto the artist network.
+taxonomy_registration_assert(
+	array( 'main' ) === $policy['sources']['genre'],
+	'genre source policy is the main site only'
+);
+taxonomy_registration_assert(
+	in_array( 'genre', $policy['targets']['community']['topic'] ?? array(), true ),
+	'community topic target policy includes genre'
+);
+taxonomy_registration_assert(
+	array( 'genre' ) === ( $policy['targets']['events']['data_machine_events'] ?? null ),
+	'events data_machine_events target policy includes genre'
+);
+taxonomy_registration_assert(
+	array( 'genre' ) === ( $policy['targets']['artist']['artist_profile'] ?? null ),
+	'artist artist_profile target policy includes genre'
 );
