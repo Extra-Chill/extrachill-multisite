@@ -111,8 +111,12 @@ function ec_get_domain_map() {
  * @return int
  */
 function ec_filter_link_page_storage_blog_id( $blog_id ) {
+	// The constant is overridable from wp-config (see the defined() guard
+	// above), so a non-positive value is a real runtime possibility even
+	// though the in-repo default folds to a constant for static analysis.
 	$configured = (int) EC_BLOG_ID_LINK_PAGES;
 
+	// @phpstan-ignore greater.alwaysTrue (configurable constant; default folds to 13)
 	return $configured > 0 ? $configured : absint( $blog_id );
 }
 add_filter( 'ec_link_page_storage_blog_id', 'ec_filter_link_page_storage_blog_id' );
