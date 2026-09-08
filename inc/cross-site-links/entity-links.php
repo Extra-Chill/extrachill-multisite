@@ -151,7 +151,7 @@ function extrachill_get_user_profile_url( $user_id, $user_email = '' ) {
  * @return string Author link HTML.
  */
 function extrachill_get_comment_author_link_multisite( $comment ) {
-	$author_url = extrachill_get_user_profile_url( $comment->user_id, $comment->comment_author_email );
+	$author_url = extrachill_get_user_profile_url( (int) $comment->user_id, $comment->comment_author_email );
 
 	if ( $comment->user_id > 0 ) {
 		return '<a href="' . esc_url( $author_url ) . '">' . get_comment_author( $comment ) . '</a>';
@@ -352,7 +352,7 @@ function extrachill_get_artist_blog_archive_url( $artist_slug ) {
 	try {
 		$term = get_term_by( 'slug', $artist_slug, 'artist' );
 
-		if ( ! $term || is_wp_error( $term ) ) {
+		if ( ! $term instanceof WP_Term ) {
 			return null;
 		}
 
